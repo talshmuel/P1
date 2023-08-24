@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/DataTransferModule/DataTransferModule.iml" filepath="$PROJECT_DIR$/DataTransferModule/DataTransferModule.iml" />
+      <module fileurl="file://$PROJECT_DIR$/EngineModule/EngineModule.iml" filepath="$PROJECT_DIR$/EngineModule/EngineModule.iml" />
+      <module fileurl="file://$PROJECT_DIR$/P1.iml" filepath="$PROJECT_DIR$/P1.iml" />
+      <module fileurl="file://$PROJECT_DIR$/UIModule/UIModule.iml" filepath="$PROJECT_DIR$/UIModule/UIModule.iml" />
+    </modules>
+  </component>
+</project>
