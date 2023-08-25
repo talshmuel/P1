@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="PRDController">
+   <center>
+      <TabPane prefHeight="317.0" prefWidth="317.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+        <tabs>
+          <Tab text="Details">
+               <content>
+                  <SplitPane dividerPositions="0.2938888888888889" prefHeight="160.0" prefWidth="200.0">
+                     <items>
+                        <TreeView fx:id="worldDetailsTree" onMouseClicked="#handleSelectWorldTreeItem" prefHeight="200.0" prefWidth="200.0" />
+                        <Pane prefHeight="288.0" prefWidth="421.0">
+                           <children>
+                              <ListView layoutX="12.0" layoutY="7.0" prefHeight="270.0" prefWidth="399.0" />
+                           </children>
+                        </Pane>
+                     </items>
+                  </SplitPane>
+               </content>
+          </Tab>
+          <Tab text="New Execution">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="288.0" prefWidth="640.0" />
+            </content>
+          </Tab>
+            <Tab text="Results">
+               <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+               </content>
+            </Tab>
+        </tabs>
+         <opaqueInsets>
+            <Insets />
+         </opaqueInsets>
+      </TabPane>
+   </center>
+   <top>
+      <VBox alignment="CENTER" prefHeight="83.0" prefWidth="600.0" BorderPane.alignment="CENTER">
+         <children>
+            <Label alignment="CENTER" prefHeight="41.0" prefWidth="218.0" text="Predictions">
+               <font>
+                  <Font size="22.0" />
+               </font>
+            </Label>
+            <HBox alignment="CENTER" prefHeight="50.0" prefWidth="600.0" spacing="20.0">
+               <children>
+                  <Button fx:id="loadXMLButton" mnemonicParsing="false" onAction="#openFileChooser" prefHeight="25.0" prefWidth="69.0" text="Load File" />
+                  <TextField fx:id="filePathField" editable="false" prefHeight="1.0" prefWidth="310.0" />
+                  <Button fx:id="queueManagementBotton" mnemonicParsing="false" prefHeight="43.0" prefWidth="137.0" text="Queue Management" />
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </top>
+</BorderPane>
