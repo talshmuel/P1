@@ -4,20 +4,29 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TreeView?>
+<?import javafx.scene.effect.Light.Distant?>
+<?import javafx.scene.effect.Lighting?>
+<?import javafx.scene.effect.Shadow?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.paint.Color?>
 <?import javafx.scene.text.Font?>
 
-
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="PRDController">
+<BorderPane maxHeight="2000.0" maxWidth="2000.0" minHeight="400.0" minWidth="600.0" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="PRDController">
    <center>
       <TabPane prefHeight="317.0" prefWidth="317.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
         <tabs>
@@ -36,15 +45,96 @@
                </content>
           </Tab>
           <Tab text="New Execution">
-            <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="288.0" prefWidth="640.0" />
-            </content>
-          </Tab>
-            <Tab text="Results">
                <content>
-                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                  <SplitPane prefHeight="160.0" prefWidth="200.0">
+                     <padding>
+                        <Insets left="200.0" />
+                     </padding>
+                  </SplitPane>
                </content>
-            </Tab>
+               <content>
+                  <GridPane>
+                    <columnConstraints>
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="237.33333333333334" minWidth="10.0" prefWidth="215.33333333333334" />
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="378.0" minWidth="10.0" prefWidth="358.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints maxHeight="271.3333333333333" minHeight="10.0" prefHeight="22.33333524068197" vgrow="SOMETIMES" />
+                        <RowConstraints maxHeight="271.3333333333333" minHeight="10.0" prefHeight="239.66670735677084" vgrow="SOMETIMES" />
+                        <RowConstraints maxHeight="94.0" minHeight="0.0" prefHeight="26.6666259765625" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                     <children>
+                        <Button fx:id="clearSimulation" mnemonicParsing="false" text="Clear" GridPane.rowIndex="2">
+                           <GridPane.margin>
+                              <Insets left="50.0" />
+                           </GridPane.margin>
+                        </Button>
+                        <Button fx:id="startSimulation" mnemonicParsing="false" text="Start!" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                           <GridPane.margin>
+                              <Insets left="200.0" />
+                           </GridPane.margin>
+                        </Button>
+                        <Label prefHeight="17.0" prefWidth="251.0" text="Please fill values for the environment variables:" GridPane.columnIndex="1" GridPane.halignment="CENTER" />
+                        <TableView fx:id="environmentTable" maxHeight="600.0" maxWidth="600.0" minHeight="200.0" minWidth="200.0" prefHeight="400.0" prefWidth="400.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.valignment="BOTTOM" GridPane.vgrow="ALWAYS">
+                          <columns>
+                            <TableColumn fx:id="nameColumn" editable="false" maxWidth="300.0" minWidth="100.0" prefWidth="150.0" sortable="false" text="Name" />
+                            <TableColumn fx:id="typeColumn" editable="false" maxWidth="100.0" minWidth="45.0" prefWidth="45.0" sortable="false" text="Type" />
+                              <TableColumn fx:id="bottomColumn" editable="false" maxWidth="100.0" minWidth="50.0" prefWidth="50.0" sortable="false" text="Bottom" />
+                              <TableColumn fx:id="topColumn" editable="false" maxWidth="100.0" minWidth="50.0" prefWidth="50.0" sortable="false" text="Top" />
+                              <TableColumn fx:id="valueColumn" maxWidth="300.0" minWidth="80.0" onEditCommit="#handleEditCommit" sortable="false" text="Value" />
+                          </columns>
+                           <opaqueInsets>
+                              <Insets />
+                           </opaqueInsets>
+                           <effect>
+                              <Lighting diffuseConstant="2.0" specularConstant="0.0" specularExponent="40.0" surfaceScale="0.0">
+                                 <bumpInput>
+                                    <Shadow>
+                                       <color>
+                                          <Color red="0.37719297409057617" green="0.27722907066345215" blue="0.24680528044700623" />
+                                       </color>
+                                    </Shadow>
+                                 </bumpInput>
+                                 <light>
+                                    <Light.Distant>
+                                       <color>
+                                          <Color red="0.7222222089767456" green="1.0" blue="0.7731481194496155" />
+                                       </color>
+                                    </Light.Distant>
+                                 </light>
+                              </Lighting>
+                           </effect>
+                        </TableView>
+                        <ScrollPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
+                          <content>
+                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="237.0" prefWidth="221.0">
+                                 <children>
+                                    <TableView fx:id="entityTable" layoutX="-3.0" prefHeight="237.0" prefWidth="219.0">
+                                      <columns>
+                                        <TableColumn fx:id="entityNameColumn" editable="false" maxWidth="600.0" minWidth="100.0" prefWidth="120.0" sortable="false" text="Name" />
+                                        <TableColumn fx:id="quantityColumn" maxWidth="600.0" minWidth="50.0" onEditCommit="#handleEntityEditCommit" prefWidth="98.00001271565756" sortable="false" text="Quantity" />
+                                      </columns>
+                                    </TableView>
+                                 </children>
+                              </AnchorPane>
+                          </content>
+                        </ScrollPane>
+                        <Label layoutX="295.0" layoutY="12.0" prefHeight="17.0" prefWidth="251.0" text="Please choose quantity for each entity:" />
+                     </children>
+                     <effect>
+                        <Lighting diffuseConstant="2.0" specularConstant="0.0" surfaceScale="0.0">
+                           <bumpInput>
+                              <Shadow />
+                           </bumpInput>
+                           <light>
+                              <Light.Distant />
+                           </light>
+                        </Lighting>
+                     </effect>
+                  </GridPane>
+               </content>
+          </Tab>
+            <Tab text="Results" />
         </tabs>
          <opaqueInsets>
             <Insets />
