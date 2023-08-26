@@ -112,7 +112,7 @@
                                     <TableView fx:id="entityTable" layoutX="-3.0" prefHeight="237.0" prefWidth="219.0">
                                       <columns>
                                         <TableColumn fx:id="entityNameColumn" editable="false" maxWidth="600.0" minWidth="100.0" prefWidth="120.0" sortable="false" text="Name" />
-                                        <TableColumn fx:id="quantityColumn" maxWidth="600.0" minWidth="50.0" onEditCommit="#handleEntityEditCommit" prefWidth="98.00001271565756" sortable="false" text="Quantity" />
+                                        <TableColumn fx:id="quantityColumn" maxWidth="600.0" minWidth="50.0" prefWidth="98.00001271565756" sortable="false" text="Quantity" />
                                       </columns>
                                     </TableView>
                                  </children>

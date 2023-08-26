@@ -35,81 +35,88 @@ public class PRDController {
     private TreeView<String> worldDetailsTree;
 
     ///////////////////////////// gon /////////////////////////////
+    @FXML
+    private TableView<EnvironmentInfo> environmentTable;
+    @FXML
+    private TableColumn<EnvironmentInfo, String> nameColumn;
+    @FXML
+    private TableColumn<EnvironmentInfo, String> typeColumn;
+    @FXML
+    private TableColumn<EnvironmentInfo, Object> bottomColumn;
+    @FXML
+    private TableColumn<EnvironmentInfo, Object> topColumn;
+    @FXML
+    private TableColumn<EnvironmentInfo, String> valueColumn;
 
     @FXML
-    private TableView<NameValueEntry> environmentTable;
+    private TableView<EntityInfo> entityTable;
     @FXML
-    private TableColumn<NameValueEntry, String> nameColumn;
+    private TableColumn<EntityInfo, String> entityNameColumn;
     @FXML
-    private TableColumn<NameValueEntry, String> typeColumn;
-    @FXML
-    private TableColumn<NameValueEntry, Object> bottomColumn;
-    @FXML
-    private TableColumn<NameValueEntry, Object> topColumn;
-    @FXML
-    private TableColumn<NameValueEntry, String> valueColumn;
-    @FXML
-    private TableView<EntityValueEntry> entityTable;
-    @FXML
-    private TableColumn<EntityValueEntry, String> entityNameColumn;
-    @FXML
-    private TableColumn<EntityValueEntry, String> quantityColumn;
+    private TableColumn<EntityInfo, String> quantityColumn;
 
     private void setEntityTable(){
-        entityNameColumn.setCellValueFactory(new PropertyValueFactory<EntityValueEntry, String>("name"));
-        quantityColumn.setCellValueFactory(new PropertyValueFactory<EntityValueEntry, String>("quantity"));
-
+        entityNameColumn.setCellValueFactory(new PropertyValueFactory<EntityInfo, String>("name"));
+        quantityColumn.setCellValueFactory(new PropertyValueFactory<EntityInfo, String>("quantity"));
         entityTable.setEditable(true);
         quantityColumn.setCellFactory(TextFieldTableCell.forTableColumn(new DefaultStringConverter()));
 
         SimulationInfo simulationInfo = engine.displaySimulationDefinitionInformation();
         ArrayList<EntityInfo> entityInfo = simulationInfo.getEntities();
         for(EntityInfo e : entityInfo){
-            entityTable.getItems().add(new EntityValueEntry(e.getName(), ""));
+            entityTable.getItems().add(new EntityInfo(e.getName(), 0, null));
         }
 
         quantityColumn.setOnEditCommit(event -> {
-            String newValue = event.getNewValue();
-            EntityValueEntry item = event.getTableView().getItems().get(event.getTablePosition().getRow());
-            item.setPopulation(newValue);
+            String newValue = event.getNewValue(); // todo: add exception
+            // todo: add this value to world's entity population
+            EntityInfo item = event.getTableView().getItems().get(event.getTablePosition().getRow());
+            item.setPopulation(Integer.parseInt(newValue));
         });
     }
 
-    @FXML
-    void handleEntityEditCommit(TableColumn.CellEditEvent<EntityValueEntry, String> event) {
-        EntityValueEntry item = event.getTableView().getItems().get(event.getTablePosition().getRow());
-        String newValue = event.getNewValue();
-        item.setPopulation(newValue);
-        entityTable.refresh();
-    }
+//    @FXML
+//    void handleEntityEditCommit(TableColumn.CellEditEvent<EntityInfo, String> event) {
+//        String newValue = event.getNewValue();
+//        EntityInfo item = event.getTableView().getItems().get(event.getTablePosition().getRow());
+//        item.setPopulation(Integer.parseInt(newValue));
+//        entityTable.refresh();
+//    }
 
     private void setEnvironmentTable(){
-        nameColumn.setCellValueFactory(new PropertyValueFactory<NameValueEntry, String>("name"));
-        typeColumn.setCellValueFactory(new PropertyValueFactory<NameValueEntry, String>("type"));
-        bottomColumn.setCellValueFactory(new PropertyValueFactory<NameValueEntry, Object>("bottom"));
-        topColumn.setCellValueFactory(new PropertyValueFactory<NameValueEntry, Object>("top"));
+        nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+        typeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
+        bottomColumn.setCellValueFactory(new PropertyValueFactory<>("bottomLimit"));
+        topColumn.setCellValueFactory(new PropertyValueFactory<>("topLimit"));
+        valueColumn.setCellValueFactory(new PropertyValueFactory<>("value"));
 
         environmentTable.setEditable(true);
         valueColumn.setCellFactory(TextFieldTableCell.forTableColumn(new DefaultStringConverter()));
 
+        // Populate data in the TableView (replace this with your data)
         ArrayList<PropertyInfo> definitions = engine.getEnvironmentDefinitions();
         for(PropertyInfo p : definitions) {
-            environmentTable.getItems().add(new NameValueEntry(p.getName(), p.getType(), p.getBottomLimit(), p.getTopLimit(), ""));
+            environmentTable.getItems().add(new EnvironmentInfo(p.getName(), p.getType(), (Integer)p.getBottomLimit(), (Integer)p.getTopLimit(), null));
         }
 
         valueColumn.setOnEditCommit(event -> {
-            String newValue = event.getNewValue();
-            NameValueEntry item = event.getTableView().getItems().get(event.getTablePosition().getRow());
+            Object newValue = event.getNewValue(); // todo: add exceptions
+            // todo: add this value to world
+            EnvironmentInfo item = event.getTableView().getItems().get(event.getTablePosition().getRow());
             item.setValue(newValue);
         });
     }
 
     @FXML
-    private void handleEditCommit(TableColumn.CellEditEvent<NameValueEntry, String> event) {
-        NameValueEntry item = event.getTableView().getItems().get(event.getTablePosition().getRow());
+    private void handleEditCommit(TableColumn.CellEditEvent<EnvironmentInfo, String> event) {
+        EnvironmentInfo item = event.getTableView().getItems().get(event.getTablePosition().getRow());
         String newValue = event.getNewValue();
         item.setValue(newValue);
         environmentTable.refresh();
+    }
+
+    private void setEnvironmentVariableValueFromUser(){
+        PropertyInfo propertyInfo;
     }
 
     ///////////////////////////// gon /////////////////////////////

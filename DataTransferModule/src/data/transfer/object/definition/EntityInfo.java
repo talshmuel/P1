@@ -34,4 +34,7 @@ public final class EntityInfo {
         return population;
     }
 
+    public void setPopulation(int population) {
+        this.population = population;
+    }
 }

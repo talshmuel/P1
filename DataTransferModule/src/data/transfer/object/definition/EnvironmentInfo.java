@@ -1,13 +1,22 @@
-import javax.naming.Name;
+package data.transfer.object.definition;
 
-public class NameValueEntry {
+public final class EnvironmentInfo {
     private String name;
     private String type;
-    private Object bottomLimit;
-    private Object topLimit;
+    private Integer bottomLimit;
+    //private Double bottomLimit;
+    private Integer topLimit;
+    //private Double topLimit;
     private Object value;
 
-    public NameValueEntry(String name, String type, Object bottom, Object top, Object value){
+//    public EnvironmentInfo(String name, String type, Double bottom, Double top, Object value){
+//        this.name = name;
+//        this.type = type;
+//        this.bottomLimit = bottom;
+//        this.topLimit = top;
+//        this.value = value;
+//    }
+    public EnvironmentInfo(String name, String type, Integer bottom, Integer top, Object value){
         this.name = name;
         this.type = type;
         this.bottomLimit = bottom;
@@ -47,11 +56,22 @@ public class NameValueEntry {
         this.value = value;
     }
 
+    public void setTopLimit(Integer topLimit) {
+        this.topLimit = topLimit;
+    }
+    /*
     public void setTopLimit(Double topLimit) {
         this.topLimit = topLimit;
     }
 
-    public void setBottomLimit(Object bottomLimit) {
+     */
+
+    public void setBottomLimit(Integer bottomLimit) {
         this.bottomLimit = bottomLimit;
     }
+    /*
+    public void setBottomLimit(Double bottomLimit) {
+        this.bottomLimit = bottomLimit;
+    }
+     */
 }
