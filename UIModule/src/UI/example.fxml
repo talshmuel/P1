@@ -23,25 +23,16 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="2000.0" maxWidth="2000.0" minHeight="400.0" minWidth="600.0" prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="PRDController">
+<BorderPane maxHeight="2000.0" maxWidth="2000.0" minHeight="400.0" minWidth="600.0" prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UI.PRDController">
    <center>
       <TabPane fx:id="tabPane" prefHeight="317.0" prefWidth="317.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
         <tabs>
           <Tab fx:id="detailsTab" text="Details">
                <content>
-                  <SplitPane dividerPositions="0.2938888888888889" prefHeight="160.0" prefWidth="200.0">
-                     <items>
-                        <TreeView fx:id="worldDetailsTree" onMouseClicked="#handleSelectWorldTreeItem" prefHeight="200.0" prefWidth="200.0" />
-                        <Pane prefHeight="288.0" prefWidth="421.0">
-                           <children>
-                              <ListView layoutX="12.0" layoutY="7.0" prefHeight="270.0" prefWidth="399.0" />
-                           </children>
-                        </Pane>
-                     </items>
-                  </SplitPane>
+                   <fx:include fx:id="detailsPageComponent" source="page/details/DetailsPage.fxml"/>
                </content>
           </Tab>
-          <Tab fx:id="newExecutionTab" text="New Execution">
+          <Tab text="New Execution">
                <content>
                   <SplitPane prefHeight="160.0" prefWidth="200.0">
                      <padding>
@@ -121,7 +112,20 @@
                   </GridPane>
                </content>
           </Tab>
-            <Tab fx:id="resultsTab" text="Results" />
+            <Tab fx:id="resultsTab" text="Results">
+               <content>
+                  <GridPane>
+                    <columnConstraints>
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                  </GridPane>
+               </content></Tab>
         </tabs>
          <opaqueInsets>
             <Insets />

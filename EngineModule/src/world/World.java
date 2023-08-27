@@ -89,7 +89,7 @@ public class World implements Serializable {
         return res;
     }
 
-    public void setEnvironmentValue(String name, Object val)throws IncompatibleType {
+    public void setEnvironmentValue(String name, Object val) throws IncompatibleType {
         environmentVariables.get(name).set(val);
     }
     public ArrayList<PropertyValueInfo> getEnvironmentValues(){

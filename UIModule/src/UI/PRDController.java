@@ -1,3 +1,6 @@
+package UI;
+
+import UI.page.details.DetailsPageController;
 import data.transfer.object.EndSimulationData;
 import data.transfer.object.definition.*;
 import engine.Engine;
@@ -25,12 +28,20 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import world.property.impl.Property;
 
 
 public class PRDController {
+    @FXML private SplitPane detailsPageComponent;
+    @FXML private DetailsPageController detailsPageComponentController;
+
+//    @FXML private SplitPane resultsPageComponent;//זה כנראה לא יהיה ספליט פיין צריך לעדכן!!!
+//    @FXML private DetailsPageController resultsPageComponentController;
+
     private EngineInterface engine;
 
     @FXML
@@ -42,8 +53,6 @@ public class PRDController {
     @FXML
     private Button queueManagementBotton;
 
-    @FXML
-    private TreeView<String> worldDetailsTree;
 
     ///////////////////////////// gon /////////////////////////////
 
@@ -53,7 +62,6 @@ public class PRDController {
     private Tab detailsTab;
     @FXML
     private Tab resultsTab;
-
     @FXML
     private Tab newExecutionTab;
     @FXML
@@ -78,6 +86,20 @@ public class PRDController {
     /** New Execution logic **/
     @FXML
     void handleStartSimulation(ActionEvent event) throws IncompatibleAction, DivisionByZeroException, IncompatibleType {
+        // update environment variables. טל תתעלמי מזה בינתיים
+        ArrayList<PropertyInfo> definitions = engine.getEnvironmentDefinitions();
+        ArrayList<PropertyValueInfo> values = engine.getEnvironmentValues();
+        for(PropertyInfo d : definitions){
+            System.out.println("name: " + d.getName());
+            System.out.println("type: " + d.getType());
+            System.out.println("bottom: " + d.getBottomLimit());
+            System.out.println("top: " + d.getTopLimit());
+        }
+        for(PropertyValueInfo v : values){
+            System.out.println("name: " + v.getName());
+            System.out.println("value: " + v.getVal());
+        }
+
         // Switch to the "Results" tab
         tabPane.getSelectionModel().select(resultsTab);
 
@@ -135,6 +157,11 @@ public class PRDController {
 
                             slider.valueProperty().addListener((observable, oldValue, newValue) -> {
                                 variable.setValue(newValue);
+                                try {
+                                    engine.setEnvironmentVariable(variable.getName(), newValue);
+                                } catch (IncompatibleType e) {
+                                    throw new RuntimeException(e);
+                                }
                             });
                             inputNode = hbox;
                             break;
@@ -154,7 +181,7 @@ public class PRDController {
                             hbox.getChildren().addAll(currentValueLabel, bottomLimitLabel, slider, topLimitLabel);
 
                             slider.valueProperty().addListener((observable, oldValue, newValue) -> {
-                                variable.setValue(newValue);
+                                variable.setValue(newValue); // todo: add exceptions
                             });
                             inputNode = hbox;
                             break;
@@ -188,10 +215,10 @@ public class PRDController {
                             break;
                         default:
                             TextField textField = new TextField();
-                            textField.setPrefHeight(15);
+                            textField.setPrefHeight(10);
                             textField.textProperty().addListener((observable, oldValue, newValue) -> {
                                 // Update the variable's value
-                                variable.setValue(newValue);
+                                variable.setValue(newValue);  // todo: add exceptions
                             });
                             inputNode = textField;
                             break;
@@ -252,83 +279,38 @@ public class PRDController {
             try {
                 engine = new Engine();
                 engine.createSimulationByXMLFile(selectedFile.getAbsolutePath());
+                setModel(engine);
             }catch (Exception e){
                 //צריך לבדוק כאן איך מתמודדים עם שגיאות
             }
-            setWorldDetailsTree();
+            detailsPageComponentController.setWorldDetailsTree();
             setEnvironmentTable(); // gon
             setEntityTable(); // gon
         }
     }
+
     @FXML
     void showWorldTree(ActionEvent event) {
 
 
     }
-//    @FXML
-//    private void initialize(){
-//        engine = new Engine();
-//    }
-
-    private void setWorldDetailsTree(){
-        SimulationInfo simulationInfo = engine.displaySimulationDefinitionInformation();
-        TreeItem<String> worldItem = new TreeItem<>("World");
-
-        TreeItem <String> entitiesItem = new TreeItem<>("Entities");
-        setChildrenOfEntitiesItem(simulationInfo.getEntities(), entitiesItem);
-
-        TreeItem <String> environmentItem = new TreeItem<>("Environment variables");
-//        setChildrenOfEnvironmentItem(simulationInfo. , environmentItem);
-
-        TreeItem <String> rulesItem = new TreeItem<>("Rules");
-        //setChildrenOfRulesItem(simulationInfo.getRules(), rulesItem);
-
-        TreeItem <String> endConditionsItem = new TreeItem<>("End conditions");
-        //setChildrenOfEndConditionsItem(simulationInfo.getEndConditions(), endConditionsItem);
-
-
-        worldItem.getChildren().addAll(entitiesItem, environmentItem, rulesItem, endConditionsItem);
-        worldDetailsTree.setRoot(worldItem);
-    }
-    private void setChildrenOfEntitiesItem(ArrayList<EntityInfo> entitiesInfo, TreeItem <String> entitiesItem){
-        for(EntityInfo entityInfo:entitiesInfo){
-            TreeItem<String> entityItem = new TreeItem<>(entityInfo.getName());
-            TreeItem<String> propertiesItem = new TreeItem<>("Properties");
-            for (PropertyInfo propInfo : entityInfo.getProperties()){
-                TreeItem<String> propItem = new TreeItem<>(propInfo.getName());
-                propertiesItem.getChildren().add(propItem);
-            }
-            entityItem.getChildren().add(propertiesItem);
-            entitiesItem.getChildren().add(entityItem);
-        }
-    }
-//    private void setChildrenOfEnvironmentItem(ArrayList<TerminationInfo> environmentInfo, TreeItem <String> environmentItem){
-//
-//    }
-    private void setChildrenOfRulesItem(ArrayList<RuleInfo> rulesInfo, TreeItem <String> rulesItem){
-
-    }
-    private void setChildrenOfEndConditionsItem(ArrayList<TerminationInfo> terminationInfo, TreeItem <String> entitiesItem){
-
-    }
-    @FXML
-    void handleSelectWorldTreeItem() {
-        TreeItem<String> selected = worldDetailsTree.getSelectionModel().getSelectedItem();
-        SimulationInfo simulationInfo = engine.displaySimulationDefinitionInformation();
-//        switch (selected.getValue()){
-//            case "Entities":
-//                break;
-//            case "Environment variables":
-//                break;
-//            case "Rules":
-//                break;
-//            case "End conditions":
-//                break;
-//
-//        }
-    }
 
     public void setModel(EngineInterface engine) {
-        this.engine = engine;
+        detailsPageComponentController.setModel(engine);
+        //resultsPageComponentController.setModel(engine);
     }
+
+    @FXML
+    public void initialize() {
+        if (detailsPageComponentController != null) {
+            detailsPageComponentController.setMainController(this);
+            //resultsPageComponentController.setMainController(this);
+        }
+    }
+
+    public void setDetailsPageController(DetailsPageController detailsPageController) {
+        this.detailsPageComponentController = detailsPageController;
+        detailsPageController.setMainController(this);
+    }
+
 }
