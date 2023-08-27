@@ -92,7 +92,6 @@ public class DetailsPageController {
 
             }
         }
-
     }
 
     public void setMainController(PRDController mainController) {
@@ -101,6 +100,4 @@ public class DetailsPageController {
     public void setModel(EngineInterface engine) {
         this.engine = engine;
     }
-
-
 }
