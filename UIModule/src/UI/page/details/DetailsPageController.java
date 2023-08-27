@@ -68,17 +68,19 @@ public class DetailsPageController {
         TreeItem<String> selected = worldDetailsTree.getSelectionModel().getSelectedItem();
         if (selected!= null) {
             SimulationInfo simulationInfo = engine.displaySimulationDefinitionInformation();
-            switch (selected.getParent().getValue()) {
-                case "Entities":
-                    showPropertiesOfEntity(simulationInfo, selected.getValue());
-                    break;
-                case "Environment variables":
-                    break;
-                case "Rules":
-                    break;
-                case "End conditions":
-                    break;
+            if(selected.getParent()!=null) {
+                switch (selected.getParent().getValue()) {
+                    case "Entities":
+                        showPropertiesOfEntity(simulationInfo, selected.getValue());
+                        break;
+                    case "Environment variables":
+                        break;
+                    case "Rules":
+                        break;
+                    case "End conditions":
+                        break;
 
+                }
             }
         }
     }
