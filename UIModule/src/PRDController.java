@@ -1,6 +1,10 @@
+import data.transfer.object.EndSimulationData;
 import data.transfer.object.definition.*;
 import engine.Engine;
 import engine.EngineInterface;
+import exception.DivisionByZeroException;
+import exception.IncompatibleAction;
+import exception.IncompatibleType;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -42,6 +46,16 @@ public class PRDController {
     private TreeView<String> worldDetailsTree;
 
     ///////////////////////////// gon /////////////////////////////
+
+    @FXML
+    private TabPane tabPane;
+    @FXML
+    private Tab detailsTab;
+    @FXML
+    private Tab resultsTab;
+
+    @FXML
+    private Tab newExecutionTab;
     @FXML
     private TableView<EntityInfo> entityTable;
     @FXML
@@ -56,6 +70,29 @@ public class PRDController {
     private TableColumn<EnvironmentInfo, String> envTypeCol;
     @FXML
     private TableColumn<EnvironmentInfo, String> envValueCol;
+    @FXML
+    private Button startSimulation;
+    @FXML
+    private Button clearSimulation;
+
+    /** New Execution logic **/
+    @FXML
+    void handleStartSimulation(ActionEvent event) throws IncompatibleAction, DivisionByZeroException, IncompatibleType {
+        // Switch to the "Results" tab
+        tabPane.getSelectionModel().select(resultsTab);
+
+        // Start the simulation
+        try {
+            EndSimulationData endSimulationData = engine.runSimulation();
+            System.out.println("The simulation ended after " + endSimulationData.getEndConditionVal() + " " +
+                    endSimulationData.getEndCondition());
+            System.out.println("Run ID: " + endSimulationData.getRunId() + "\n");
+        }
+        catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+
+    }
 
     public void setEnvironmentTable() {
         envNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
