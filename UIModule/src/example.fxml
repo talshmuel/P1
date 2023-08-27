@@ -4,7 +4,6 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
@@ -15,7 +14,6 @@
 <?import javafx.scene.effect.Light.Distant?>
 <?import javafx.scene.effect.Lighting?>
 <?import javafx.scene.effect.Shadow?>
-<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
@@ -23,10 +21,9 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.paint.Color?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="2000.0" maxWidth="2000.0" minHeight="400.0" minWidth="600.0" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="PRDController">
+<BorderPane maxHeight="2000.0" maxWidth="2000.0" minHeight="400.0" minWidth="600.0" prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="PRDController">
    <center>
       <TabPane prefHeight="317.0" prefWidth="317.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
         <tabs>
@@ -55,71 +52,51 @@
                <content>
                   <GridPane>
                     <columnConstraints>
-                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="237.33333333333334" minWidth="10.0" prefWidth="215.33333333333334" />
-                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="378.0" minWidth="10.0" prefWidth="358.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="294.0000356038412" minWidth="10.0" prefWidth="231.33327738444012" />
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="452.6667226155599" minWidth="10.0" prefWidth="452.6667226155599" />
                     </columnConstraints>
                     <rowConstraints>
-                        <RowConstraints maxHeight="271.3333333333333" minHeight="10.0" prefHeight="22.33333524068197" vgrow="SOMETIMES" />
-                        <RowConstraints maxHeight="271.3333333333333" minHeight="10.0" prefHeight="239.66670735677084" vgrow="SOMETIMES" />
+                        <RowConstraints maxHeight="20.0" minHeight="5.666677157084152" prefHeight="20.0" vgrow="SOMETIMES" />
+                        <RowConstraints maxHeight="20.0" minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
+                        <RowConstraints maxHeight="338.9999879201253" minHeight="10.0" prefHeight="322.00000699361163" vgrow="SOMETIMES" />
                         <RowConstraints maxHeight="94.0" minHeight="0.0" prefHeight="26.6666259765625" vgrow="SOMETIMES" />
                     </rowConstraints>
                      <children>
-                        <Button fx:id="clearSimulation" mnemonicParsing="false" text="Clear" GridPane.rowIndex="2">
+                        <Button fx:id="clearSimulation" mnemonicParsing="false" text="Clear" GridPane.rowIndex="3">
                            <GridPane.margin>
                               <Insets left="50.0" />
                            </GridPane.margin>
                         </Button>
-                        <Button fx:id="startSimulation" mnemonicParsing="false" text="Start!" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                        <Button fx:id="startSimulation" mnemonicParsing="false" text="Start!" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="3">
                            <GridPane.margin>
                               <Insets left="200.0" />
                            </GridPane.margin>
                         </Button>
-                        <Label prefHeight="17.0" prefWidth="251.0" text="Please fill values for the environment variables:" GridPane.columnIndex="1" GridPane.halignment="CENTER" />
-                        <TableView fx:id="environmentTable" maxHeight="600.0" maxWidth="600.0" minHeight="200.0" minWidth="200.0" prefHeight="400.0" prefWidth="400.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.valignment="BOTTOM" GridPane.vgrow="ALWAYS">
-                          <columns>
-                            <TableColumn fx:id="nameColumn" editable="false" maxWidth="300.0" minWidth="100.0" prefWidth="150.0" sortable="false" text="Name" />
-                            <TableColumn fx:id="typeColumn" editable="false" maxWidth="100.0" minWidth="45.0" prefWidth="45.0" sortable="false" text="Type" />
-                              <TableColumn fx:id="bottomColumn" editable="false" maxWidth="100.0" minWidth="50.0" prefWidth="50.0" sortable="false" text="Bottom" />
-                              <TableColumn fx:id="topColumn" editable="false" maxWidth="100.0" minWidth="50.0" prefWidth="50.0" sortable="false" text="Top" />
-                              <TableColumn fx:id="valueColumn" maxWidth="300.0" minWidth="80.0" onEditCommit="#handleEditCommit" sortable="false" text="Value" />
-                          </columns>
-                           <opaqueInsets>
+                        <Label maxHeight="20.0" minHeight="10.0" prefHeight="20.0" prefWidth="251.0" text="Please fill values for the environment variables:" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                        <Label layoutX="295.0" layoutY="12.0" prefHeight="20.0" prefWidth="195.0" text="Please choose number of population" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="TOP" GridPane.vgrow="ALWAYS">
+                           <GridPane.margin>
                               <Insets />
-                           </opaqueInsets>
-                           <effect>
-                              <Lighting diffuseConstant="2.0" specularConstant="0.0" specularExponent="40.0" surfaceScale="0.0">
-                                 <bumpInput>
-                                    <Shadow>
-                                       <color>
-                                          <Color red="0.37719297409057617" green="0.27722907066345215" blue="0.24680528044700623" />
-                                       </color>
-                                    </Shadow>
-                                 </bumpInput>
-                                 <light>
-                                    <Light.Distant>
-                                       <color>
-                                          <Color red="0.7222222089767456" green="1.0" blue="0.7731481194496155" />
-                                       </color>
-                                    </Light.Distant>
-                                 </light>
-                              </Lighting>
-                           </effect>
+                           </GridPane.margin></Label>
+                        <TableView fx:id="envTable" maxHeight="400.0" maxWidth="451.0" minHeight="20.0" minWidth="10.0" prefHeight="500.0" prefWidth="407.0" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.valignment="TOP" GridPane.vgrow="ALWAYS">
+                          <columns>
+                            <TableColumn fx:id="envNameCol" editable="false" prefWidth="120.0" sortable="false" text="Name" />
+                            <TableColumn fx:id="envTypeCol" editable="false" prefWidth="70.0" sortable="false" text="Type" />
+                              <TableColumn fx:id="envValueCol" prefWidth="257.99998474121094" sortable="false" text="Value" />
+                          </columns>
+                           <GridPane.margin>
+                              <Insets />
+                           </GridPane.margin>
                         </TableView>
-                        <ScrollPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
-                          <content>
-                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="237.0" prefWidth="221.0">
-                                 <children>
-                                    <TableView fx:id="entityTable" layoutX="-3.0" prefHeight="237.0" prefWidth="219.0">
-                                      <columns>
-                                        <TableColumn fx:id="entityNameColumn" editable="false" maxWidth="600.0" minWidth="100.0" prefWidth="120.0" sortable="false" text="Name" />
-                                        <TableColumn fx:id="quantityColumn" maxWidth="600.0" minWidth="50.0" prefWidth="98.00001271565756" sortable="false" text="Quantity" />
-                                      </columns>
-                                    </TableView>
-                                 </children>
-                              </AnchorPane>
-                          </content>
-                        </ScrollPane>
-                        <Label layoutX="295.0" layoutY="12.0" prefHeight="17.0" prefWidth="251.0" text="Please choose quantity for each entity:" />
+                        <TableView fx:id="entityTable" maxHeight="800.0" maxWidth="450.0" minHeight="20.0" minWidth="10.0" prefHeight="500.0" prefWidth="247.0" GridPane.rowIndex="2">
+                          <columns>
+                            <TableColumn fx:id="entityNameCol" editable="false" prefWidth="116.00000250339508" sortable="false" text="Entity Name" />
+                            <TableColumn fx:id="entityPopCol" prefWidth="129.99999237060547" text="Population" />
+                          </columns>
+                           <GridPane.margin>
+                              <Insets right="10.0" />
+                           </GridPane.margin>
+                        </TableView>
+                        <Label layoutX="29.0" layoutY="10.0" prefHeight="20.0" prefWidth="80.0" text="for each entity:" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
                      </children>
                      <effect>
                         <Lighting diffuseConstant="2.0" specularConstant="0.0" surfaceScale="0.0">

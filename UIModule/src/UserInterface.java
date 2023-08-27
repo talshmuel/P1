@@ -24,7 +24,7 @@ public class UserInterface extends Application {
         PRDController controller = fxmlLoader.getController();
         controller.setModel(engine);
 
-        Scene scene = new Scene(root);
+        Scene scene = new Scene(root, 700, 600);
 
         primaryStage.setScene(scene);
         primaryStage.show();

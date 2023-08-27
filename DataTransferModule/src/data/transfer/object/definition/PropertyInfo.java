@@ -41,8 +41,7 @@ public final class PropertyInfo {
     public String getType() {
         return type;
     }
-    public Boolean getIsRandomInit() {return isRandomlyInitialized;
-    }
+    public Boolean getIsRandomInit() {return isRandomlyInitialized;}
 
 
 

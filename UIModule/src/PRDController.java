@@ -5,10 +5,14 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.converter.DefaultStringConverter;
@@ -18,6 +22,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 
 public class PRDController {
     private EngineInterface engine;
@@ -36,89 +43,166 @@ public class PRDController {
 
     ///////////////////////////// gon /////////////////////////////
     @FXML
-    private TableView<EnvironmentInfo> environmentTable;
-    @FXML
-    private TableColumn<EnvironmentInfo, String> nameColumn;
-    @FXML
-    private TableColumn<EnvironmentInfo, String> typeColumn;
-    @FXML
-    private TableColumn<EnvironmentInfo, Object> bottomColumn;
-    @FXML
-    private TableColumn<EnvironmentInfo, Object> topColumn;
-    @FXML
-    private TableColumn<EnvironmentInfo, String> valueColumn;
-
-    @FXML
     private TableView<EntityInfo> entityTable;
     @FXML
-    private TableColumn<EntityInfo, String> entityNameColumn;
+    private TableColumn<EntityInfo, String> entityNameCol;
     @FXML
-    private TableColumn<EntityInfo, String> quantityColumn;
+    private TableColumn<EntityInfo, Integer> entityPopCol;
+    @FXML
+    private TableView<EnvironmentInfo> envTable;
+    @FXML
+    private TableColumn<EnvironmentInfo, String> envNameCol;
+    @FXML
+    private TableColumn<EnvironmentInfo, String> envTypeCol;
+    @FXML
+    private TableColumn<EnvironmentInfo, String> envValueCol;
+
+    public void setEnvironmentTable() {
+        envNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+        envTypeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
+        envValueCol.setCellValueFactory(new PropertyValueFactory<>("value"));
+
+        // Populate the table with environment variables
+        ArrayList<PropertyInfo> definitions = engine.getEnvironmentDefinitions();
+        ObservableList<EnvironmentInfo> environmentVariables = FXCollections.observableArrayList();
+        for (PropertyInfo p : definitions) {
+            environmentVariables.add(new EnvironmentInfo(p.getName(), p.getType(), p.getBottomLimit(), p.getTopLimit()));
+        }
+        envTable.setItems(environmentVariables);
+
+        envValueCol.setCellFactory(column -> new TableCell<EnvironmentInfo, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    EnvironmentInfo variable = (EnvironmentInfo) getTableRow().getItem(); // Get the EnvironmentInfo object
+                    Node inputNode;
+
+                    switch (variable.getType()) {
+                        case "Integer": {
+                            double top = (int) variable.getTopLimit();
+                            double bottom = (int) variable.getBottomLimit();
+                            Slider slider = new Slider(bottom, top, bottom);
+                            slider.setPrefWidth(100);
+                            Label currentValueLabel = new Label();
+                            currentValueLabel.setStyle("-fx-text-fill: green;");
+                            currentValueLabel.textProperty().bind(slider.valueProperty().asString("%.2f"));
+                            Label bottomLimitLabel = new Label(variable.getBottomLimit().toString());
+                            Label topLimitLabel = new Label(variable.getTopLimit().toString());
+                            HBox hbox =  new HBox(10);
+                            hbox.setAlignment(Pos.CENTER);
+                            hbox.getChildren().addAll(currentValueLabel, bottomLimitLabel, slider, topLimitLabel);
+
+                            slider.valueProperty().addListener((observable, oldValue, newValue) -> {
+                                variable.setValue(newValue);
+                            });
+                            inputNode = hbox;
+                            break;
+                        }
+                        case "Float": {
+                            double top = (double) variable.getTopLimit();
+                            double bottom = (double) variable.getBottomLimit();
+                            Slider slider = new Slider(bottom, top, bottom);
+                            slider.setPrefWidth(100);
+                            Label currentValueLabel = new Label();
+                            currentValueLabel.setStyle("-fx-text-fill: blue;");
+                            currentValueLabel.textProperty().bind(slider.valueProperty().asString("%.2f"));
+                            Label bottomLimitLabel = new Label(variable.getBottomLimit().toString());
+                            Label topLimitLabel = new Label(variable.getTopLimit().toString());
+                            HBox hbox =  new HBox(10);
+                            hbox.setAlignment(Pos.CENTER);
+                            hbox.getChildren().addAll(currentValueLabel, bottomLimitLabel, slider, topLimitLabel);
+
+                            slider.valueProperty().addListener((observable, oldValue, newValue) -> {
+                                variable.setValue(newValue);
+                            });
+                            inputNode = hbox;
+                            break;
+                        }
+                        case "Boolean":
+                            CheckBox trueCheckBox = new CheckBox("True");
+                            CheckBox falseCheckBox = new CheckBox("False");
+                            trueCheckBox.setSelected(false);
+                            falseCheckBox.setSelected(false);
+
+                            trueCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+                                if (newValue) {
+                                    falseCheckBox.setSelected(false);
+                                    variable.setValue(Boolean.toString(true));
+                                } else if (!falseCheckBox.isSelected()) {
+                                    trueCheckBox.setSelected(true); // Enforce selecting one
+                                }
+                            });
+
+                            falseCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+                                if (newValue) {
+                                    trueCheckBox.setSelected(false);
+                                    variable.setValue(Boolean.toString(false));
+                                } else if (!trueCheckBox.isSelected()) {
+                                    falseCheckBox.setSelected(true); // Enforce selecting one
+                                }
+                            });
+                            HBox hbox = new HBox(trueCheckBox, falseCheckBox);
+                            hbox.setAlignment(Pos.CENTER);
+                            inputNode = hbox;
+                            break;
+                        default:
+                            TextField textField = new TextField();
+                            textField.setPrefHeight(15);
+                            textField.textProperty().addListener((observable, oldValue, newValue) -> {
+                                // Update the variable's value
+                                variable.setValue(newValue);
+                            });
+                            inputNode = textField;
+                            break;
+                    }
+
+                    setGraphic(inputNode);
+                }
+            }
+        });
+    }
+
 
     private void setEntityTable(){
-        entityNameColumn.setCellValueFactory(new PropertyValueFactory<EntityInfo, String>("name"));
-        quantityColumn.setCellValueFactory(new PropertyValueFactory<EntityInfo, String>("quantity"));
-        entityTable.setEditable(true);
-        quantityColumn.setCellFactory(TextFieldTableCell.forTableColumn(new DefaultStringConverter()));
+        entityNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+        entityPopCol.setCellValueFactory(new PropertyValueFactory<>("population"));
 
+        // Populate the entity table with data
         SimulationInfo simulationInfo = engine.displaySimulationDefinitionInformation();
-        ArrayList<EntityInfo> entityInfo = simulationInfo.getEntities();
-        for(EntityInfo e : entityInfo){
+        ArrayList<EntityInfo> entities = simulationInfo.getEntities();
+        for(EntityInfo e : entities){
             entityTable.getItems().add(new EntityInfo(e.getName(), 0, null));
         }
+        ObservableList<EntityInfo> entityData = FXCollections.observableArrayList(entities);
+        entityTable.setItems(entityData);
 
-        quantityColumn.setOnEditCommit(event -> {
-            String newValue = event.getNewValue(); // todo: add exception
-            // todo: add this value to world's entity population
-            EntityInfo item = event.getTableView().getItems().get(event.getTablePosition().getRow());
-            item.setPopulation(Integer.parseInt(newValue));
+        entityPopCol.setCellFactory(column -> new TableCell<EntityInfo, Integer>() {
+            @Override
+            protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    EntityInfo entity = getTableView().getItems().get(getIndex());
+                    TextField textField = new TextField("");
+                    textField.textProperty().addListener((observable, oldValue, newValue) -> {
+                        if (newValue.matches("\\d*")) {
+                            entity.setPopulation(Integer.parseInt(newValue));
+                        } else {
+                            textField.setText(oldValue);
+                        }
+                    });
+                    setGraphic(textField);
+                }
+            }
         });
+
     }
-
-//    @FXML
-//    void handleEntityEditCommit(TableColumn.CellEditEvent<EntityInfo, String> event) {
-//        String newValue = event.getNewValue();
-//        EntityInfo item = event.getTableView().getItems().get(event.getTablePosition().getRow());
-//        item.setPopulation(Integer.parseInt(newValue));
-//        entityTable.refresh();
-//    }
-
-    private void setEnvironmentTable(){
-        nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
-        typeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
-        bottomColumn.setCellValueFactory(new PropertyValueFactory<>("bottomLimit"));
-        topColumn.setCellValueFactory(new PropertyValueFactory<>("topLimit"));
-        valueColumn.setCellValueFactory(new PropertyValueFactory<>("value"));
-
-        environmentTable.setEditable(true);
-        valueColumn.setCellFactory(TextFieldTableCell.forTableColumn(new DefaultStringConverter()));
-
-        // Populate data in the TableView (replace this with your data)
-        ArrayList<PropertyInfo> definitions = engine.getEnvironmentDefinitions();
-        for(PropertyInfo p : definitions) {
-            environmentTable.getItems().add(new EnvironmentInfo(p.getName(), p.getType(), (Integer)p.getBottomLimit(), (Integer)p.getTopLimit(), null));
-        }
-
-        valueColumn.setOnEditCommit(event -> {
-            Object newValue = event.getNewValue(); // todo: add exceptions
-            // todo: add this value to world
-            EnvironmentInfo item = event.getTableView().getItems().get(event.getTablePosition().getRow());
-            item.setValue(newValue);
-        });
-    }
-
-    @FXML
-    private void handleEditCommit(TableColumn.CellEditEvent<EnvironmentInfo, String> event) {
-        EnvironmentInfo item = event.getTableView().getItems().get(event.getTablePosition().getRow());
-        String newValue = event.getNewValue();
-        item.setValue(newValue);
-        environmentTable.refresh();
-    }
-
-    private void setEnvironmentVariableValueFromUser(){
-        PropertyInfo propertyInfo;
-    }
-
     ///////////////////////////// gon /////////////////////////////
 
     @FXML
