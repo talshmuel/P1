@@ -17,7 +17,7 @@ public class DetailsPageController {
     @FXML
     private TreeView<String> worldDetailsTree;
     @FXML
-    private ListView<PropertyInfo> entityPropertiesListView;
+    private ListView<String> entityPropertiesListView;
 
 
     @FXML
@@ -69,6 +69,7 @@ public class DetailsPageController {
         if (selected!= null) {
             SimulationInfo simulationInfo = engine.displaySimulationDefinitionInformation();
             if(selected.getParent()!=null) {
+                entityPropertiesListView.getItems().clear();
                 switch (selected.getParent().getValue()) {
                     case "Entities":
                         showPropertiesOfEntity(simulationInfo, selected.getValue());
@@ -89,11 +90,22 @@ public class DetailsPageController {
         for(EntityInfo entityInfo : simulationInfo.getEntities()){
             if(entityInfo.getName().equals(entityName)){
                 for(PropertyInfo prop : entityInfo.getProperties()){
-                    entityPropertiesListView.getItems().add(prop);
+                    entityPropertiesListView.getItems().add(getStringProperty(prop));
                 }
 
             }
         }
+    }
+    String getStringProperty(PropertyInfo prop){
+        String res;
+        res = "Property name: "+ prop.getName()+"\nType: "+ prop.getType();
+        if(prop.getTopLimit()!= null)
+            res = res+"\nRange: "+ prop.getBottomLimit()+" - "+prop.getTopLimit();
+        if(prop.getIsRandomInit())
+            res = res+"\nProperty is randomly initialize";
+
+
+        return res;
     }
 
     public void setMainController(PRDController mainController) {

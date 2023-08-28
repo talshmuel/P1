@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.effect.Lighting?>
+<?import javafx.scene.effect.Shadow?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.text.Font?>
+
+<GridPane xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UI.page.execution.ExecutionPageController">
+    <columnConstraints>
+        <ColumnConstraints hgrow="SOMETIMES" maxWidth="294.0000356038412" minWidth="10.0" prefWidth="231.33327738444012" />
+        <ColumnConstraints hgrow="SOMETIMES" maxWidth="452.6667226155599" minWidth="10.0" prefWidth="452.6667226155599" />
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints maxHeight="20.0" minHeight="5.666677157084152" prefHeight="20.0" vgrow="SOMETIMES" />
+        <RowConstraints maxHeight="20.0" minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
+        <RowConstraints maxHeight="338.9999879201253" minHeight="10.0" prefHeight="322.00000699361163" vgrow="SOMETIMES" />
+        <RowConstraints maxHeight="94.0" minHeight="0.0" prefHeight="26.6666259765625" vgrow="SOMETIMES" />
+    </rowConstraints>
+    <children>
+        <Button fx:id="clearSimulation" mnemonicParsing="false" onAction="#handleClearSimulation" text="Clear" GridPane.rowIndex="3">
+            <GridPane.margin>
+                <Insets left="50.0" />
+            </GridPane.margin>
+        </Button>
+        <Button fx:id="startSimulation" mnemonicParsing="false" onAction="#handleStartSimulation" text="Start!" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="3">
+            <GridPane.margin>
+                <Insets left="200.0" />
+            </GridPane.margin>
+        </Button>
+        <Label maxHeight="20.0" minHeight="10.0" prefHeight="20.0" prefWidth="251.0" text="Please fill values for the environment variables:" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
+            <font>
+                <Font size="13.0" />
+            </font></Label>
+        <Label layoutX="295.0" layoutY="12.0" prefHeight="20.0" prefWidth="195.0" text="Please choose number of population" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="TOP" GridPane.vgrow="ALWAYS">
+            <GridPane.margin>
+                <Insets />
+            </GridPane.margin>
+            <font>
+                <Font size="13.0" />
+            </font></Label>
+        <TableView fx:id="envTable" maxHeight="400.0" maxWidth="451.0" minHeight="20.0" minWidth="10.0" prefHeight="500.0" prefWidth="407.0" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.valignment="TOP" GridPane.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="envNameCol" editable="false" prefWidth="120.0" sortable="false" text="Name" />
+                <TableColumn fx:id="envTypeCol" editable="false" prefWidth="70.0" sortable="false" text="Type" />
+                <TableColumn fx:id="envValueCol" prefWidth="257.99998474121094" sortable="false" text="Value" />
+            </columns>
+            <GridPane.margin>
+                <Insets />
+            </GridPane.margin>
+        </TableView>
+        <TableView fx:id="entityTable" maxHeight="800.0" maxWidth="450.0" minHeight="20.0" minWidth="10.0" prefHeight="500.0" prefWidth="247.0" GridPane.rowIndex="2">
+            <columns>
+                <TableColumn fx:id="entityNameCol" editable="false" prefWidth="116.00000250339508" sortable="false" text="Entity Name" />
+                <TableColumn fx:id="entityPopCol" prefWidth="129.99999237060547" text="Population" />
+            </columns>
+            <GridPane.margin>
+                <Insets right="10.0" />
+            </GridPane.margin>
+        </TableView>
+        <Label layoutX="29.0" layoutY="10.0" prefHeight="20.0" prefWidth="80.0" text="for each entity:" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
+            <font>
+                <Font size="13.0" />
+            </font>
+        </Label>
+    </children>
+    <effect>
+        <Lighting diffuseConstant="2.0" specularConstant="0.0" surfaceScale="0.0">
+            <bumpInput>
+                <Shadow />
+            </bumpInput>
+        </Lighting>
+    </effect>
+</GridPane>
