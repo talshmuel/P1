@@ -1,12 +1,13 @@
-package data.transfer.object.definition;
+package UI.page.execution;
 
-public final class EnvironmentInfo {
+public class EnvironmentTableView {
     private String name;
     private String type;
     private Object value;
     private Object bottomLimit;
     private Object topLimit;
-    public EnvironmentInfo(String name, String type, Object bottomLimit, Object topLimit){
+
+    public EnvironmentTableView(String name, String type, Object bottomLimit, Object topLimit){
         this.name = name;
         this.type = type;
         this.value = null;

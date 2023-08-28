@@ -3,6 +3,8 @@ package world.property.api;
 
 import java.io.Serializable;
 
+
+
 public abstract class PropertyDefinition implements Serializable {
     String name;
     //String type;

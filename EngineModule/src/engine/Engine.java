@@ -272,7 +272,36 @@ public class Engine implements EngineInterface, Serializable {
     }
     @Override
     public SimulationInfo displaySimulationDefinitionInformation(){
-        return new SimulationInfo(displayEntitiesInformation(), displayRulesInformation(), displayTerminationInfo());
+        return new SimulationInfo(displayEntitiesInformation(), displayRulesInformation(), displayTerminationInfo(), displayEnvironmentVariablesInfo());
+    }
+
+    private Map<String, PropertyInfo> displayEnvironmentVariablesInfo(){
+        Map<String, PropertyInfo> environmentInfo = new HashMap<>();
+        Map<String, Property> environmentVariables = world.getEnvironmentVariables();
+
+        for(String name : environmentVariables.keySet()){
+            PropertyDefinition propDef = environmentVariables.get(name).getDefinition();
+            Object topLimit = propDef.getTopLimit();
+            Object bottomLimit = propDef.getBottomLimit();
+            String type;
+
+            if(propDef instanceof IntegerPropertyDefinition){
+                type = "Integer";
+            } else if (propDef instanceof FloatPropertyDefinition){
+                type = "Float";
+            } else if (propDef instanceof BooleanPropertyDefinition){
+                type = "Boolean";
+            } else{ //  if (propDef instanceof StringPropertyDefinition){
+                type = "String";
+            }
+
+            PropertyInfo propInfo = new PropertyInfo(name, type, topLimit, bottomLimit, false);
+            environmentInfo.put(name, propInfo);
+        }
+
+
+
+        return environmentInfo;
     }
     private ArrayList<EntityInfo> displayEntitiesInformation() {
         ArrayList<EntityInfo> entitiesInfoArray = new ArrayList<>();

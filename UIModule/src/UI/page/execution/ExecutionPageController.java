@@ -13,8 +13,10 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import java.util.ArrayList;
+import java.util.Map;
 
 public class ExecutionPageController {
     private EngineInterface engine;
@@ -23,14 +25,16 @@ public class ExecutionPageController {
     @FXML private TableView<EntityInfo> entityTable;
     @FXML private TableColumn<EntityInfo, String> entityNameCol;
     @FXML private TableColumn<EntityInfo, Integer> entityPopCol;
-    @FXML private TableView<EnvironmentInfo> envTable;
-    @FXML private TableColumn<EnvironmentInfo, String> envNameCol;
-    @FXML private TableColumn<EnvironmentInfo, String> envTypeCol;
-    @FXML private TableColumn<EnvironmentInfo, String> envValueCol;
+
+    @FXML private TableView<EnvironmentTableView> envTable;
+    @FXML private TableColumn<EnvironmentTableView, String> envNameCol;
+    @FXML private TableColumn<EnvironmentTableView, String> envTypeCol;
+    @FXML private TableColumn<EnvironmentTableView, String> envValueCol;
     @FXML private Button startSimulation;
     @FXML private Button clearSimulation;
 
     public void setEnvironmentTable() {
+        System.out.println("!!!!!!!");
         envNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         envTypeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
         envValueCol.setCellValueFactory(new PropertyValueFactory<>("value"));
@@ -38,15 +42,19 @@ public class ExecutionPageController {
         setEnvironmentValueCell();
     }
     public void populateEnvironmentTableWithValues(){
+        System.out.println("!!!!populateEnvironmentTableWithValues!!!");
         ArrayList<PropertyInfo> definitions = engine.getEnvironmentDefinitions();
-        ObservableList<EnvironmentInfo> environmentVariables = FXCollections.observableArrayList();
+        ObservableList<EnvironmentTableView> environmentVariables = FXCollections.observableArrayList();
         for (PropertyInfo p : definitions) {
-            environmentVariables.add(new EnvironmentInfo(p.getName(), p.getType(), p.getBottomLimit(), p.getTopLimit()));
+            environmentVariables.add(new EnvironmentTableView(p.getName(), p.getType(), p.getBottomLimit(), p.getTopLimit()));
         }
         envTable.setItems(environmentVariables);
     }
+
     public void setEnvironmentValueCell(){
-        envValueCol.setCellFactory(column -> new TableCell<EnvironmentInfo, String>() {
+        System.out.println("!!!!setEnvironmentValueCell!!!");
+
+        envValueCol.setCellFactory(column -> new TableCell<EnvironmentTableView, String>() {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
@@ -54,7 +62,7 @@ public class ExecutionPageController {
                 if (empty) {
                     setGraphic(null);
                 } else {
-                    EnvironmentInfo variable = (EnvironmentInfo) getTableRow().getItem();
+                    EnvironmentTableView variable = (EnvironmentTableView) getTableRow().getItem();
                     Node inputNode;
 
                     switch (variable.getType()) {
@@ -80,7 +88,8 @@ public class ExecutionPageController {
             }
         });
     }
-    public HBox setEnvironmentIntegerCell(EnvironmentInfo variable){
+    public HBox setEnvironmentIntegerCell(EnvironmentTableView variable){
+        // todo: setOnAction for the slider or whatever we choose
         double top = (int) variable.getTopLimit();
         double bottom = (int) variable.getBottomLimit();
         Slider slider = new Slider(bottom, top, bottom);
@@ -96,15 +105,16 @@ public class ExecutionPageController {
 
         slider.valueProperty().addListener((observable, oldValue, newValue) -> {
             variable.setValue(newValue);
+
             try {
                 engine.setEnvironmentVariable(variable.getName(), newValue);
             } catch (IncompatibleType e) {
-                throw new RuntimeException(e);
+                // todo: add exceptions
             }
         });
         return hbox;
     }
-    public HBox setEnvironmentFloatCell(EnvironmentInfo variable){
+    public HBox setEnvironmentFloatCell(EnvironmentTableView variable){
         double top = (double) variable.getTopLimit();
         double bottom = (double) variable.getBottomLimit();
         Slider slider = new Slider(bottom, top, bottom);
@@ -128,63 +138,100 @@ public class ExecutionPageController {
         });
         return hbox;
     }
-    public HBox setEnvironmentBooleanCell(EnvironmentInfo variable){
+    public HBox setEnvironmentBooleanCell(EnvironmentTableView variable){
         CheckBox trueCheckBox = new CheckBox("True");
         CheckBox falseCheckBox = new CheckBox("False");
 
         trueCheckBox.setSelected(false);
         falseCheckBox.setSelected(false);
 
-        trueBoxChecked(variable, trueCheckBox, falseCheckBox);
-        falseBoxChecked(variable, trueCheckBox, falseCheckBox);
+        //trueBoxChecked(variable, trueCheckBox, falseCheckBox);
+        //falseBoxChecked(variable, trueCheckBox, falseCheckBox);
+        trueCheckBox.setOnAction(event -> trueBoxChecked(variable, trueCheckBox, falseCheckBox));
+        falseCheckBox.setOnAction(event -> falseBoxChecked(variable, trueCheckBox, falseCheckBox));
 
         HBox hbox = new HBox(trueCheckBox, falseCheckBox);
         hbox.setAlignment(Pos.CENTER);
         return hbox;
     }
-
-    public void trueBoxChecked(EnvironmentInfo variable, CheckBox trueCheckBox, CheckBox falseCheckBox){
-        trueCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                falseCheckBox.setSelected(false);
-                variable.setValue(Boolean.toString(true));
-                try {
-                    engine.setEnvironmentVariable(variable.getName(), true);
-                } catch (IncompatibleType e) {
-                    // todo: add exceptions
-                }
-            } else if (!falseCheckBox.isSelected()) {
-                trueCheckBox.setSelected(true); // enforce selecting one
-            }
-        });
+    public void trueBoxChecked(EnvironmentTableView variable, CheckBox trueCheckBox, CheckBox falseCheckBox){
+//        trueCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+//            if (newValue) {
+//                falseCheckBox.setSelected(false);
+//                variable.setValue(Boolean.toString(true));
+//                try {
+//                    engine.setEnvironmentVariable(variable.getName(), true);
+//                } catch (IncompatibleType e) {
+//                    // todo: add exceptions
+//                }
+//            } else if (!falseCheckBox.isSelected()) {
+//                trueCheckBox.setSelected(true); // enforce selecting one
+//            }
+//        });
+        falseCheckBox.setSelected(false);
+        variable.setValue(Boolean.toString(true));
+        try {
+            System.out.println("$$ true!");
+            engine.setEnvironmentVariable(variable.getName(), true);
+        } catch (IncompatibleType e) {
+            // todo: add exceptions
+        }
     }
-    public void falseBoxChecked(EnvironmentInfo variable, CheckBox trueCheckBox, CheckBox falseCheckBox){
-        falseCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                trueCheckBox.setSelected(false);
-                variable.setValue(Boolean.toString(false));
-                try {
-                    engine.setEnvironmentVariable(variable.getName(), false);
-                } catch (IncompatibleType e) {
-                    // todo: add exceptions
-                }
-            } else if (!trueCheckBox.isSelected()) {
-                falseCheckBox.setSelected(true); // enforce selecting one
-            }
-        });
+    public void falseBoxChecked(EnvironmentTableView variable, CheckBox trueCheckBox, CheckBox falseCheckBox){
+//        falseCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+//            if (newValue) {
+//                trueCheckBox.setSelected(false);
+//                variable.setValue(Boolean.toString(false));
+//                try {
+//                    engine.setEnvironmentVariable(variable.getName(), false);
+//                } catch (IncompatibleType e) {
+//                    // todo: add exceptions
+//                }
+//            } else if (!trueCheckBox.isSelected()) {
+//                falseCheckBox.setSelected(true); // enforce selecting one
+//            }
+//        });
+        trueCheckBox.setSelected(false);
+        variable.setValue(Boolean.toString(false));
+        try {
+            System.out.println("$$ false!");
+            engine.setEnvironmentVariable(variable.getName(), false);
+        } catch (IncompatibleType e) {
+            // todo: add exceptions
+        }
     }
 
-    public TextField setEnvironmentStringCell(EnvironmentInfo variable){
+    public TextField setEnvironmentStringCell(EnvironmentTableView variable){
         TextField textField = new TextField();
         textField.setPrefHeight(10);
-        textField.textProperty().addListener((observable, oldValue, newValue) -> {
-            variable.setValue(newValue);
-            try {
-                engine.setEnvironmentVariable(variable.getName(), newValue);
-            } catch (IncompatibleType e) {
-                // todo: add exceptions
+//        textField.textProperty().addListener((observable, oldValue, newValue) -> {
+//            variable.setValue(newValue);
+//            try {
+//                engine.setEnvironmentVariable(variable.getName(), newValue);
+//            } catch (IncompatibleType e) {
+//                // todo: add exceptions
+//            }
+//        });
+        ///////////////////////////////////////////////
+        textField.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                String newValue = textField.getText();
+                variable.setValue(newValue);
+
+                System.out.println("%%%%");
+
+                try {
+                    System.out.println("new value: " + newValue);
+                    System.out.println("@@@@@");
+                    engine.setEnvironmentVariable(variable.getName(), newValue);
+                    System.out.println("new value: " + newValue);
+                } catch (IncompatibleType e) {
+                    // todo: add exceptions
+                }
+                // Additional action or navigation logic here...
             }
         });
+        /////////////////////////////////////////////////
         return textField;
     }
 
@@ -245,6 +292,7 @@ public class ExecutionPageController {
     }
 
     @FXML void handleClearSimulation(ActionEvent event) {
+        // todo: למחוק רק את הערכים גון!!!!!
         envTable.getItems().clear();
         entityTable.getItems().clear();
         engine.cleanResults();
