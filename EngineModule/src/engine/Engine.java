@@ -39,8 +39,10 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public class Engine implements EngineInterface, Serializable {
+public class Engine implements EngineInterface, Serializable, Runnable {
     AssistFunctions functions;
     World world;
     int ticks;
@@ -49,6 +51,34 @@ public class Engine implements EngineInterface, Serializable {
         functions = new AssistFunctions();
         runResults = new ArrayList<>();
         ticks = 0;
+    }
+
+    @Override
+    public void run() {
+        try{
+            ticks=1;
+            LocalDateTime currentDateTime = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy | HH.mm.ss");
+            String formattedDateTime = currentDateTime.format(formatter);
+
+            world.generateEntitiesByDefinitions();
+
+            long startTime = System.currentTimeMillis();
+
+            while (simulationShouldRun(startTime)) {
+                for (Rule rule : world.getRules()) {
+                    if (ruleShouldRun(rule))
+                        runRule(rule);
+                }
+                ticks++;
+            }
+
+            saveRunResults(formattedDateTime);
+            world.cleanup();
+            //return getEndSimulationData();
+        }catch (Exception e){
+
+        }
     }
 
     public void setWorld(World world) {
@@ -100,26 +130,30 @@ public class Engine implements EngineInterface, Serializable {
 
     @Override
     public EndSimulationData runSimulation() throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
-        ticks=1;
-        LocalDateTime currentDateTime = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy | HH.mm.ss");
-        String formattedDateTime = currentDateTime.format(formatter);
-
-        world.generateEntitiesByDefinitions();
-
-        long startTime = System.currentTimeMillis();
-
-        while (simulationShouldRun(startTime)) {
-            for (Rule rule : world.getRules()) {
-                if (ruleShouldRun(rule))
-                    runRule(rule);
-            }
-            ticks++;
-        }
-
-        saveRunResults(formattedDateTime);
-        world.cleanup();
-        return getEndSimulationData();
+        ExecutorService threadExecutor = Executors.newFixedThreadPool(3);
+        threadExecutor.execute(this);
+        threadExecutor.shutdown();
+        return null;
+        //        ticks=1;
+//        LocalDateTime currentDateTime = LocalDateTime.now();
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy | HH.mm.ss");
+//        String formattedDateTime = currentDateTime.format(formatter);
+//
+//        world.generateEntitiesByDefinitions();
+//
+//        long startTime = System.currentTimeMillis();
+//
+//        while (simulationShouldRun(startTime)) {
+//            for (Rule rule : world.getRules()) {
+//                if (ruleShouldRun(rule))
+//                    runRule(rule);
+//            }
+//            ticks++;
+//        }
+//
+//        saveRunResults(formattedDateTime);
+//        world.cleanup();
+//        return getEndSimulationData();
     }
 
     @Override
