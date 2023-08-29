@@ -26,4 +26,8 @@ public class EntityDefinition implements Serializable {
     public Map<String, PropertyDefinition> getPropsDef() {
         return propsDef;
     }
+
+    public void setNumOfInstances(int numOfInstances) {
+        this.numOfInstances = numOfInstances;
+    }
 }

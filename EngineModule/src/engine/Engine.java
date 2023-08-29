@@ -1,6 +1,7 @@
 package engine;
 
 import data.transfer.object.EndSimulationData;
+import data.transfer.object.DataFromUser;
 import data.transfer.object.definition.*;
 import data.transfer.object.run.result.EntityResultInfo;
 import data.transfer.object.run.result.PropertyResultInfo;
@@ -39,10 +40,8 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-public class Engine implements EngineInterface, Serializable, Runnable {
+public class Engine implements EngineInterface, Serializable {
     AssistFunctions functions;
     World world;
     int ticks;
@@ -53,33 +52,7 @@ public class Engine implements EngineInterface, Serializable, Runnable {
         ticks = 0;
     }
 
-    @Override
-    public void run() {
-        try{
-            ticks=1;
-            LocalDateTime currentDateTime = LocalDateTime.now();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy | HH.mm.ss");
-            String formattedDateTime = currentDateTime.format(formatter);
 
-            world.generateEntitiesByDefinitions();
-
-            long startTime = System.currentTimeMillis();
-
-            while (simulationShouldRun(startTime)) {
-                for (Rule rule : world.getRules()) {
-                    if (ruleShouldRun(rule))
-                        runRule(rule);
-                }
-                ticks++;
-            }
-
-            saveRunResults(formattedDateTime);
-            world.cleanup();
-            //return getEndSimulationData();
-        }catch (Exception e){
-
-        }
-    }
 
     public void setWorld(World world) {
         this.world = world;
@@ -129,31 +102,39 @@ public class Engine implements EngineInterface, Serializable, Runnable {
     }
 
     @Override
-    public EndSimulationData runSimulation() throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
-        ExecutorService threadExecutor = Executors.newFixedThreadPool(3);
-        threadExecutor.execute(this);
-        threadExecutor.shutdown();
-        return null;
-        //        ticks=1;
-//        LocalDateTime currentDateTime = LocalDateTime.now();
-//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy | HH.mm.ss");
-//        String formattedDateTime = currentDateTime.format(formatter);
-//
-//        world.generateEntitiesByDefinitions();
-//
-//        long startTime = System.currentTimeMillis();
-//
-//        while (simulationShouldRun(startTime)) {
-//            for (Rule rule : world.getRules()) {
-//                if (ruleShouldRun(rule))
-//                    runRule(rule);
-//            }
-//            ticks++;
-//        }
-//
-//        saveRunResults(formattedDateTime);
-//        world.cleanup();
-//        return getEndSimulationData();
+    public EndSimulationData runSimulation(DataFromUser detailsToRun) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
+        updateDataFromUser(detailsToRun);
+        ticks=1;
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy | HH.mm.ss");
+        String formattedDateTime = currentDateTime.format(formatter);
+
+        world.generateEntitiesByDefinitions();
+
+        long startTime = System.currentTimeMillis();
+
+        while (simulationShouldRun(startTime)) {
+            for (Rule rule : world.getRules()) {
+                if (ruleShouldRun(rule))
+                    runRule(rule);
+            }
+            ticks++;
+        }
+
+        saveRunResults(formattedDateTime);
+        world.cleanup();
+        return getEndSimulationData();
+    }
+    private void updateDataFromUser(DataFromUser detailsToRun){
+        detailsToRun.getPopulation().forEach((entityName, amount)->world.setEntitiesPopulation(entityName, amount));
+        detailsToRun.getEnvironment().forEach((varName, value)-> {
+            try {
+                world.setEnvironmentValue(varName, value);
+            } catch (IncompatibleType e) {
+                throw new RuntimeException(e);
+            }
+        });
+
     }
 
     @Override
@@ -200,13 +181,15 @@ public class Engine implements EngineInterface, Serializable, Runnable {
     private EndSimulationData getEndSimulationData(){
         String endCondition;
         int id, endConditionVal;
-        if(ticks<world.getEndConditionValueByType("ticks")) {
-            endCondition = "seconds";
-            endConditionVal = world.getEndConditionValueByType("seconds");
-        }
-        else {
+        if(world.getEndConditionValueByType("ticks") != null &&
+                ticks>world.getEndConditionValueByType("ticks")) {
             endCondition = "ticks";
             endConditionVal = world.getEndConditionValueByType("ticks");
+        }
+        else {
+            endCondition = "seconds";
+            endConditionVal = world.getEndConditionValueByType("seconds");
+
         }
 
         id = runResults.get(runResults.size()-1).getID();

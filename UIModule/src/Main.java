@@ -1,4 +1,5 @@
 import data.transfer.object.EndSimulationData;
+import data.transfer.object.DataFromUser;
 import data.transfer.object.definition.*;
 import data.transfer.object.run.result.EntityResultInfo;
 import data.transfer.object.run.result.PropertyResultInfo;
@@ -15,6 +16,8 @@ public class Main {
     static EngineInterface engine = new Engine();
 
     public static void main(String[] args) throws IncompatibleType {
+
+
         boolean shutdown = false;
 
         System.out.println("-------------------------");
@@ -48,7 +51,11 @@ public class Main {
                     shutdown = true;
                     break;
             }
+
         }
+
+
+
     }
 
     public static int printAfterRestoreMenuAndPerformAction() throws IncompatibleType {
@@ -226,18 +233,22 @@ public class Main {
         }
         return choice;
     }
-    public static void handleRunSimulationChoice() throws IncompatibleType {
+    public static void handleRunSimulationChoice() {
 
-        getEnvironmentVariablesValuesFromUser();
         try {
-            EndSimulationData endSimulationData = engine.runSimulation();
+            getEnvironmentVariablesValuesFromUser();
+
+            EndSimulationData endSimulationData = engine.runSimulation(new DataFromUser());
+
             System.out.println("The simulation ended after " + endSimulationData.getEndConditionVal() + " " +
                     endSimulationData.getEndCondition());
             System.out.println("Run ID: " + endSimulationData.getRunId() + "\n");
-        }
-        catch (Exception e){
+
+
+        } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+
     }
 
     public static void getEnvironmentVariablesValuesFromUser()throws IncompatibleType{

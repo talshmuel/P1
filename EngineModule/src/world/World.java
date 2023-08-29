@@ -107,6 +107,13 @@ public class World implements Serializable {
         return count;
     }
 
+    public void setEntitiesPopulation(String entityName, Integer amount){
+        for(EntityDefinition entityDefinition : entitiesDefinition){
+            if(entityDefinition.getName().equals(entityName)){
+                entityDefinition.setNumOfInstances(amount);
+            }
+        }
+    }
     public void cleanup(){
         entities.clear();
     }

@@ -2,9 +2,9 @@ package UI.page.execution;
 
 import UI.PRDController;
 import data.transfer.object.EndSimulationData;
+import data.transfer.object.DataFromUser;
 import data.transfer.object.definition.*;
 import engine.EngineInterface;
-import exception.IncompatibleType;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -16,11 +16,17 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ExecutionPageController {
     private EngineInterface engine;
     private PRDController mainController;
+    DataFromUser dataFromUser;
+    ExecutorService threadExecutor = Executors.newFixedThreadPool(3);
+    public ExecutionPageController(){
+        dataFromUser = new DataFromUser();
+    }
 
     @FXML private TableView<EntityInfo> entityTable;
     @FXML private TableColumn<EntityInfo, String> entityNameCol;
@@ -105,12 +111,8 @@ public class ExecutionPageController {
 
         slider.valueProperty().addListener((observable, oldValue, newValue) -> {
             variable.setValue(newValue);
+            dataFromUser.setEnvironment(variable.getName(), newValue);
 
-            try {
-                engine.setEnvironmentVariable(variable.getName(), newValue);
-            } catch (IncompatibleType e) {
-                // todo: add exceptions
-            }
         });
         return hbox;
     }
@@ -130,11 +132,8 @@ public class ExecutionPageController {
 
         slider.valueProperty().addListener((observable, oldValue, newValue) -> {
             variable.setValue(newValue);
-            try {
-                engine.setEnvironmentVariable(variable.getName(), newValue);
-            } catch (IncompatibleType e) {
-                // todo: add exceptions
-            }
+            dataFromUser.setEnvironment(variable.getName(), newValue);
+
         });
         return hbox;
     }
@@ -170,14 +169,11 @@ public class ExecutionPageController {
 //        });
         falseCheckBox.setSelected(false);
         variable.setValue(Boolean.toString(true));
-        try {
             System.out.println("$$ true!");
-            engine.setEnvironmentVariable(variable.getName(), true);
-        } catch (IncompatibleType e) {
-            // todo: add exceptions
-        }
+            dataFromUser.setEnvironment(variable.getName(), true);
+
     }
-    public void falseBoxChecked(EnvironmentTableView variable, CheckBox trueCheckBox, CheckBox falseCheckBox){
+    public void falseBoxChecked(EnvironmentTableView variable, CheckBox trueCheckBox, CheckBox falseCheckBox) {
 //        falseCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
 //            if (newValue) {
 //                trueCheckBox.setSelected(false);
@@ -193,12 +189,10 @@ public class ExecutionPageController {
 //        });
         trueCheckBox.setSelected(false);
         variable.setValue(Boolean.toString(false));
-        try {
-            System.out.println("$$ false!");
-            engine.setEnvironmentVariable(variable.getName(), false);
-        } catch (IncompatibleType e) {
-            // todo: add exceptions
-        }
+
+        System.out.println("$$ false!");
+        dataFromUser.setEnvironment(variable.getName(), false);
+
     }
 
     public TextField setEnvironmentStringCell(EnvironmentTableView variable){
@@ -220,14 +214,11 @@ public class ExecutionPageController {
 
                 System.out.println("%%%%");
 
-                try {
-                    System.out.println("new value: " + newValue);
-                    System.out.println("@@@@@");
-                    engine.setEnvironmentVariable(variable.getName(), newValue);
-                    System.out.println("new value: " + newValue);
-                } catch (IncompatibleType e) {
-                    // todo: add exceptions
-                }
+                System.out.println("new value: " + newValue);
+                System.out.println("@@@@@");
+                dataFromUser.setEnvironment(variable.getName(), newValue);
+                System.out.println("new value: " + newValue);
+
                 // Additional action or navigation logic here...
             }
         });
@@ -256,7 +247,7 @@ public class ExecutionPageController {
                     TextField textField = new TextField();
                     textField.textProperty().addListener((observable, oldValue, newValue) -> {
                         if (newValue.matches("\\d*")) {
-                            entity.setPopulation(Integer.parseInt(newValue));
+                            dataFromUser.setPopulation(entity.getName(),Integer.parseInt(newValue));
                         } else {
                             textField.setText(oldValue);
                         }
@@ -277,18 +268,22 @@ public class ExecutionPageController {
     }
 
     @FXML void handleStartSimulation(ActionEvent event) {
-        try {
-            EndSimulationData endSimulationData = engine.runSimulation();
-            System.out.println("The simulation ended after " + endSimulationData.getEndConditionVal() + " " +
-                    endSimulationData.getEndCondition());
-            System.out.println("Run ID: " + endSimulationData.getRunId() + "\n");
-        }
-        catch (Exception e){
-            System.out.println(e.getMessage());
-        }
+        threadExecutor.execute(this::runSimulation);
 
         // switch to the "Results" tab
         //tabPane.getSelectionModel().select(resultsTab);
+    }
+
+    private synchronized void runSimulation(){
+        try {
+            EndSimulationData endSimulationData = engine.runSimulation(new DataFromUser(dataFromUser));
+            //dataFromUser.cleanup();
+            System.out.println("The simulation ended after " + endSimulationData.getEndConditionVal() + " " +
+                    endSimulationData.getEndCondition());
+            System.out.println("Run ID: " + endSimulationData.getRunId() + "\n");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     @FXML void handleClearSimulation(ActionEvent event) {
@@ -304,4 +299,5 @@ public class ExecutionPageController {
     public void setModel(EngineInterface engine) {
         this.engine = engine;
     }
+
 }

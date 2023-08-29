@@ -1,6 +1,7 @@
 package engine;
 
 import data.transfer.object.EndSimulationData;
+import data.transfer.object.DataFromUser;
 import data.transfer.object.definition.PropertyInfo;
 import data.transfer.object.definition.PropertyValueInfo;
 import data.transfer.object.definition.SimulationInfo;
@@ -16,7 +17,7 @@ import java.util.ArrayList;
 
 public interface EngineInterface {
     Boolean createSimulationByXMLFile(String fileName) throws FileDoesntExistException, InvalidXMLFileNameException, EnvironmentException, EntityException, PropertyException, MustBeNumberException, RuleException, TerminationException;
-    EndSimulationData runSimulation()throws DivisionByZeroException, IncompatibleType, IncompatibleAction;
+    EndSimulationData runSimulation(DataFromUser detailsToRun)throws DivisionByZeroException, IncompatibleType, IncompatibleAction;
     void setEnvironmentVariable(String name, Object val)throws IncompatibleType;
 
 
