@@ -5,6 +5,7 @@ import data.transfer.object.EndSimulationData;
 import data.transfer.object.DataFromUser;
 import data.transfer.object.definition.*;
 import engine.EngineInterface;
+import exception.IncompatibleType;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -41,7 +42,6 @@ public class ExecutionPageController {
     @FXML private Button clearSimulation;
 
     public void setEnvironmentTable() {
-        System.out.println("!!!!!!!");
         envNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         envTypeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
         envValueCol.setCellValueFactory(new PropertyValueFactory<>("value"));
@@ -49,7 +49,6 @@ public class ExecutionPageController {
         setEnvironmentValueCell();
     }
     public void populateEnvironmentTableWithValues(){
-        System.out.println("!!!!populateEnvironmentTableWithValues!!!");
         ArrayList<PropertyInfo> definitions = engine.getEnvironmentDefinitions();
         ObservableList<EnvironmentTableView> environmentVariables = FXCollections.observableArrayList();
         for (PropertyInfo p : definitions) {
@@ -59,8 +58,6 @@ public class ExecutionPageController {
     }
 
     public void setEnvironmentValueCell(){
-        System.out.println("!!!!setEnvironmentValueCell!!!");
-
         envValueCol.setCellFactory(column -> new TableCell<EnvironmentTableView, String>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -95,49 +92,123 @@ public class ExecutionPageController {
             }
         });
     }
+
+    private void showErrorAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setHeaderText(null); // No header
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
     public HBox setEnvironmentIntegerCell(EnvironmentTableView variable){
-        // todo: setOnAction for the slider or whatever we choose
-        double top = (int) variable.getTopLimit();
-        double bottom = (int) variable.getBottomLimit();
-        Slider slider = new Slider(bottom, top, bottom);
-        slider.setPrefWidth(100);
-        Label currentValueLabel = new Label();
-        currentValueLabel.setStyle("-fx-text-fill: green;");
-        currentValueLabel.textProperty().bind(slider.valueProperty().asString("%.2f"));
-        Label bottomLimitLabel = new Label(variable.getBottomLimit().toString());
-        Label topLimitLabel = new Label(variable.getTopLimit().toString());
-        HBox hbox =  new HBox(10);
-        hbox.setAlignment(Pos.CENTER);
-        hbox.getChildren().addAll(currentValueLabel, bottomLimitLabel, slider, topLimitLabel);
+        TextField inputField = new TextField();
 
-        slider.valueProperty().addListener((observable, oldValue, newValue) -> {
-            variable.setValue(newValue);
-            dataFromUser.setEnvironment(variable.getName(), newValue);
+        Integer bottomLimit = (Integer) variable.getBottomLimit();
+        Integer topLimit = (Integer) variable.getTopLimit();
 
+        inputField.setOnAction(event -> {
+            String input = inputField.getText();
+
+            try {
+                double inputValue = Double.parseDouble(input);
+
+                if (inputValue >= bottomLimit && inputValue <= topLimit) {
+                    variable.setValue(inputValue);
+                    dataFromUser.setEnvironment(variable.getName(), inputValue);
+                } else {
+                    showErrorAlert("Invalid input! Please enter a number between " + bottomLimit + " and " + topLimit + ".");
+                }
+            } catch (NumberFormatException e) {
+                showErrorAlert("Invalid input! Please enter a number.");
+            }
         });
+
+        Label label = new Label(bottomLimit + " - " + topLimit);
+        HBox hbox = new HBox(label, inputField);
+        hbox.setAlignment(Pos.CENTER);
         return hbox;
     }
+
+//    public HBox setEnvironmentIntegerCell2(EnvironmentTableView variable){
+//        // todo: setOnAction for the slider or whatever we choose
+//        double top = (int) variable.getTopLimit();
+//        double bottom = (int) variable.getBottomLimit();
+//        Slider slider = new Slider(bottom, top, bottom);
+//        slider.setPrefWidth(100);
+//        Label currentValueLabel = new Label();
+//        currentValueLabel.setStyle("-fx-text-fill: green;");
+//        currentValueLabel.textProperty().bind(slider.valueProperty().asString("%.2f"));
+//        Label bottomLimitLabel = new Label(variable.getBottomLimit().toString());
+//        Label topLimitLabel = new Label(variable.getTopLimit().toString());
+//        HBox hbox =  new HBox(10);
+//        hbox.setAlignment(Pos.CENTER);
+//        hbox.getChildren().addAll(currentValueLabel, bottomLimitLabel, slider, topLimitLabel);
+//
+//        slider.valueProperty().addListener((observable, oldValue, newValue) -> {
+//            variable.setValue(newValue);
+//            dataFromUser.setEnvironment(variable.getName(), newValue);
+//
+//        });
+//        return hbox;
+//    }
+
     public HBox setEnvironmentFloatCell(EnvironmentTableView variable){
-        double top = (double) variable.getTopLimit();
-        double bottom = (double) variable.getBottomLimit();
-        Slider slider = new Slider(bottom, top, bottom);
-        slider.setPrefWidth(100);
-        Label currentValueLabel = new Label();
-        currentValueLabel.setStyle("-fx-text-fill: blue;");
-        currentValueLabel.textProperty().bind(slider.valueProperty().asString("%.2f"));
-        Label bottomLimitLabel = new Label(variable.getBottomLimit().toString());
-        Label topLimitLabel = new Label(variable.getTopLimit().toString());
-        HBox hbox =  new HBox(10);
-        hbox.setAlignment(Pos.CENTER);
-        hbox.getChildren().addAll(currentValueLabel, bottomLimitLabel, slider, topLimitLabel);
+        TextField inputField = new TextField();
 
-        slider.valueProperty().addListener((observable, oldValue, newValue) -> {
-            variable.setValue(newValue);
-            dataFromUser.setEnvironment(variable.getName(), newValue);
+        Double bottomLimit = (Double) variable.getBottomLimit();
+        Double topLimit = (Double) variable.getTopLimit();
 
+        inputField.setOnAction(event -> {
+            String input = inputField.getText();
+
+            try {
+                double inputValue = Double.parseDouble(input);
+
+                if (inputValue >= bottomLimit && inputValue <= topLimit) {
+                    variable.setValue(inputValue);
+                    dataFromUser.setEnvironment(variable.getName(), inputValue);
+                } else {
+                    showErrorAlert("Invalid input! Please enter a number between " + bottomLimit + " and " + topLimit + ".");
+                }
+            } catch (NumberFormatException e) {
+                showErrorAlert("Invalid input! Please enter a number.");
+            }
         });
+
+        Label label = new Label(bottomLimit + " - " + topLimit);
+        HBox hbox = new HBox(label, inputField);
+        hbox.setAlignment(Pos.CENTER);
         return hbox;
     }
+
+
+
+//    public HBox setEnvironmentFloatCell2(EnvironmentTableView variable){
+//        double top = (double) variable.getTopLimit();
+//        double bottom = (double) variable.getBottomLimit();
+//        Slider slider = new Slider(bottom, top, bottom);
+//        slider.setPrefWidth(100);
+//        Label currentValueLabel = new Label();
+//        currentValueLabel.setStyle("-fx-text-fill: blue;");
+//        currentValueLabel.textProperty().bind(slider.valueProperty().asString("%.2f"));
+//        Label bottomLimitLabel = new Label(variable.getBottomLimit().toString());
+//        Label topLimitLabel = new Label(variable.getTopLimit().toString());
+//        HBox hbox =  new HBox(10);
+//        hbox.setAlignment(Pos.CENTER);
+//        hbox.getChildren().addAll(currentValueLabel, bottomLimitLabel, slider, topLimitLabel);
+//
+//        slider.valueProperty().addListener((observable, oldValue, newValue) -> {
+//            variable.setValue(newValue);
+//            dataFromUser.setEnvironment(variable.getName(), newValue);
+//
+//        });
+//        return hbox;
+//    }
+
+
+
+
     public HBox setEnvironmentBooleanCell(EnvironmentTableView variable){
         CheckBox trueCheckBox = new CheckBox("True");
         CheckBox falseCheckBox = new CheckBox("False");
@@ -170,10 +241,11 @@ public class ExecutionPageController {
 //        });
         falseCheckBox.setSelected(false);
         variable.setValue(Boolean.toString(true));
-            System.out.println("$$ true!");
-            dataFromUser.setEnvironment(variable.getName(), true);
-
+        dataFromUser.setEnvironment(variable.getName(), true);
     }
+
+
+
     public void falseBoxChecked(EnvironmentTableView variable, CheckBox trueCheckBox, CheckBox falseCheckBox) {
 //        falseCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
 //            if (newValue) {
@@ -190,10 +262,7 @@ public class ExecutionPageController {
 //        });
         trueCheckBox.setSelected(false);
         variable.setValue(Boolean.toString(false));
-
-        System.out.println("$$ false!");
         dataFromUser.setEnvironment(variable.getName(), false);
-
     }
 
     public TextField setEnvironmentStringCell(EnvironmentTableView variable){
@@ -233,7 +302,6 @@ public class ExecutionPageController {
         entityPopCol.setCellValueFactory(new PropertyValueFactory<>("population"));
         populateEntityTableWithValues();
         setPopulationCell();
-        // todo: add population to world's entity
     }
 
     public void setPopulationCell(){
