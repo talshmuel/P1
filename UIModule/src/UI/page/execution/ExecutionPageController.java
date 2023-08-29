@@ -1,6 +1,7 @@
 package UI.page.execution;
 
 import UI.PRDController;
+import com.sun.xml.internal.ws.api.model.wsdl.WSDLOutput;
 import data.transfer.object.EndSimulationData;
 import data.transfer.object.DataFromUser;
 import data.transfer.object.definition.*;
@@ -14,10 +15,17 @@ import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
+import world.property.impl.Property;
+
+import java.awt.*;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -46,17 +54,126 @@ public class ExecutionPageController {
         envTypeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
         envValueCol.setCellValueFactory(new PropertyValueFactory<>("value"));
         populateEnvironmentTableWithValues();
+        System.out.println("now going to setEnvironmentValueCell");
+        //setRandomValuesInTable();
         setEnvironmentValueCell();
     }
+
     public void populateEnvironmentTableWithValues(){
+        System.out.println("populateEnvironmentTableWithValues");
         ArrayList<PropertyInfo> definitions = engine.getEnvironmentDefinitions();
         ObservableList<EnvironmentTableView> environmentVariables = FXCollections.observableArrayList();
+
+        System.out.println("Environment variables:");
         for (PropertyInfo p : definitions) {
             environmentVariables.add(new EnvironmentTableView(p.getName(), p.getType(), p.getBottomLimit(), p.getTopLimit()));
         }
+
+//        System.out.println("Environment values:");
+//        ArrayList<PropertyValueInfo> environmentValues = engine.getEnvironmentValues();
+//        int i=0;
+//        for(PropertyValueInfo v : environmentValues){
+//            environmentVariables.get(i++).setValue(v.getVal());
+//        }
+//        System.out.println("#################3:");
+
         envTable.setItems(environmentVariables);
     }
 
+
+//    public void setRandomValuesInTable(){
+//        System.out.println("setRandomValuesInTable");
+//        envValueCol.setCellFactory(column -> new TableCell<EnvironmentTableView, String>() {
+//            @Override
+//            protected void updateItem(String item, boolean empty) {
+//                System.out.println("updateItem");
+//                super.updateItem(item, empty);
+//
+//                if (empty) {
+//                    setGraphic(null);
+//                } else {
+//                    EnvironmentTableView variable = (EnvironmentTableView) getTableRow().getItem();
+//                    Node inputNode;
+//
+//                    switch (variable.getType()) {
+//                        case "Integer": {
+//                            inputNode = setRandomIntegerEnvironmentCell(variable);
+//                            break;
+//                        }
+//                        case "Float": {
+//                            inputNode = setRandomFloatEnvironmentCell(variable);
+//                            break;
+//                        }
+//                        case "Boolean": {
+//                            inputNode = setRandomBooleanEnvironmentCell(variable);
+//                            break;
+//                        }
+//                        default: { // String type
+//                            inputNode = setRandomStringEnvironmentCell(variable);
+//                            break;
+//                        }
+//                    }
+//
+//                    setGraphic(inputNode);
+//                }
+//            }
+//        });
+//    }
+//
+//    public HBox setRandomIntegerEnvironmentCell(EnvironmentTableView variable){
+//        TextField inputField = new TextField();
+//
+//        Integer bottomLimit = (Integer) variable.getBottomLimit();
+//        Integer topLimit = (Integer) variable.getTopLimit();
+//
+//        inputField.setText(variable.getValue().toString());
+//
+//        Label label = new Label(bottomLimit + " - " + topLimit);
+//        HBox hbox = new HBox(label, inputField);
+//        hbox.setAlignment(Pos.CENTER);
+//        return hbox;
+//    }
+//
+//    public HBox setRandomFloatEnvironmentCell(EnvironmentTableView variable){
+//        TextField inputField = new TextField();
+//
+//        Double bottomLimit = (Double) variable.getBottomLimit();
+//        Double topLimit = (Double) variable.getTopLimit();
+//
+//        inputField.setText(variable.getValue().toString());
+//
+//        Label label = new Label(bottomLimit + " - " + topLimit);
+//        HBox hbox = new HBox(label, inputField);
+//        hbox.setAlignment(Pos.CENTER);
+//        return hbox;
+//    }
+//
+//    public TextField setRandomStringEnvironmentCell(EnvironmentTableView variable){
+//        TextField textField = new TextField();
+//        textField.setPrefHeight(10);
+//        textField.setText(variable.getValue().toString());
+//        return textField;
+//    }
+//
+//    public HBox setRandomBooleanEnvironmentCell(EnvironmentTableView variable){
+//        CheckBox trueCheckBox = new CheckBox("True");
+//        CheckBox falseCheckBox = new CheckBox("False");
+//        trueCheckBox.setSelected(false);
+//        falseCheckBox.setSelected(false);
+//
+//        if(variable.getValue().equals(true)){
+//            trueCheckBox.setSelected(true);
+//        } else {
+//            falseCheckBox.setSelected(true);
+//        }
+//
+//        HBox hbox = new HBox(trueCheckBox, falseCheckBox);
+//        hbox.setAlignment(Pos.CENTER);
+//        return hbox;
+//    }
+
+
+/////////////////////////////////////////////////////////////////
     public void setEnvironmentValueCell(){
         envValueCol.setCellFactory(column -> new TableCell<EnvironmentTableView, String>() {
             @Override
@@ -87,6 +204,7 @@ public class ExecutionPageController {
                             break;
                         }
                     }
+
                     setGraphic(inputNode);
                 }
             }
@@ -130,28 +248,6 @@ public class ExecutionPageController {
         return hbox;
     }
 
-//    public HBox setEnvironmentIntegerCell2(EnvironmentTableView variable){
-//        // todo: setOnAction for the slider or whatever we choose
-//        double top = (int) variable.getTopLimit();
-//        double bottom = (int) variable.getBottomLimit();
-//        Slider slider = new Slider(bottom, top, bottom);
-//        slider.setPrefWidth(100);
-//        Label currentValueLabel = new Label();
-//        currentValueLabel.setStyle("-fx-text-fill: green;");
-//        currentValueLabel.textProperty().bind(slider.valueProperty().asString("%.2f"));
-//        Label bottomLimitLabel = new Label(variable.getBottomLimit().toString());
-//        Label topLimitLabel = new Label(variable.getTopLimit().toString());
-//        HBox hbox =  new HBox(10);
-//        hbox.setAlignment(Pos.CENTER);
-//        hbox.getChildren().addAll(currentValueLabel, bottomLimitLabel, slider, topLimitLabel);
-//
-//        slider.valueProperty().addListener((observable, oldValue, newValue) -> {
-//            variable.setValue(newValue);
-//            dataFromUser.setEnvironment(variable.getName(), newValue);
-//
-//        });
-//        return hbox;
-//    }
 
     public HBox setEnvironmentFloatCell(EnvironmentTableView variable){
         TextField inputField = new TextField();
@@ -182,33 +278,6 @@ public class ExecutionPageController {
         return hbox;
     }
 
-
-
-//    public HBox setEnvironmentFloatCell2(EnvironmentTableView variable){
-//        double top = (double) variable.getTopLimit();
-//        double bottom = (double) variable.getBottomLimit();
-//        Slider slider = new Slider(bottom, top, bottom);
-//        slider.setPrefWidth(100);
-//        Label currentValueLabel = new Label();
-//        currentValueLabel.setStyle("-fx-text-fill: blue;");
-//        currentValueLabel.textProperty().bind(slider.valueProperty().asString("%.2f"));
-//        Label bottomLimitLabel = new Label(variable.getBottomLimit().toString());
-//        Label topLimitLabel = new Label(variable.getTopLimit().toString());
-//        HBox hbox =  new HBox(10);
-//        hbox.setAlignment(Pos.CENTER);
-//        hbox.getChildren().addAll(currentValueLabel, bottomLimitLabel, slider, topLimitLabel);
-//
-//        slider.valueProperty().addListener((observable, oldValue, newValue) -> {
-//            variable.setValue(newValue);
-//            dataFromUser.setEnvironment(variable.getName(), newValue);
-//
-//        });
-//        return hbox;
-//    }
-
-
-
-
     public HBox setEnvironmentBooleanCell(EnvironmentTableView variable){
         CheckBox trueCheckBox = new CheckBox("True");
         CheckBox falseCheckBox = new CheckBox("False");
@@ -226,40 +295,12 @@ public class ExecutionPageController {
         return hbox;
     }
     public void trueBoxChecked(EnvironmentTableView variable, CheckBox trueCheckBox, CheckBox falseCheckBox){
-//        trueCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-//            if (newValue) {
-//                falseCheckBox.setSelected(false);
-//                variable.setValue(Boolean.toString(true));
-//                try {
-//                    engine.setEnvironmentVariable(variable.getName(), true);
-//                } catch (IncompatibleType e) {
-//                    // todo: add exceptions
-//                }
-//            } else if (!falseCheckBox.isSelected()) {
-//                trueCheckBox.setSelected(true); // enforce selecting one
-//            }
-//        });
         falseCheckBox.setSelected(false);
         variable.setValue(Boolean.toString(true));
         dataFromUser.setEnvironment(variable.getName(), true);
     }
 
-
-
     public void falseBoxChecked(EnvironmentTableView variable, CheckBox trueCheckBox, CheckBox falseCheckBox) {
-//        falseCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-//            if (newValue) {
-//                trueCheckBox.setSelected(false);
-//                variable.setValue(Boolean.toString(false));
-//                try {
-//                    engine.setEnvironmentVariable(variable.getName(), false);
-//                } catch (IncompatibleType e) {
-//                    // todo: add exceptions
-//                }
-//            } else if (!trueCheckBox.isSelected()) {
-//                falseCheckBox.setSelected(true); // enforce selecting one
-//            }
-//        });
         trueCheckBox.setSelected(false);
         variable.setValue(Boolean.toString(false));
         dataFromUser.setEnvironment(variable.getName(), false);
@@ -268,35 +309,17 @@ public class ExecutionPageController {
     public TextField setEnvironmentStringCell(EnvironmentTableView variable){
         TextField textField = new TextField();
         textField.setPrefHeight(10);
-//        textField.textProperty().addListener((observable, oldValue, newValue) -> {
-//            variable.setValue(newValue);
-//            try {
-//                engine.setEnvironmentVariable(variable.getName(), newValue);
-//            } catch (IncompatibleType e) {
-//                // todo: add exceptions
-//            }
-//        });
-        ///////////////////////////////////////////////
         textField.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER) {
                 String newValue = textField.getText();
                 variable.setValue(newValue);
-
-                System.out.println("%%%%");
-
-                System.out.println("new value: " + newValue);
-                System.out.println("@@@@@");
                 dataFromUser.setEnvironment(variable.getName(), newValue);
-                System.out.println("new value: " + newValue);
-
-                // Additional action or navigation logic here...
             }
         });
-        /////////////////////////////////////////////////
         return textField;
     }
 
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public void setEntityTable(){
         entityNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         entityPopCol.setCellValueFactory(new PropertyValueFactory<>("population"));
