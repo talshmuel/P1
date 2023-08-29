@@ -2,6 +2,7 @@ package UI;
 
 import UI.page.details.DetailsPageController;
 import UI.page.execution.ExecutionPageController;
+import UI.page.results.ResultsPageController;
 import data.transfer.object.DataFromUser;
 import engine.Engine;
 import engine.EngineInterface;
@@ -21,8 +22,8 @@ public class PRDController {
     @FXML private GridPane executionPageComponent;
     @FXML private ExecutionPageController executionPageComponentController;
 
-//    @FXML private SplitPane resultsPageComponent;//זה כנראה לא יהיה ספליט פיין צריך לעדכן!!!
-//    @FXML private DetailsPageController resultsPageComponentController;
+    @FXML private GridPane resultsPageComponent;
+    @FXML private ResultsPageController resultsPageComponentController;
 
     private EngineInterface engine;
 
@@ -34,6 +35,10 @@ public class PRDController {
 
     @FXML
     private Button queueManagementBotton;
+
+    public void addUpdateSimulationToResultsPage(String update){
+        resultsPageComponentController.addItemToList(update);
+    }
 
     @FXML
     void openFileChooser(ActionEvent event) {
@@ -65,7 +70,7 @@ public class PRDController {
     public void setModel(EngineInterface engine) {
         detailsPageComponentController.setModel(engine);
         executionPageComponentController.setModel(engine);
-        //resultsPageComponentController.setModel(engine);
+        resultsPageComponentController.setModel(engine);
     }
 
     @FXML
@@ -73,7 +78,7 @@ public class PRDController {
         if (detailsPageComponentController != null) {
             detailsPageComponentController.setMainController(this);
             executionPageComponentController.setMainController(this);
-            //resultsPageComponentController.setMainController(this);
+            resultsPageComponentController.setMainController(this);
         }
     }
 

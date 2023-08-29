@@ -5,6 +5,7 @@ import data.transfer.object.EndSimulationData;
 import data.transfer.object.DataFromUser;
 import data.transfer.object.definition.*;
 import engine.EngineInterface;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -278,9 +279,12 @@ public class ExecutionPageController {
         try {
             EndSimulationData endSimulationData = engine.runSimulation(new DataFromUser(dataFromUser));
             //dataFromUser.cleanup();
-            System.out.println("The simulation ended after " + endSimulationData.getEndConditionVal() + " " +
-                    endSimulationData.getEndCondition());
-            System.out.println("Run ID: " + endSimulationData.getRunId() + "\n");
+            Platform.runLater(()->{
+                mainController.addUpdateSimulationToResultsPage("The simulation ended after " + endSimulationData.getEndConditionVal() + " " +
+                    endSimulationData.getEndCondition()+"\nRun ID: " + endSimulationData.getRunId() + "\n");
+            });
+
+
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
