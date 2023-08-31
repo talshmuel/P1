@@ -1,5 +1,6 @@
 package world.creator;
 
+import world.Grid;
 import world.World;
 import world.entity.EntityDefinition;
 import world.property.impl.Property;
@@ -18,13 +19,34 @@ import java.util.*;
 
 
 public class WorldCreator {
+    Map<String, Property> environmentVarMap;
+    ArrayList<EntityDefinition> entityDefList;
+    ArrayList<Rule> rulesList;
+    Map<String, Integer> endConditionsMap;
+
+    public void setEnvironmentVarMap(Map<String, Property> environmentVarMap) {
+        this.environmentVarMap = environmentVarMap;
+    }
+
+    public void setEntityDefList(ArrayList<EntityDefinition> entityDefList) {
+        this.entityDefList = entityDefList;
+    }
+
+    public void setRulesList(ArrayList<Rule> rulesList) {
+        this.rulesList = rulesList;
+    }
+
+    public void setEndConditionsMap(Map<String, Integer> endConditionsMap) {
+        this.endConditionsMap = endConditionsMap;
+    }
 
     public World createWorldFromXMLFile(PRDWorld prdWorld) throws EnvironmentException, EntityException, PropertyException, MustBeNumberException, RuleException, TerminationException {
-        Map<String, Property> environmentVarMap = validateAndCreateEnvironment(prdWorld.getPRDEvironment().getPRDEnvProperty());
-        ArrayList<EntityDefinition> entityDefList = validateAndCreateEntities(prdWorld.getPRDEntities().getPRDEntity());
-        ArrayList<Rule> rulesList = validateAndCreateRules(prdWorld.getPRDRules().getPRDRule(), entityDefList);
-        Map<String, Integer> endConditionsMap = validateAndCreateTermination(prdWorld.getPRDTermination());
-        return (new World(entityDefList, environmentVarMap, rulesList, endConditionsMap));
+        setEnvironmentVarMap(validateAndCreateEnvironment(prdWorld.getPRDEvironment().getPRDEnvProperty()));
+        setEntityDefList(validateAndCreateEntities(prdWorld.getPRDEntities().getPRDEntity()));
+        setRulesList(validateAndCreateRules(prdWorld.getPRDRules().getPRDRule(), entityDefList));
+        setEndConditionsMap(validateAndCreateTermination(prdWorld.getPRDTermination()));
+        Grid grid = new Grid(10, 10); // todo: change hard coded
+        return (new World(entityDefList, environmentVarMap, rulesList, endConditionsMap, grid));
     }
     /** CREATE ENVIRONMENT **/
     public Map<String, Property> validateAndCreateEnvironment(List<PRDEnvProperty> prdEnvironment) throws EnvironmentException{
@@ -252,18 +274,18 @@ public class WorldCreator {
 
     public Action validateAndCreateAction
             (PRDAction a, String entityNameInAction, EntityDefinition entityDefinitionInWorld, ArrayList<EntityDefinition> entities)
-            throws MustBeNumberException, EntityException, PropertyException {
+            throws MustBeNumberException, EntityException, PropertyException{
 
         switch (a.getType()) {
             case "increase": {
                 Map<String, PropertyDefinition> propertiesInWorld = validatePropertyInAction(a.getProperty(), entityDefinitionInWorld);
-                String by = validateIncreaseOrDecreaseAction(a, propertiesInWorld, "increase");
-                return new Increase(entityNameInAction, a.getProperty(), by);
+                if(validateExpressionIsANumber(a, propertiesInWorld, "increase"))
+                    return new Increase(entityNameInAction, a.getProperty(), a.getBy());
             }
             case "decrease":{
                 Map<String, PropertyDefinition> propertiesInWorld = validatePropertyInAction(a.getProperty(), entityDefinitionInWorld);
-                String by = validateIncreaseOrDecreaseAction(a, propertiesInWorld, "decrease");
-                return new Decrease(entityNameInAction, a.getProperty(), by);
+                if(validateExpressionIsANumber(a, propertiesInWorld, "decrease"))
+                    return new Decrease(entityNameInAction, a.getProperty(), a.getBy());
             }
             case "kill":{
                 String propertyNameInAction = a.getProperty();
@@ -374,18 +396,109 @@ public class WorldCreator {
         }
         return conditionsListInWorld;
     }
-    public String validateIncreaseOrDecreaseAction(PRDAction a, Map<String, PropertyDefinition> propertiesInWorld, String actionName) throws MustBeNumberException {
-        if(!isNameOfFunction(a.getBy()) && !propertiesInWorld.containsKey(a.getBy())){ // checks if it's function or property
-            if(!a.getBy().matches("\\d+")) { // checks if it's a number
+
+    public boolean validateExpressionIsANumber(PRDAction a, Map<String, PropertyDefinition> propertiesInWorld, String actionName) throws MustBeNumberException {
+        if(isNameOfFunction(a.getBy())){ // checks if the function will return a number
+            return validateExpressionFunctionIsANumber(a.getBy(), actionName, propertiesInWorld);
+        } else if(propertiesInWorld.containsKey(a.getBy())){ // checks if the property is of numeric type
+            validateExpressionPropertyIsANumber(a.getBy(), propertiesInWorld, actionName);
+            return true; // todo
+        } else {
+            if(a.getBy().matches("\\d+"))
+                return true;
+            else
                 throw new MustBeNumberException(actionName);
+        }
+    }
+
+    public boolean validateExpressionFunctionIsANumber(String byExpression, String actionName, Map<String, PropertyDefinition> propertiesInWorld) throws MustBeNumberException {
+        String functionName = byExpression.substring(0, byExpression.indexOf("("));
+        String expressionInParenthesis = byExpression.substring(byExpression.indexOf("(") + 1, byExpression.indexOf(")"));
+
+        switch (functionName) {
+            case "environment": {
+                return validateEnvironmentFunction(expressionInParenthesis, actionName);
+            }
+            case "random": {
+                if (expressionInParenthesis.matches("\\d+"))
+                    return true;
+                else
+                    throw new MustBeNumberException("XML File Error: Random function must receive a number!\n");
+            }
+            case "evaluate": {
+                return validateEvaluateFunction(expressionInParenthesis);
+            }
+            case "percent": {
+                return validatePercentFunction(expressionInParenthesis, actionName, propertiesInWorld);
+            }
+            case "ticks": {
+                // todo
+            }
+            default: // case "ticks":{
+                throw new MustBeNumberException("XML File Error: Function name doesn't exist!\n");
+        }
+    }
+    public boolean validateEnvironmentFunction(String expressionInParenthesis, String actionName) throws MustBeNumberException{
+        Property envProperty = environmentVarMap.get(expressionInParenthesis);
+        if (envProperty.getType().equals("Integer") || envProperty.getType().equals("Float"))
+            return true;
+        else
+            throw new MustBeNumberException("XML File Error: Property type in action " + actionName + " must be a number!\n");
+    }
+    public boolean validateEvaluateFunction(String expressionInParenthesis) throws MustBeNumberException {
+        String[] splitExpression = expressionInParenthesis.split("\\.");
+        String entityName = splitExpression[0];
+        String propertyName = splitExpression[1];
+
+        for (EntityDefinition e : entityDefList) {
+            if (e.getName().equals(entityName)) {
+                if (e.getPropsDef().get(propertyName) != null) { // checks if the property type is a number
+                    if (e.getPropsDef().get(propertyName).getType().equals("Integer") || e.getPropsDef().get(propertyName).getType().equals("Float"))
+                        return true;
+                    else
+                        throw new MustBeNumberException("XML File Error: The property: " + propertyName + " does not belong to entity: " + entityName + "!\n");
+                }
             }
         }
-        return a.getBy();
+
+        throw new MustBeNumberException("XML File Error: The entity: " + entityName + " doesn't exist!\n");
     }
+    public boolean validatePercentFunction(String expressionInParenthesis, String actionName, Map<String, PropertyDefinition> propertiesInWorld) throws MustBeNumberException {
+        String expr1 = expressionInParenthesis.substring(0, expressionInParenthesis.indexOf(")"));
+        String expr2 = expressionInParenthesis.substring(expressionInParenthesis.indexOf(",")+1);
+
+        validateExpressionInPercentFunction(expr1, actionName, propertiesInWorld);
+        validateExpressionInPercentFunction(expr2, actionName, propertiesInWorld);
+        return true;
+
+        //return validateExpressionFunctionIsANumber(expr1, actionName) && validateExpressionFunctionIsANumber(expr2, actionName);
+    }
+
+    void validateExpressionInPercentFunction(String expression, String actionName, Map<String, PropertyDefinition> propertiesInWorld) throws MustBeNumberException {
+        if(isNameOfFunction(expression)){
+            validateExpressionFunctionIsANumber(expression, actionName, propertiesInWorld);
+        } else if (propertiesInWorld.containsKey(expression)){
+            PropertyDefinition property = propertiesInWorld.get(expression);
+            if(!property.getType().equals("Integer") && !property.getType().equals("Float"))
+                throw new MustBeNumberException("XML File Error: Property " + property.getName() + " in percent function must be a number!\n");
+        } else {
+            if(!expression.matches("\\d+"))
+                throw new MustBeNumberException("XML File Error: Expression in percent function must be a number!\n");
+        }
+    }
+
+    public boolean validateTicksFunction(String byExpression, String expressionInParenthesis){
+        return true;
+    }
+    void validateExpressionPropertyIsANumber(String byExpression, Map<String, PropertyDefinition> propertiesInWorld, String actionName) throws MustBeNumberException{
+        PropertyDefinition property = propertiesInWorld.get(byExpression);
+        if(!property.getType().equals("Integer") && !property.getType().equals("Float"))
+            throw new MustBeNumberException("XML File Exception: property given in action: " + actionName + " must be a number!\n");
+    }
+
     /** EXPLANATION: check if a property type and an expression type matches. returns the name of the expression. **/
     public String validateExpressionAndPropertyTypes(String expressionToCheck, String property, Map<String, PropertyDefinition> propertiesInWorld) throws PropertyException {
-
-        if(!isNameOfFunction(expressionToCheck) && !propertiesInWorld.containsKey(expressionToCheck)) { // checks if it's function or property
+        if(!isNameOfFunction(expressionToCheck) && !propertiesInWorld.containsKey(expressionToCheck)) {
             // checks if the type of the property to set matches
             String typeOfProperty = propertiesInWorld.get(property).getType();
             switch (typeOfProperty){
@@ -406,6 +519,9 @@ public class WorldCreator {
         }
         return expressionToCheck;
     }
+
+
+
     /** EXPLANATION: checks if this property is of numeric type (decimal, float) **/
     public void checkIfPropertyIsNumeric(Map<String, PropertyDefinition> propertiesInWorld, String propertyToCheck) throws MustBeNumberException {
         // check if this property is numeric type:

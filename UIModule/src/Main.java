@@ -8,6 +8,9 @@ import engine.Engine;
 import engine.EngineInterface;
 import exception.IncompatibleType;
 import exception.PathDoesntExistException;
+import world.Grid;
+import world.creator.XMLFileException;
+import world.entity.Coordinate;
 import xml.reader.validator.*;
 
 import java.util.*;
@@ -16,8 +19,6 @@ public class Main {
     static EngineInterface engine = new Engine();
 
     public static void main(String[] args) throws IncompatibleType {
-
-
         boolean shutdown = false;
 
         System.out.println("-------------------------");
@@ -444,6 +445,8 @@ public class Main {
                 System.out.println(m.getMessage());
             } catch (TerminationException terminationException) {
                 System.out.println(terminationException.getMessage());
+            } catch (XMLFileException e) {
+                System.out.println("XMLFileException");
             }
         }
     }

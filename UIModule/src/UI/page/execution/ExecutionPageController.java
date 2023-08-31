@@ -8,6 +8,7 @@ import data.transfer.object.definition.*;
 import engine.EngineInterface;
 import exception.IncompatibleType;
 import javafx.application.Platform;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -21,6 +22,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import world.property.impl.Property;
 
 import java.awt.*;
@@ -46,6 +48,7 @@ public class ExecutionPageController {
     @FXML private TableColumn<EnvironmentTableView, String> envNameCol;
     @FXML private TableColumn<EnvironmentTableView, String> envTypeCol;
     @FXML private TableColumn<EnvironmentTableView, String> envValueCol;
+    @FXML private TableColumn<EnvironmentTableView, String> envSelectedValCol;
     @FXML private Button startSimulation;
     @FXML private Button clearSimulation;
 
@@ -53,159 +56,70 @@ public class ExecutionPageController {
         envNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         envTypeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
         envValueCol.setCellValueFactory(new PropertyValueFactory<>("value"));
+        envSelectedValCol.setCellValueFactory(new PropertyValueFactory<>("selectedValue"));
         populateEnvironmentTableWithValues();
-        System.out.println("now going to setEnvironmentValueCell");
-        //setRandomValuesInTable();
         setEnvironmentValueCell();
+
+    }
+
+    public String findRandomValue(String nameToSearch){
+        ArrayList<PropertyValueInfo> environmentValues = engine.getEnvironmentValues();
+        int i=0;
+        for(PropertyValueInfo v : environmentValues){
+            if(v.getName().equals(nameToSearch)) {
+                if(v.getVal() instanceof Double){
+                    return String.format("%.2f", (Double)v.getVal());
+                }
+                return v.getVal().toString();
+            }
+        }
+        return null;
     }
 
     public void populateEnvironmentTableWithValues(){
-        System.out.println("populateEnvironmentTableWithValues");
         ArrayList<PropertyInfo> definitions = engine.getEnvironmentDefinitions();
         ObservableList<EnvironmentTableView> environmentVariables = FXCollections.observableArrayList();
-
-        System.out.println("Environment variables:");
         for (PropertyInfo p : definitions) {
-            environmentVariables.add(new EnvironmentTableView(p.getName(), p.getType(), p.getBottomLimit(), p.getTopLimit()));
+            String selectedValue = findRandomValue(p.getName());
+            environmentVariables.add(new EnvironmentTableView(p.getName(), p.getType(), p.getBottomLimit(), p.getTopLimit(), selectedValue));
         }
-
-//        System.out.println("Environment values:");
-//        ArrayList<PropertyValueInfo> environmentValues = engine.getEnvironmentValues();
-//        int i=0;
-//        for(PropertyValueInfo v : environmentValues){
-//            environmentVariables.get(i++).setValue(v.getVal());
-//        }
-//        System.out.println("#################3:");
-
         envTable.setItems(environmentVariables);
     }
 
-
-//    public void setRandomValuesInTable(){
-//        System.out.println("setRandomValuesInTable");
-//        envValueCol.setCellFactory(column -> new TableCell<EnvironmentTableView, String>() {
-//            @Override
-//            protected void updateItem(String item, boolean empty) {
-//                System.out.println("updateItem");
-//                super.updateItem(item, empty);
-//
-//                if (empty) {
-//                    setGraphic(null);
-//                } else {
-//                    EnvironmentTableView variable = (EnvironmentTableView) getTableRow().getItem();
-//                    Node inputNode;
-//
-//                    switch (variable.getType()) {
-//                        case "Integer": {
-//                            inputNode = setRandomIntegerEnvironmentCell(variable);
-//                            break;
-//                        }
-//                        case "Float": {
-//                            inputNode = setRandomFloatEnvironmentCell(variable);
-//                            break;
-//                        }
-//                        case "Boolean": {
-//                            inputNode = setRandomBooleanEnvironmentCell(variable);
-//                            break;
-//                        }
-//                        default: { // String type
-//                            inputNode = setRandomStringEnvironmentCell(variable);
-//                            break;
-//                        }
-//                    }
-//
-//                    setGraphic(inputNode);
-//                }
-//            }
-//        });
-//    }
-//
-//    public HBox setRandomIntegerEnvironmentCell(EnvironmentTableView variable){
-//        TextField inputField = new TextField();
-//
-//        Integer bottomLimit = (Integer) variable.getBottomLimit();
-//        Integer topLimit = (Integer) variable.getTopLimit();
-//
-//        inputField.setText(variable.getValue().toString());
-//
-//        Label label = new Label(bottomLimit + " - " + topLimit);
-//        HBox hbox = new HBox(label, inputField);
-//        hbox.setAlignment(Pos.CENTER);
-//        return hbox;
-//    }
-//
-//    public HBox setRandomFloatEnvironmentCell(EnvironmentTableView variable){
-//        TextField inputField = new TextField();
-//
-//        Double bottomLimit = (Double) variable.getBottomLimit();
-//        Double topLimit = (Double) variable.getTopLimit();
-//
-//        inputField.setText(variable.getValue().toString());
-//
-//        Label label = new Label(bottomLimit + " - " + topLimit);
-//        HBox hbox = new HBox(label, inputField);
-//        hbox.setAlignment(Pos.CENTER);
-//        return hbox;
-//    }
-//
-//    public TextField setRandomStringEnvironmentCell(EnvironmentTableView variable){
-//        TextField textField = new TextField();
-//        textField.setPrefHeight(10);
-//        textField.setText(variable.getValue().toString());
-//        return textField;
-//    }
-//
-//    public HBox setRandomBooleanEnvironmentCell(EnvironmentTableView variable){
-//        CheckBox trueCheckBox = new CheckBox("True");
-//        CheckBox falseCheckBox = new CheckBox("False");
-//        trueCheckBox.setSelected(false);
-//        falseCheckBox.setSelected(false);
-//
-//        if(variable.getValue().equals(true)){
-//            trueCheckBox.setSelected(true);
-//        } else {
-//            falseCheckBox.setSelected(true);
-//        }
-//
-//        HBox hbox = new HBox(trueCheckBox, falseCheckBox);
-//        hbox.setAlignment(Pos.CENTER);
-//        return hbox;
-//    }
-
-
-/////////////////////////////////////////////////////////////////
     public void setEnvironmentValueCell(){
         envValueCol.setCellFactory(column -> new TableCell<EnvironmentTableView, String>() {
             @Override
             protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
 
+                super.updateItem(item, empty);
                 if (empty) {
                     setGraphic(null);
                 } else {
                     EnvironmentTableView variable = (EnvironmentTableView) getTableRow().getItem();
-                    Node inputNode;
 
-                    switch (variable.getType()) {
-                        case "Integer": {
-                            inputNode = setEnvironmentIntegerCell(variable);
-                            break;
+                    if(variable != null){
+                        Node inputNode;
+
+                        switch (variable.getType()) {
+                            case "Integer": {
+                                inputNode = setEnvironmentIntegerCell(variable);
+                                break;
+                            }
+                            case "Float": {
+                                inputNode = setEnvironmentFloatCell(variable);
+                                break;
+                            }
+                            case "Boolean": {
+                                inputNode = setEnvironmentBooleanCell(variable);
+                                break;
+                            }
+                            default: { // String type
+                                inputNode = setEnvironmentStringCell(variable);
+                                break;
+                            }
                         }
-                        case "Float": {
-                            inputNode = setEnvironmentFloatCell(variable);
-                            break;
-                        }
-                        case "Boolean": {
-                            inputNode = setEnvironmentBooleanCell(variable);
-                            break;
-                        }
-                        default: { // String type
-                            inputNode = setEnvironmentStringCell(variable);
-                            break;
-                        }
+                        setGraphic(inputNode);
                     }
-
-                    setGraphic(inputNode);
                 }
             }
         });
@@ -214,25 +128,28 @@ public class ExecutionPageController {
     private void showErrorAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Error");
-        alert.setHeaderText(null); // No header
+        alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
     }
 
-    public HBox setEnvironmentIntegerCell(EnvironmentTableView variable){
+    public VBox setEnvironmentIntegerCell(EnvironmentTableView variable){
         TextField inputField = new TextField();
-
+        inputField.setAlignment(Pos.CENTER);
+        inputField.setMaxWidth(60);
         Integer bottomLimit = (Integer) variable.getBottomLimit();
         Integer topLimit = (Integer) variable.getTopLimit();
+        String initialSelectedValue = variable.getSelectedValue();
 
         inputField.setOnAction(event -> {
             String input = inputField.getText();
-
             try {
-                double inputValue = Double.parseDouble(input);
-
+                //double inputValue = Double.parseDouble(input);
+                int inputValue = Integer.parseInt(input);
                 if (inputValue >= bottomLimit && inputValue <= topLimit) {
-                    variable.setValue(inputValue);
+                    variable.setValue(String.valueOf(inputValue));
+                    variable.setSelectedValue(String.valueOf(inputValue));
+                    envTable.refresh();
                     dataFromUser.setEnvironment(variable.getName(), inputValue);
                 } else {
                     showErrorAlert("Invalid input! Please enter a number between " + bottomLimit + " and " + topLimit + ".");
@@ -242,27 +159,30 @@ public class ExecutionPageController {
             }
         });
 
-        Label label = new Label(bottomLimit + " - " + topLimit);
-        HBox hbox = new HBox(label, inputField);
-        hbox.setAlignment(Pos.CENTER);
-        return hbox;
+        Label rangeLabel = new Label("Range: " + bottomLimit + " - " + topLimit);
+        VBox vbox = new VBox(rangeLabel, inputField);
+        vbox.setSpacing(2);
+        vbox.setAlignment(Pos.CENTER);
+        variable.setSelectedValue(initialSelectedValue);
+        return vbox;
     }
 
-
-    public HBox setEnvironmentFloatCell(EnvironmentTableView variable){
+    public VBox setEnvironmentFloatCell(EnvironmentTableView variable){
         TextField inputField = new TextField();
-
+        inputField.setAlignment(Pos.CENTER);
+        inputField.setMaxWidth(60);
         Double bottomLimit = (Double) variable.getBottomLimit();
         Double topLimit = (Double) variable.getTopLimit();
+        String initialSelectedValue = variable.getSelectedValue();
 
         inputField.setOnAction(event -> {
             String input = inputField.getText();
-
             try {
                 double inputValue = Double.parseDouble(input);
-
                 if (inputValue >= bottomLimit && inputValue <= topLimit) {
-                    variable.setValue(inputValue);
+                    variable.setValue(String.valueOf(inputValue));
+                    variable.setSelectedValue(String.valueOf(inputValue));
+                    envTable.refresh();
                     dataFromUser.setEnvironment(variable.getName(), inputValue);
                 } else {
                     showErrorAlert("Invalid input! Please enter a number between " + bottomLimit + " and " + topLimit + ".");
@@ -272,51 +192,68 @@ public class ExecutionPageController {
             }
         });
 
-        Label label = new Label(bottomLimit + " - " + topLimit);
-        HBox hbox = new HBox(label, inputField);
-        hbox.setAlignment(Pos.CENTER);
-        return hbox;
+        Label rangeLabel = new Label("Range: " + bottomLimit + " - " + topLimit);
+        VBox vbox = new VBox(rangeLabel, inputField);
+        vbox.setSpacing(2);
+        vbox.setAlignment(Pos.CENTER);
+        variable.setSelectedValue(initialSelectedValue);
+        return vbox;
     }
 
     public HBox setEnvironmentBooleanCell(EnvironmentTableView variable){
         CheckBox trueCheckBox = new CheckBox("True");
         CheckBox falseCheckBox = new CheckBox("False");
-
         trueCheckBox.setSelected(false);
         falseCheckBox.setSelected(false);
 
-        //trueBoxChecked(variable, trueCheckBox, falseCheckBox);
-        //falseBoxChecked(variable, trueCheckBox, falseCheckBox);
         trueCheckBox.setOnAction(event -> trueBoxChecked(variable, trueCheckBox, falseCheckBox));
         falseCheckBox.setOnAction(event -> falseBoxChecked(variable, trueCheckBox, falseCheckBox));
 
+        // Initialize the selected value based on the initial value
+        if (variable.getValue() != null) {
+            boolean initialValue = Boolean.parseBoolean(variable.getValue().toString());
+            trueCheckBox.setSelected(initialValue);
+            falseCheckBox.setSelected(!initialValue);
+        }
+
         HBox hbox = new HBox(trueCheckBox, falseCheckBox);
         hbox.setAlignment(Pos.CENTER);
+        hbox.setSpacing(6);
         return hbox;
     }
     public void trueBoxChecked(EnvironmentTableView variable, CheckBox trueCheckBox, CheckBox falseCheckBox){
         falseCheckBox.setSelected(false);
         variable.setValue(Boolean.toString(true));
+        variable.setSelectedValue(Boolean.toString(true));
+        envTable.refresh();
         dataFromUser.setEnvironment(variable.getName(), true);
     }
 
     public void falseBoxChecked(EnvironmentTableView variable, CheckBox trueCheckBox, CheckBox falseCheckBox) {
         trueCheckBox.setSelected(false);
         variable.setValue(Boolean.toString(false));
+        variable.setSelectedValue(Boolean.toString(false));
+        envTable.refresh();
         dataFromUser.setEnvironment(variable.getName(), false);
     }
 
     public TextField setEnvironmentStringCell(EnvironmentTableView variable){
-        TextField textField = new TextField();
-        textField.setPrefHeight(10);
-        textField.setOnKeyPressed(event -> {
+        TextField inputField = new TextField();
+        inputField.setMaxWidth(100.0);
+        inputField.setAlignment(Pos.CENTER);
+        String initialSelectedValue = variable.getSelectedValue();
+
+        inputField.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER) {
-                String newValue = textField.getText();
-                variable.setValue(newValue);
-                dataFromUser.setEnvironment(variable.getName(), newValue);
+                String inputValue = inputField.getText();
+                variable.setValue(inputValue);
+                variable.setSelectedValue(String.valueOf(inputValue));
+                envTable.refresh();
+                dataFromUser.setEnvironment(variable.getName(), inputValue);
             }
         });
-        return textField;
+        variable.setSelectedValue(initialSelectedValue);
+        return inputField;
     }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////

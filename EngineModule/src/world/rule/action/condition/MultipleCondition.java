@@ -5,9 +5,7 @@ import exception.IncompatibleAction;
 import exception.IncompatibleType;
 import world.rule.action.Action;
 import world.rule.action.api.PropertiesToAction;
-
 import world.rule.action.api.PropertiesToMultipleCondition;
-
 import java.util.ArrayList;
 
 

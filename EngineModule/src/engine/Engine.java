@@ -15,6 +15,7 @@ import run.result.PropertyResult;
 import run.result.Result;
 import world.api.AssistFunctions;
 import world.creator.WorldCreator;
+import world.creator.XMLFileException;
 import world.entity.Entity;
 import world.entity.EntityDefinition;
 import world.World;
@@ -52,13 +53,11 @@ public class Engine implements EngineInterface, Serializable {
         ticks = 0;
     }
 
-
-
     public void setWorld(World world) {
         this.world = world;
     }
     @Override
-    public Boolean createSimulationByXMLFile(String fileName) throws FileDoesntExistException, InvalidXMLFileNameException, EnvironmentException, EntityException, PropertyException, MustBeNumberException, RuleException, TerminationException {
+    public Boolean createSimulationByXMLFile(String fileName) throws FileDoesntExistException, InvalidXMLFileNameException, EnvironmentException, EntityException, PropertyException, MustBeNumberException, RuleException, TerminationException, XMLFileException {
         XMLReader reader = new XMLReader();
         PRDWorld prdWorld = reader.validateXMLFileAndCreatePRDWorld(fileName);
 
@@ -98,7 +97,6 @@ public class Engine implements EngineInterface, Serializable {
     @Override
     public void setEnvironmentVariable(String name, Object val)throws IncompatibleType {
         world.setEnvironmentValue(name, val);
-
     }
 
     @Override
@@ -110,10 +108,17 @@ public class Engine implements EngineInterface, Serializable {
         String formattedDateTime = currentDateTime.format(formatter);
 
         world.generateEntitiesByDefinitions();
+        // scatter the entities on the grid randomly
+        world.generateRandomPositionsOnGrid();
+        world.printMatrix(); // todo: delete later
+        System.out.println("-----------------------------------------------");
 
         long startTime = System.currentTimeMillis();
 
-        while (simulationShouldRun(startTime)) {
+        while (simulationShouldRun(startTime)) { // todo: change the loop like aviad said
+            world.moveAllEntitiesOnGrid();
+            world.printMatrix(); // todo: delete later
+            System.out.println("-----------------------------------------------");
             for (Rule rule : world.getRules()) {
                 if (ruleShouldRun(rule))
                     runRule(rule);
@@ -134,7 +139,6 @@ public class Engine implements EngineInterface, Serializable {
                 throw new RuntimeException(e);
             }
         });
-
     }
 
     @Override
@@ -260,7 +264,7 @@ public class Engine implements EngineInterface, Serializable {
             for (Action action : rule.getActions()) {
                 if (actionShouldRunOnEntity(action, entity)) {
                     setValueOfExpressionOnAction(action, entity);
-                    if (action.activate(getNeededProperties(action, entity))) {//need to kill
+                    if (action.activate(getNeededProperties(action, entity))) { //need to kill
                         entitiesToKill.add(entity);
                     }
                 }
@@ -428,7 +432,7 @@ public class Engine implements EngineInterface, Serializable {
 
         Property actionProp = entity.getPropertyByName(action.getPropToChangeName());
         if(!(action instanceof MultipleCondition)) {
-            action.setExpressionVal(getValueOfExpression(action.getExpression(), entity,actionProp));
+            action.setExpressionVal(getValueOfExpression(action.getExpression(), entity, actionProp));
             if (action instanceof Calculation) {
                 Object expression2Val = getValueOfExpression(((Calculation) action).getExpression2(), entity, actionProp);
                 ((Calculation) action).setExpression2Val(expression2Val);
@@ -462,11 +466,15 @@ public class Engine implements EngineInterface, Serializable {
             return functions.environment(expression.substring(12, len-1));
         else if (expression.startsWith("random"))
             return functions.random(Integer.parseInt(expression.substring(7, len-1)));
+        else if (expression.startsWith("evaluate")){
+            // example: evaluate(ent-2.p1)
+            functions.setEntities(world.getEntities());
+            return functions.evaluate(expression.substring(9, len-1));
+        }
         else if (entity.getPropertyByName(expression) != null)
             return entity.getPropertyByName(expression).getVal();
         else
             return getSimpleExpressionValue(expression, actionProp);
-
     }
 
     private Object getSimpleExpressionValue(String expression, Property actionProp){

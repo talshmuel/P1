@@ -10,13 +10,14 @@ import exception.DivisionByZeroException;
 import exception.IncompatibleAction;
 import exception.IncompatibleType;
 import exception.PathDoesntExistException;
+import world.creator.XMLFileException;
 import xml.reader.validator.*;
 
 import java.util.ArrayList;
 
 
 public interface EngineInterface {
-    Boolean createSimulationByXMLFile(String fileName) throws FileDoesntExistException, InvalidXMLFileNameException, EnvironmentException, EntityException, PropertyException, MustBeNumberException, RuleException, TerminationException;
+    Boolean createSimulationByXMLFile(String fileName) throws FileDoesntExistException, InvalidXMLFileNameException, EnvironmentException, EntityException, PropertyException, MustBeNumberException, RuleException, TerminationException, XMLFileException;
     EndSimulationData runSimulation(DataFromUser detailsToRun)throws DivisionByZeroException, IncompatibleType, IncompatibleAction;
     void setEnvironmentVariable(String name, Object val)throws IncompatibleType;
 

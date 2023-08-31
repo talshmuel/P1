@@ -4,15 +4,17 @@ public class EnvironmentTableView {
     private String name;
     private String type;
     private Object value;
+    private String selectedValue;
     private Object bottomLimit;
     private Object topLimit;
 
-    public EnvironmentTableView(String name, String type, Object bottomLimit, Object topLimit){
+    public EnvironmentTableView(String name, String type, Object bottomLimit, Object topLimit, String selectedValue){
         this.name = name;
         this.type = type;
         this.value = null;
         this.bottomLimit = bottomLimit;
         this.topLimit = topLimit;
+        this.selectedValue = selectedValue;
     }
     public String getName() {
         return name;
@@ -29,6 +31,11 @@ public class EnvironmentTableView {
     public Object getTopLimit() {
         return topLimit;
     }
+
+    public String getSelectedValue() {
+        return selectedValue;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -43,5 +50,9 @@ public class EnvironmentTableView {
     }
     public void setBottomLimit(Object bottomLimit) {
         this.bottomLimit = bottomLimit;
+    }
+
+    public void setSelectedValue(String selectedValue) {
+        this.selectedValue = selectedValue;
     }
 }
