@@ -20,10 +20,12 @@ public class World implements Serializable {
     ArrayList<Rule> rules;
     //ArrayList<EndCondition> endConditions;
     Map<String, Integer> endConditions;
+
+    //////// new:
     Grid grid;
     //Integer numOfThreads;
 
-    public void printMatrix(){
+    public void printMatrix(){ // todo: delete later
         for (int i = 0; i < grid.getNumOfRows(); i++) {
             for (int j = 0; j < grid.getNumOfCols(); j++) {
                 System.out.print(grid.matrix[i][j] + " ");
@@ -58,6 +60,7 @@ public class World implements Serializable {
             }
         }
     }
+
     private Property generatePropertyByDefinitions(PropertyDefinition propdef){
         switch (propdef.getType()){
             case "Boolean":
@@ -141,7 +144,7 @@ public class World implements Serializable {
                 int newCol = random.nextInt(grid.getNumOfCols()-1)+1;
                 if(grid.isPositionAvailable(newRow, newCol)){ // if the place is empty -> place the entity there
                     Coordinate position = new Coordinate(newRow, newCol);
-                    System.out.println("new position is: (" + position.getRow() + ", " + position.getCol() + ")");
+                    //System.out.println("new position is: (" + position.getRow() + ", " + position.getCol() + ")");
                     e.setPosition(position);
                     grid.updateGrid(position);
                     entityInPlace=true;
@@ -153,21 +156,9 @@ public class World implements Serializable {
     public void moveAllEntitiesOnGrid() {
         for(Entity e : entities){
             e.setPosition(grid.moveEntityOnGrid(e));
-            System.out.println("new position is: (" + e.getPosition().getRow() + ", " + e.getPosition().getCol() + ")");
+            //System.out.println("DEBUG: new position is: (" + e.getPosition().getRow() + ", " + e.getPosition().getCol() + ")");
         }
     }
 
-    /*public void moveEntityOnGrid(Entity entity){
-        List<Grid.Direction> availableCoordinates = new ArrayList<>();
-        Coordinate entityLocation = entity.getPosition();
-        // check right:
-
-        // check left:
-        // check up:
-        // check down:
-
-
-
-    }*/
 
 }

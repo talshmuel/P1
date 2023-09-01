@@ -34,6 +34,12 @@ public class WorldCreator {
 
     public void setRulesList(ArrayList<Rule> rulesList) {
         this.rulesList = rulesList;
+        /*// todo: delete later hard coded
+        ArrayList<Action> actions = new ArrayList<>();
+        EntityDefinition entityToKill = entityDefList.get(0);
+        EntityDefinition entityToCreate = entityDefList.get(1);
+        actions.add(new Replace(entityToKill.getName(), entityToCreate.getName(), "scratch"));
+        this.rulesList.add(new Rule("r4", actions, 1, 1));*/
     }
 
     public void setEndConditionsMap(Map<String, Integer> endConditionsMap) {
@@ -282,22 +288,22 @@ public class WorldCreator {
             case "increase": {
                 Map<String, PropertyDefinition> propertiesInWorld = validatePropertyInAction(a.getProperty(), entityDefinitionInWorld);
                 if(validateExpressionIsANumber(a, propertiesInWorld, "increase"))
-                    return new Increase(entityNameInAction, a.getProperty(), a.getBy());
+                    return new Increase(entityNameInAction, null, a.getProperty(), a.getBy());
             }
             case "decrease":{
                 Map<String, PropertyDefinition> propertiesInWorld = validatePropertyInAction(a.getProperty(), entityDefinitionInWorld);
                 if(validateExpressionIsANumber(a, propertiesInWorld, "decrease"))
-                    return new Decrease(entityNameInAction, a.getProperty(), a.getBy());
+                    return new Decrease(entityNameInAction, null, a.getProperty(), a.getBy());
             }
             case "kill":{
                 String propertyNameInAction = a.getProperty();
-                return new Kill(entityNameInAction, propertyNameInAction);
+                return new Kill(entityNameInAction, null, propertyNameInAction);
             }
             case "set":{
                 String propertyNameInAction = a.getProperty();
                 Map<String, PropertyDefinition> propertiesInWorld = validatePropertyInAction(propertyNameInAction, entityDefinitionInWorld);
                 String valToSet = validateExpressionAndPropertyTypes(a.getValue(), propertyNameInAction, propertiesInWorld);
-                return new Set(entityNameInAction, propertyNameInAction, valToSet);
+                return new Set(entityNameInAction, null, propertyNameInAction, valToSet);
             }
             case "calculation":{
                 Map<String, PropertyDefinition> propertiesInWorld = validatePropertyInAction(a.getResultProp(), entityDefinitionInWorld);
@@ -335,7 +341,7 @@ public class WorldCreator {
         ArrayList<Condition> conditionsListInWorld = validateAndCreateConditionsList(a, a.getPRDCondition(), entities, entityDefinitionInWorld);
         ArrayList<Action> thenActions = validateAndCreateThenActions(a, entities);
         ArrayList<Action> elseActions = validateAndCreateElseActions(a, entities);
-        return new MultipleCondition(entityDefinitionInWorld.getName(), null, thenActions, elseActions, logic, conditionsListInWorld);
+        return new MultipleCondition(entityDefinitionInWorld.getName(), null, null, thenActions, elseActions, logic, conditionsListInWorld);
     }
 
     public ArrayList<Action> validateAndCreateThenActions(PRDAction a, ArrayList<EntityDefinition> entities) throws MustBeNumberException, EntityException, PropertyException {
@@ -373,10 +379,10 @@ public class WorldCreator {
         if(mainCond){ // if not a main condition -> doesn't have then/else actions.
             ArrayList<Action> thenActions = validateAndCreateThenActions(a, entities);
             ArrayList<Action> elseActions = validateAndCreateElseActions(a, entities);
-            return new SingleCondition(c.getEntity(), property, operator, expression, thenActions, elseActions);
+            return new SingleCondition(c.getEntity(), null, property, operator, expression, thenActions, elseActions);
 
         } else {
-            return new SingleCondition(c.getEntity(), property, operator, expression, null, null); // thenActions, elseActions);
+            return new SingleCondition(c.getEntity(), null, property, operator, expression, null, null); // thenActions, elseActions);
         }
 
     }
@@ -393,7 +399,7 @@ public class WorldCreator {
 
                 MultipleCondition.Logic logic = validateLogicalSign(c.getLogical());
                 ArrayList<Condition> conditions = validateAndCreateConditionsList(a, c, entities, entityDefinition);
-                conditionsListInWorld.add(new MultipleCondition(c.getEntity(), null, null, null, logic, conditions));
+                conditionsListInWorld.add(new MultipleCondition(c.getEntity(), null, null, null, null, logic, conditions));
             }
         }
         return conditionsListInWorld;
@@ -546,13 +552,13 @@ public class WorldCreator {
         checkIfPropertyIsNumeric(propertiesMap, a.getResultProp()); // check if the result property is of numeric type
         String arg1 = validateCalculationExpression(a.getPRDMultiply().getArg1(), propertiesMap);
         String arg2 = validateCalculationExpression(a.getPRDMultiply().getArg2(), propertiesMap);
-        return new Multiply(entityInAction, a.getResultProp(), arg1, arg2);
+        return new Multiply(entityInAction, null, a.getResultProp(), arg1, arg2);
     }
     public Divide validateAndCreatesDivideAction(PRDAction a, String entityInAction, Map<String, PropertyDefinition> propertiesMap) throws MustBeNumberException{
         checkIfPropertyIsNumeric(propertiesMap, a.getResultProp()); // check if the result property is of numeric type
         String arg1 = validateCalculationExpression(a.getPRDDivide().getArg1(), propertiesMap);
         String arg2 = validateCalculationExpression(a.getPRDDivide().getArg2(), propertiesMap);
-        return new Divide(entityInAction, a.getResultProp(), arg1, arg2);
+        return new Divide(entityInAction,null, a.getResultProp(), arg1, arg2);
     }
     /** EXPLANATION: checks if this entity exists in world, and if so -> returns the EntityDefinition **/
     public EntityDefinition validateEntityOfAction(String entityInAction, ArrayList<EntityDefinition> entities) throws EntityException {

@@ -27,6 +27,7 @@
    <center>
       <TabPane fx:id="tabPane" prefHeight="317.0" prefWidth="317.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
         <tabs>
+            if(
           <Tab fx:id="detailsTab" text="Details">
                <content>
                    <fx:include fx:id="detailsPageComponent" source="page/details/DetailsPage.fxml"/>

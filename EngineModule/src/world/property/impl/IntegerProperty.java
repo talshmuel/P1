@@ -29,18 +29,18 @@ public class IntegerProperty extends Property {
     }
 
     @Override
-    public void increase(Object increaseBy)throws IncompatibleType {
+    public void increase(Object increaseBy) throws IncompatibleType {
         if(increaseBy instanceof Integer)
             if((Integer)increaseBy+val<=(Integer)definition.getTopLimit())
-                val = val+(Integer) increaseBy;
+                val = val + (Integer) increaseBy;
             else
-                val = (Integer)definition.getTopLimit();
+                val = (Integer) definition.getTopLimit();
         else
             throw new IncompatibleType();
     }
 
     @Override
-    public void decrease(Object decreaseBy)throws IncompatibleType {
+    public void decrease(Object decreaseBy) throws IncompatibleType {
         if(decreaseBy instanceof Integer)
             if(val-(Integer)decreaseBy>=(Integer)definition.getBottomLimit())
                 val = val-(Integer) decreaseBy;
@@ -51,34 +51,34 @@ public class IntegerProperty extends Property {
     }
 
     @Override
-    public void set(Object setTo)throws IncompatibleType {
+    public void set(Object setTo) throws IncompatibleType {
         if(setTo instanceof Integer)
-            if((Integer) setTo>=(Integer)definition.getBottomLimit() && (Integer) setTo<=(Integer)definition.getTopLimit())
+            if((Integer) setTo >= (Integer) definition.getBottomLimit() && (Integer) setTo <= (Integer)definition.getTopLimit())
                 val = (Integer) setTo;
-            else if ((Integer) setTo<(Integer)definition.getBottomLimit())
-                val = (Integer)definition.getBottomLimit();
-            else if ((Integer) setTo>(Integer)definition.getTopLimit()) {
-                val = (Integer)definition.getTopLimit();
+            else if ((Integer) setTo < (Integer) definition.getBottomLimit())
+                val = (Integer) definition.getBottomLimit();
+            else if ((Integer) setTo > (Integer) definition.getTopLimit()) {
+                val = (Integer) definition.getTopLimit();
             }
             else
                 throw new IncompatibleType();
     }
     @Override
-    public Boolean isBigger(Object toCompere)throws IncompatibleType {
+    public Boolean isBigger(Object toCompere) throws IncompatibleType {
         if(toCompere instanceof Integer)
-            return val>(Integer) toCompere;
+            return val > (Integer) toCompere;
         else if(toCompere instanceof Double)
-            return val>(Double) toCompere;
+            return val > (Double) toCompere;
         else
             throw new IncompatibleType();
     }
 
     @Override
-    public Boolean isSmaller(Object toCompere)throws IncompatibleType {
+    public Boolean isSmaller(Object toCompere) throws IncompatibleType {
         if(toCompere instanceof Integer)
-            return val<(Integer) toCompere;
+            return val < (Integer) toCompere;
         else if(toCompere instanceof Double)
-            return val<(Double) toCompere;
+            return val < (Double) toCompere;
         else
             throw new IncompatibleType();
     }

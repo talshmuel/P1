@@ -13,6 +13,7 @@ import exception.PathDoesntExistException;
 import run.result.EntityResult;
 import run.result.PropertyResult;
 import run.result.Result;
+import world.Grid;
 import world.api.AssistFunctions;
 import world.creator.WorldCreator;
 import world.entity.Entity;
@@ -22,10 +23,11 @@ import world.property.api.*;
 import world.property.impl.*;
 import world.rule.Rule;
 import world.rule.action.*;
-import world.rule.action.api.PropertiesToAction;
-import world.rule.action.api.PropertiesToCondition;
-import world.rule.action.api.PropertiesToMultipleCondition;
+import world.rule.action.Set;
+import world.rule.action.api.*;
 import world.rule.action.calculation.Calculation;
+import world.rule.action.calculation.Divide;
+import world.rule.action.calculation.Multiply;
 import world.rule.action.condition.Condition;
 import world.rule.action.condition.MultipleCondition;
 import world.rule.action.condition.SingleCondition;
@@ -63,7 +65,7 @@ public class Engine implements EngineInterface, Serializable {
         // if file opened successfully, but the data is incorrect, then prdWorld would be null
         if(prdWorld != null){
             WorldCreator worldCreator = new WorldCreator();
-            world = worldCreator.createWorldFromXMLFile(prdWorld);
+            /*world = worldCreator.createWorldFromXMLFile(prdWorld);*/ hardCodedMaster2();
             functions.setEnvironmentVariables(world.getEnvironmentVariables());
             return true;
         } else {
@@ -107,7 +109,6 @@ public class Engine implements EngineInterface, Serializable {
         String formattedDateTime = currentDateTime.format(formatter);
 
         world.generateEntitiesByDefinitions();
-        //world.generateRandomPositionsOnGrid(); // scatter the entities on the grid randomly
         long startTime = System.currentTimeMillis();
 
         while (simulationShouldRun(startTime)) {
@@ -130,9 +131,7 @@ public class Engine implements EngineInterface, Serializable {
             for (Action action : rule.getActions()) {
                 if (actionShouldRunOnEntity(action, entity)) {
                     setValueOfExpressionOnAction(action, entity);
-                    PropertiesToAction neededProperties = getNeededProperties(action, entity);
-                    //if (action.activate(getNeededProperties(action, entity))) { // need to kill
-                    if (action.activate(neededProperties, ticks)) { // need to kill
+                    if (action.activate(null, getNeededProperties(action, entity))) { // need to kill
                         entitiesToKill.add(entity);
                     }
                 }
@@ -156,44 +155,36 @@ public class Engine implements EngineInterface, Serializable {
 
         while (simulationShouldRun(startTime)) {
             functions.setNumOfTicksInSimulation(ticks); // update in functions on which tick we are
-
-            // 1. move all entities on grid
-            world.moveAllEntitiesOnGrid();
-
-            // 2. make a list of the rules that should run
-            List<Rule> rulesThatShouldRun = new ArrayList<>();
-            for (Rule rule : world.getRules()) {
-                if (ruleShouldRun(rule))
-                    rulesThatShouldRun.add(rule);
-            }
-
-            // 3. make a list of all the actions that should run
-            List<Action> actionsThatShouldRun = new ArrayList<>();
-            for (Rule rule : rulesThatShouldRun) {
-                actionsThatShouldRun.addAll(rule.getActions());
-            }
-
+            world.moveAllEntitiesOnGrid(); // 1. move all entities on grid
+            System.out.println("DEBUG: tick #" + ticks);
+            List<Action> actionsThatShouldRun = makeListOfAllActionsThatShouldRun(); // 2. make a list of all the actions that should run
+            System.out.println("DEBUG: number of actions: " + actionsThatShouldRun.size());
             ArrayList<Entity> entitiesToKill = new ArrayList<>();
-            // 4. for each entity instance:
-            for(Entity entity : world.getEntities()) {
-                for(Action action : actionsThatShouldRun){
-                    // 5. check if the action works on the current instance
-                    if(actionShouldRunOnEntity(action, entity)){
-                        // 7. if yes -> check if there is a secondary entity regarding the action
-                        if(actionHasSecondaryEntity(action)){
-                            // 9. if yes:
-                            // -make a list of all the secondary entities needs to activate
-                            // -go over all the secondary entities instances and make the action on main entity and secondary entity
+
+
+            for(Entity entity : world.getEntities()) { // 3. for each entity instance:
+                for(Action action : actionsThatShouldRun) {
+                    if(actionShouldRunOnEntity(action, entity)) { // 4. check if the action works on the current instance
+                        if(actionHasSecondaryEntity(action)) { // 4.a if yes -> check if there is a secondary entity regarding the action
+                            // 5.a if yes:
+                            // - make a list of all the secondary entities needs to activate
+                            List<Entity> secondaryEntities = makeListOfSecondaryEntities(action);
+                            // - go over all the secondary entities instances and make the action on main entity and secondary entity
+                            for(Entity secondary : secondaryEntities){
+                                PropertiesToAction propsToAction = getNeededProperties(action, entity);//todo:maybedelete
+                                ParametersForAction params = getParametersForAction(action, entity, secondary, ticks);
+                                action.activate(params, propsToAction);// need to send main and secondary entities to activate
+                            }
                         } else {
-                            // 8. if not -> do the action on the current entity instance
+                            // 5.b if not -> do the action on the current entity instance
                             setValueOfExpressionOnAction(action, entity);
-                            PropertiesToAction neededProperties = getNeededProperties(action, entity);
-                            if (action.activate(neededProperties, ticks)) { // need to kill
+                            PropertiesToAction propsToAction = getNeededProperties(action, entity);//todo:maybedelete
+                            ParametersForAction params = getParametersForAction(action, entity, null, ticks);
+                            if (action.activate(params, propsToAction)) { // need to kill
                                 entitiesToKill.add(entity);
                             }
                         }
-                    }
-                    // 6. if not -> skip to the next action
+                    } // 4.b if not -> skip to the next action
                 }
             }
             world.killEntities(entitiesToKill);
@@ -204,9 +195,92 @@ public class Engine implements EngineInterface, Serializable {
         world.cleanup();
         return getEndSimulationData();
     }
+    ParametersForAction getParametersForAction(Action action, Entity mainEntity, Entity secondaryEntity, int ticks){
+        ParametersForAction params=null;
 
+        if(!(action instanceof Condition)) {
+            Property mainProp = mainEntity.getPropertyByName(action.getPropToChangeName());
+            params = new ParametersForAction(mainProp, mainEntity, secondaryEntity, ticks);
+        } else {
+            ArrayList<Action> thenActions = ((Condition)action).getThenActions();
+            ArrayList<Action> elseActions = ((Condition)action).getElseActions();
+            ArrayList<ParametersForAction> thenProps; // = getPropsFromActionsArray(thenActions, mainEntity);
+            ArrayList<ParametersForAction> elseProps; // = getPropsFromActionsArray(elseActions, mainEntity);
+
+            if(action instanceof SingleCondition) {
+                Property mainProp = mainEntity.getPropertyByName(action.getPropToChangeName());
+                params = new ParametersForCondition(mainProp, mainEntity, secondaryEntity, ticks, null, null);
+            } else if (action instanceof MultipleCondition) {
+                System.out.println("problem :(  *&*^%$&^$&^");
+                //params = getPropsFromMultipleConditionAction((MultipleCondition) action, mainEntity, thenProps, elseProps);
+            }
+        }
+        return params;
+    }
     private boolean actionHasSecondaryEntity(Action action){
-        return false; // todo method
+        return action.getSecondEntityInfo() != null;
+    }
+    private List<Rule> makeListOfAllRulesThatShouldRun(){
+        List<Rule> rulesThatShouldRun = new ArrayList<>();
+        for (Rule rule : world.getRules()) {
+            if (ruleShouldRun(rule))
+                rulesThatShouldRun.add(rule);
+        }
+
+        return rulesThatShouldRun;
+    }
+
+    private List<Action> makeListOfAllActionsThatShouldRun(){
+        List<Rule> rulesThatShouldRun = makeListOfAllRulesThatShouldRun();
+        List<Action> actionsThatShouldRun = new ArrayList<>();
+        for (Rule rule : rulesThatShouldRun) {
+            actionsThatShouldRun.addAll(rule.getActions());
+        }
+        return actionsThatShouldRun;
+    }
+
+    private List<Entity> makeListOfSecondaryEntities(Action action){
+        String secondEntityName = action.getSecondaryEntityName();
+        SecondaryEntity secondaryEntity = action.getSecondEntityInfo();
+        Integer count = secondaryEntity.getNumOfSecondEntities();
+
+        List<Entity> secondEntityList = new ArrayList<>();
+
+        if(count == null || count == secondaryEntity.getDefinition().getNumOfInstances()){
+            for(Entity entity : world.getEntities()){
+                if(entity.getName().equals(secondEntityName))
+                    secondEntityList.add(entity);
+            }
+        } else if(secondaryEntity.getSelection() == null){
+            // add randomly by the number
+            while(secondEntityList.size() < count){
+                Random random = new Random();
+                int max = secondaryEntity.getDefinition().getNumOfInstances();
+                int randomIndex = random.nextInt(max + 1);
+
+                // go over all entities and randomly select one
+                // if it's of the same type, add it to the list
+                Entity entityToAdd = world.getEntities().get(randomIndex);
+                if(entityToAdd.getName().equals(secondEntityName)){
+                    secondEntityList.add(entityToAdd);
+                }
+            }
+
+        } else { // add according to the condition
+            while(secondEntityList.size() < secondaryEntity.getNumOfSecondEntities()){
+                Random random = new Random();
+                int max = secondaryEntity.getDefinition().getNumOfInstances();
+                int randomIndex = random.nextInt(max + 1);
+
+                Entity entityToAdd = world.getEntities().get(randomIndex);
+                boolean conditionTrue = true; // todo
+                if(entityToAdd.getName().equals(secondEntityName) && conditionTrue){
+                    secondEntityList.add(entityToAdd);
+                }
+            }
+        }
+
+        return secondEntityList;
     }
 
     private void updateDataFromUser(DataFromUser detailsToRun){
@@ -338,7 +412,7 @@ public class Engine implements EngineInterface, Serializable {
         return ticks%rule.getTicks()==0 && Math.random()<=rule.getProbability();
     }
     private Boolean actionShouldRunOnEntity(Action action, Entity entity){
-        return action.getMainEntity().equals(entity.getName());
+        return action.getMainEntityName().equals(entity.getName());
     }
 
     private Boolean simulationShouldRun(long startTime){
@@ -557,6 +631,143 @@ public class Engine implements EngineInterface, Serializable {
             return expression;
     }
 
+    private void hardCodedMaster2(){
+        Map<String, Property> environmentVariables = hardCodedMaster2Environment();
+        ArrayList<EntityDefinition> entitiesDefinition = hardCodedMaster2EntitiesDefinitions();
+        ArrayList<Rule> rules = hardCodedMaster2Rules();
+        Map<String, Integer> termination = hardCodedMaster2EndConditions();
+        Grid grid = new Grid(100, 100);
+        setWorld(new World(entitiesDefinition, environmentVariables, rules, termination, grid));
+    }
+
+    private Map<String, Property> hardCodedMaster2Environment(){
+        Map<String, Property> res = new HashMap<>();
+        FloatPropertyDefinition d1 = new FloatPropertyDefinition("e1", false, 15.0, 100.0, 10.0);
+        FloatProperty e1 = new FloatProperty(d1);
+        BooleanPropertyDefinition d2 = new BooleanPropertyDefinition("e2", false, true);
+        BooleanProperty e2 = new BooleanProperty(d2);
+        FloatPropertyDefinition d3 = new FloatPropertyDefinition("e3", false, 50.0, 100.2, 10.4);
+        FloatProperty e3 = new FloatProperty(d3);
+        StringPropertyDefinition d4 = new StringPropertyDefinition("e4", false, "eyya");
+        StringProperty e4 = new StringProperty(d4);
+        res.put("e1", e1);
+        res.put("e2", e2);
+        res.put("e3", e3);
+        res.put("e4", e4);
+        return res;
+    }
+    private EntityDefinition hardCodedMaster2EntityDefinitionEnt1() {
+        FloatPropertyDefinition pd1 = new FloatPropertyDefinition("p1", false, 0.0, 100.0, 0.0);
+        FloatPropertyDefinition pd2 = new FloatPropertyDefinition("p2", true, 0.0, 100.0, 0.0);
+        BooleanPropertyDefinition pd3 = new BooleanPropertyDefinition("p3", true, null);
+        StringPropertyDefinition pd4 = new StringPropertyDefinition("p4", false, "example");
+        Map<String, PropertyDefinition> pArr = new HashMap<>();
+        pArr.put("p1", pd1);
+        pArr.put("p2", pd2);
+        pArr.put("p3", pd3);
+        pArr.put("p4", pd4);
+        return new EntityDefinition("ent-1", 100, pArr);
+    }
+    private EntityDefinition hardCodedMaster2EntityDefinitionEnt2() {
+        FloatPropertyDefinition pd1 = new FloatPropertyDefinition("p1", false, 0.0, 100.0, 0.0);
+        FloatPropertyDefinition pd2 = new FloatPropertyDefinition("p2", true, 0.0, 100.0, 0.0);
+        Map<String, PropertyDefinition> pArr = new HashMap<>();
+        pArr.put("p1", pd1);
+        pArr.put("p2", pd2);
+        return new EntityDefinition("ent-2", 10, pArr);
+    }
+    private ArrayList<EntityDefinition> hardCodedMaster2EntitiesDefinitions(){
+        ArrayList<EntityDefinition> res = new ArrayList<>();
+        res.add(hardCodedMaster2EntityDefinitionEnt1());
+        res.add(hardCodedMaster2EntityDefinitionEnt2());
+        return res;
+    }
+    private Map<String, Integer> hardCodedMaster2EndConditions(){
+        Map<String, Integer> res = new HashMap<>();
+        res.put("ticks", 480);
+        res.put("seconds", 10);
+        return res;
+    }
+    private Rule hardChardCodedMaster2Rule1(){
+        Increase r1a1 = new Increase("ent-1", null, "p1", "3");
+        Decrease r1a2 = new Decrease("ent-1", null, "p2", "environment(e3)");
+        Multiply r1a3 = new Multiply("ent-1", null, "p1", "p1", "environment(e1)");
+        Divide r1a4 = new Divide("ent-1", null, "p2", "environment(e3)", "3.2");
+        ArrayList<Action> actionsR1 = new ArrayList<>();
+        actionsR1.add(r1a1);
+        actionsR1.add(r1a2);
+        actionsR1.add(r1a3);
+        actionsR1.add(r1a4);
+        return new Rule("r1", actionsR1, 0.4, 1);
+    }
+    private Rule hardChardCodedMaster2Rule2(){
+        // todo: property of condition is expression
+        SingleCondition r2a1 = new SingleCondition("ent-1", null, "p1",
+                SingleCondition.Operator.BIGGERTHAN, "4", null, null);
+        SingleCondition r2a2 = new SingleCondition("ent-2", null, "p2",
+                SingleCondition.Operator.LESSTHAN, "3", null, null);
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////
+        SingleCondition sc1 = new SingleCondition("ent-1", null, "p4",
+                SingleCondition.Operator.NOTEQUAL, "nothing", null, null);
+        SingleCondition sc2 = new SingleCondition("ent-1", null, "p3",
+                SingleCondition.Operator.EQUAL, "environment(e2)", null, null);
+        ArrayList<Condition> conditions = new ArrayList<>();
+        conditions.add(sc1);
+        conditions.add(sc2);
+        MultipleCondition r2a3 = new MultipleCondition("ent-1", "ent-2", null,
+                null, null, MultipleCondition.Logic.AND, conditions);
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        ArrayList<Condition> conditions1 = new ArrayList<>();
+        conditions1.add(r2a1);
+        conditions1.add(r2a2);
+        conditions1.add(r2a3);
+        conditions1.add(r2a3);
+        // then actions:
+        Increase then1 = new Increase("ent-1", null, "p1", "3");
+        Set then2 = new Set("ent-1", null, "p1", "random(3)");
+        ArrayList<Action> thenActions = new ArrayList<>();
+        thenActions.add(then1);
+        thenActions.add(then2);
+        // else actions:
+        Kill else1 = new Kill("ent-1", null, null);
+        ArrayList<Action> elseActions = new ArrayList<>();
+        elseActions.add(else1);
+        /////////////////////
+        SingleCondition s = new SingleCondition("ent-2", null, "p1", SingleCondition.Operator.BIGGERTHAN, "4", null, null);
+        SecondaryEntity sEnt = new SecondaryEntity(4, s);
+        /////////////////
+        // todo: add info about secondary entity
+        MultipleCondition m1 = new MultipleCondition("ent-1", "ent-2", null,
+                thenActions, elseActions, MultipleCondition.Logic.OR, conditions1);
+        m1.setSecondEntityInfo(sEnt);
+
+        ArrayList<Action> actionsR2 = new ArrayList<>();
+        actionsR2.add(m1);
+        return new Rule("r2", actionsR2, 1, 1);
+    }
+    private Rule hardChardCodedMaster2Rule3(){
+        Increase r3a1 = new Increase("ent-1", null, "p1", "percent(evaluate(ent-2.p1),environment(e1))");
+        Decrease r3a2 = new Decrease("ent-2", null, "p2", "evaluate(ent-1.p1)");
+        Replace r3a3 = new Replace("ent-1", "ent-2", "scratch");
+        ArrayList<Action> proxActions = new ArrayList<>();
+        proxActions.add(r3a1);
+        proxActions.add(r3a2);
+        proxActions.add(r3a3);
+        Proximity pr = new Proximity("ent-1", "ent-2", null, "1", proxActions);
+        ArrayList<Action> actionsR3 = new ArrayList<>();
+        actionsR3.add(pr);
+        return new Rule("r3", actionsR3, 1, 1);
+    }
+    private ArrayList<Rule> hardCodedMaster2Rules(){
+        ArrayList<Rule> rules = new ArrayList<>();
+        rules.add(hardChardCodedMaster2Rule1());
+        rules.add(hardChardCodedMaster2Rule2());
+        rules.add(hardChardCodedMaster2Rule3());
+        return rules;
+    }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
 //    private Map<String, Property> createEnvironmentSmoker(){
 //
 //

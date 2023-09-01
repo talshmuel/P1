@@ -44,6 +44,9 @@ public class PRDController {
     void openFileChooser(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open File");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("XML Files", "*.xml")
+        ); // added
         File selectedFile = fileChooser.showOpenDialog(new Stage());
         if (selectedFile != null) {
             filePathField.appendText(selectedFile.getAbsolutePath());

@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 public abstract class Property implements Serializable {
     PropertyDefinition definition;
-    Integer ticksNotChanged; // למשך כמה טיקים ערכו קבוע
+    Integer ticksNotChanged; // todo: maybe delete
     Integer tickNumThatHasChanged; // באיזה טיק הוא השתנה
     //String name;
 

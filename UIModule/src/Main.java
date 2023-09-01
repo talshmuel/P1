@@ -18,14 +18,6 @@ public class Main {
     static EngineInterface engine = new Engine();
 
     public static void main(String[] args) throws IncompatibleType {
-//        Grid grid = new Grid(10, 7);
-//        Collection<Coordinate> cells = grid.findEnvironmentCells(new Coordinate(6, 0), 2);
-//        for (Coordinate coord : cells) {
-//            System.out.println("(" + coord.getRow() + ", " + coord.getCol() + ")");
-//        }
-
-
-
         boolean shutdown = false;
 
         System.out.println("-------------------------");
@@ -372,7 +364,7 @@ public class Main {
             System.out.print("   Properties: ");
             int j=1;
             for(PropertyInfo propertyInfo : entityInfo.getProperties()){
-                if(j==1) {
+                if(j==1) { // todo: למה זה מחולק ככה?
                     System.out.println("#" + j++ + " Property name: " + propertyInfo.getName());
                     System.out.println("                  type: " + propertyInfo.getType());
                     System.out.println("                  range: " + propertyInfo.getBottomLimit() + "-" + propertyInfo.getTopLimit());

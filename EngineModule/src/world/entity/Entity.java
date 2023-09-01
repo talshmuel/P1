@@ -31,4 +31,8 @@ public class Entity implements Serializable {
     public void setPosition(Coordinate position) {
         this.position = position;
     }
+
+    public Map<String, Property> getProperties() {
+        return properties;
+    }
 }
