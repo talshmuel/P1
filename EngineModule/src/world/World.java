@@ -30,6 +30,7 @@ public class World implements Serializable {
             }
             System.out.println();
         }
+        System.out.println("-----------------------------------------------");
     }
 
     public Map<String, Property> getEnvironmentVariables() {
@@ -152,6 +153,7 @@ public class World implements Serializable {
     public void moveAllEntitiesOnGrid() {
         for(Entity e : entities){
             e.setPosition(grid.moveEntityOnGrid(e));
+            System.out.println("new position is: (" + e.getPosition().getRow() + ", " + e.getPosition().getCol() + ")");
         }
     }
 

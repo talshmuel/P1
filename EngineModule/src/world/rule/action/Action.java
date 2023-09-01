@@ -32,8 +32,8 @@ abstract public class Action implements Serializable {
     }
 
 
-    abstract public Boolean activate(PropertiesToAction propsToChange)throws DivisionByZeroException, IncompatibleAction, IncompatibleType;//return true if need to kill, return false else
-
+    abstract public Boolean activate(PropertiesToAction propsToChange, int tick)throws DivisionByZeroException, IncompatibleAction, IncompatibleType;//return true if need to kill, return false else
+    // הוספתי מספר טיק -> בשביל לעדכן באיזה טיק הפרופרטי השתנה
     public String getExpression() {
         return expression;
     }

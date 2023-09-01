@@ -10,7 +10,6 @@ public class IntegerProperty extends Property {
 
     Integer val;
     public IntegerProperty(PropertyDefinition definition){
-
         super(definition);
         if(definition instanceof IntegerPropertyDefinition) {
             if (definition.getRandomlyInitialized())
@@ -49,7 +48,6 @@ public class IntegerProperty extends Property {
                 val = (Integer)definition.getBottomLimit();
         else
             throw new IncompatibleType();
-
     }
 
     @Override

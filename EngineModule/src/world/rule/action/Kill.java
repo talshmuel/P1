@@ -10,7 +10,7 @@ public class Kill extends Action{
     }
 
     @Override
-    public Boolean activate(PropertiesToAction propsToChange) {
+    public Boolean activate(PropertiesToAction propsToChange, int ticks) {
         return true;
     }
 }

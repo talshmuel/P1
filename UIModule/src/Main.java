@@ -9,7 +9,6 @@ import engine.EngineInterface;
 import exception.IncompatibleType;
 import exception.PathDoesntExistException;
 import world.Grid;
-import world.creator.XMLFileException;
 import world.entity.Coordinate;
 import xml.reader.validator.*;
 
@@ -19,6 +18,14 @@ public class Main {
     static EngineInterface engine = new Engine();
 
     public static void main(String[] args) throws IncompatibleType {
+//        Grid grid = new Grid(10, 7);
+//        Collection<Coordinate> cells = grid.findEnvironmentCells(new Coordinate(6, 0), 2);
+//        for (Coordinate coord : cells) {
+//            System.out.println("(" + coord.getRow() + ", " + coord.getCol() + ")");
+//        }
+
+
+
         boolean shutdown = false;
 
         System.out.println("-------------------------");
@@ -54,9 +61,6 @@ public class Main {
             }
 
         }
-
-
-
     }
 
     public static int printAfterRestoreMenuAndPerformAction() throws IncompatibleType {
@@ -239,7 +243,8 @@ public class Main {
         try {
             getEnvironmentVariablesValuesFromUser();
 
-            EndSimulationData endSimulationData = engine.runSimulation(new DataFromUser());
+            //EndSimulationData endSimulationData = engine.runSimulation(new DataFromUser());
+            EndSimulationData endSimulationData = engine.runSimulation2(new DataFromUser()); // gon-> new version
 
             System.out.println("The simulation ended after " + endSimulationData.getEndConditionVal() + " " +
                     endSimulationData.getEndCondition());
@@ -419,7 +424,8 @@ public class Main {
             System.out.println("Please enter the full path of your simulation settings file " +
                     "(note that the file must be of XML type)");
             System.out.println("or enter 0 to return to main menu");
-            fileName = scanner.nextLine();
+            //fileName = scanner.nextLine();
+            fileName = "C:\\Users\\gonet\\OneDrive\\שולחן העבודה\\גון\\master-ex1 - Copy.xml";
 
             if(fileName.equals("0"))
             {
@@ -445,8 +451,6 @@ public class Main {
                 System.out.println(m.getMessage());
             } catch (TerminationException terminationException) {
                 System.out.println(terminationException.getMessage());
-            } catch (XMLFileException e) {
-                System.out.println("XMLFileException");
             }
         }
     }

@@ -58,8 +58,9 @@ public class WorldCreator {
 
             switch (p.getType()){
                 case "decimal":{
-                    IntegerProperty intProp = createIntegerEnvironmentProperty(p, envName);
-                    environmentMap.put(intProp.getName(), intProp);
+                    //IntegerProperty intProp = createIntegerEnvironmentProperty(p, envName);
+                    FloatProperty floatProp = createFloatEnvironmentProperty(p, envName);
+                    environmentMap.put(floatProp.getName(), floatProp);
                     break;
                 }
                 case "float":{
@@ -142,7 +143,8 @@ public class WorldCreator {
 
             switch (p.getType()) {
                 case "decimal":{
-                    propDefsMap.put(propName, createIntegerPropertyDefinition(p, propName));
+                    //propDefsMap.put(propName, createIntegerPropertyDefinition(p, propName));
+                    propDefsMap.put(propName, createFloatPropertyDefinition(p, propName));
                     break;
                 }
                 case "float":{
@@ -429,9 +431,11 @@ public class WorldCreator {
                 return validateEvaluateFunction(expressionInParenthesis);
             }
             case "percent": {
-                return validatePercentFunction(expressionInParenthesis, actionName, propertiesInWorld);
+                //return validatePercentFunction(expressionInParenthesis, actionName, propertiesInWorld);
+                return true;
             }
             case "ticks": {
+                return true;
                 // todo
             }
             default: // case "ticks":{
@@ -488,6 +492,7 @@ public class WorldCreator {
     }
 
     public boolean validateTicksFunction(String byExpression, String expressionInParenthesis){
+
         return true;
     }
     void validateExpressionPropertyIsANumber(String byExpression, Map<String, PropertyDefinition> propertiesInWorld, String actionName) throws MustBeNumberException{

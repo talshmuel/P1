@@ -35,7 +35,7 @@ public class DetailsPageController {
         setChildrenOfEntitiesItem(simulationInfo.getEntities(), entitiesItem);
 
         TreeItem <String> environmentItem = new TreeItem<>("Environment variables");
-//        setChildrenOfEnvironmentItem(simulationInfo. , environmentItem);
+        //setChildrenOfEnvironmentItem(simulationInfo. , environmentItem);
 
         TreeItem <String> rulesItem = new TreeItem<>("Rules");
         //setChildrenOfRulesItem(simulationInfo.getRules(), rulesItem);

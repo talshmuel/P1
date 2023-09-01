@@ -38,11 +38,11 @@ public class SingleCondition extends Condition {
     }
 
     @Override
-    public Boolean activate(PropertiesToAction propsToChange)throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
+    public Boolean activate(PropertiesToAction propsToChange, int ticks)throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
         if(checkCondition(propsToChange))
-            return activateThenActions(((PropertiesToCondition)propsToChange).getThenProps());
+            return activateThenActions(((PropertiesToCondition)propsToChange).getThenProps(), ticks);
         else if (elseActions!=null)
-            return activateElseActions(((PropertiesToCondition)propsToChange).getElseProps());
+            return activateElseActions(((PropertiesToCondition)propsToChange).getElseProps(), ticks);
         else
             return false;
 
@@ -59,22 +59,22 @@ public class SingleCondition extends Condition {
     }
 
     @Override
-    public Boolean activateThenActions(ArrayList<PropertiesToAction> props)throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
+    public Boolean activateThenActions(ArrayList<PropertiesToAction> props, int ticks)throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
         boolean kill=false;
         int len = thenActions.size();
         for(int i=0; i<len;i++){
-            if(thenActions.get(i).activate(props.get(i)))
+            if(thenActions.get(i).activate(props.get(i), ticks))
                 kill = true;
         }
         return kill;
     }
 
     @Override
-    public Boolean activateElseActions(ArrayList<PropertiesToAction> props)throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
+    public Boolean activateElseActions(ArrayList<PropertiesToAction> props, int ticks)throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
         boolean kill=false;
         int len = elseActions.size();
         for(int i=0; i<len;i++){
-            if(elseActions.get(i).activate(props.get(i)))
+            if(elseActions.get(i).activate(props.get(i), ticks))
                 kill = true;
         }
         return kill;

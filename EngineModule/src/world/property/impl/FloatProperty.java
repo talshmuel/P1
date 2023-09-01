@@ -36,7 +36,7 @@ public class FloatProperty extends Property {
                 val = val+(Double) increaseBy;
             else
                 val = (Double)definition.getTopLimit();
-        if(increaseBy instanceof Integer)
+        else if(increaseBy instanceof Integer)
             if((Integer)increaseBy+val<=(Integer)definition.getTopLimit())
                 val = val+(Integer) increaseBy;
             else

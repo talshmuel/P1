@@ -30,17 +30,17 @@ public class BooleanProperty extends Property {
     }
 
     @Override
-    public void increase(Object increaseBy)throws IncompatibleAction {
+    public void increase(Object increaseBy) throws IncompatibleAction {
         throw new IncompatibleAction();
     }
 
     @Override
-    public void decrease(Object decreaseBy)throws IncompatibleAction  {
+    public void decrease(Object decreaseBy) throws IncompatibleAction  {
         throw new IncompatibleAction();
     }
 
     @Override
-    public void set(Object setTo)throws IncompatibleType {
+    public void set(Object setTo) throws IncompatibleType {
         if(setTo instanceof Boolean)
             val = (Boolean) setTo;
         else
@@ -48,12 +48,12 @@ public class BooleanProperty extends Property {
     }
 
     @Override
-    public Boolean isBigger(Object toCompere)throws IncompatibleAction {
+    public Boolean isBigger(Object toCompere) throws IncompatibleAction {
         throw new IncompatibleAction();
     }
 
     @Override
-    public Boolean isSmaller(Object toCompere)throws IncompatibleAction {
+    public Boolean isSmaller(Object toCompere) throws IncompatibleAction {
         throw new IncompatibleAction();
     }
 

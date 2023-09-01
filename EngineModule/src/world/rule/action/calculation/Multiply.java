@@ -12,29 +12,33 @@ public class Multiply extends Calculation {
     }
 
     @Override
-    public Boolean activate(PropertiesToAction propsToChange)throws IncompatibleType {
-
+    public Boolean activate(PropertiesToAction propsToChange, int ticks)throws IncompatibleType {
         if(expressionVal instanceof Integer && expression2Val instanceof Integer){
             propsToChange.getMainProp().set((Integer)expressionVal*(Integer)expression2Val);
+            propsToChange.getMainProp().setTicksNotChanged(0); // update that the property has been changed
+            propsToChange.getMainProp().setTickNumThatHasChanged(ticks); // update in which tick it has been changed
             return false;
         }
         else if(expressionVal instanceof Double && expression2Val instanceof Double){
             propsToChange.getMainProp().set((Double)expressionVal*(Double)expression2Val);
+            propsToChange.getMainProp().setTicksNotChanged(0); // update that the property has been changed
+            propsToChange.getMainProp().setTickNumThatHasChanged(ticks); // update in which tick it has been changed
             return false;
         }
         else if(expressionVal instanceof Integer && expression2Val instanceof Double){
             propsToChange.getMainProp().set((Integer)expressionVal*(Double)expression2Val);
+            propsToChange.getMainProp().setTicksNotChanged(0); // update that the property has been changed
+            propsToChange.getMainProp().setTickNumThatHasChanged(ticks); // update in which tick it has been changed
             return false;
         }
         else if(expressionVal instanceof Double && expression2Val instanceof Integer){
             propsToChange.getMainProp().set((Double)expressionVal*(Integer)expression2Val);
+            propsToChange.getMainProp().setTicksNotChanged(0); // update that the property has been changed
+            propsToChange.getMainProp().setTickNumThatHasChanged(ticks); // update in which tick it has been changed
             return false;
         }
         else
             throw new IncompatibleType();
-
-
-
     }
 }
 

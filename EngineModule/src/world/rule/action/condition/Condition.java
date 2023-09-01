@@ -15,6 +15,6 @@ public abstract class Condition extends Action {
     abstract Boolean checkCondition(PropertiesToAction propsToChange)throws IncompatibleAction, IncompatibleType;
     abstract public ArrayList<Action> getThenActions();
     abstract public ArrayList<Action> getElseActions();
-    abstract public Boolean activateThenActions(ArrayList<PropertiesToAction> props)throws DivisionByZeroException, IncompatibleAction, IncompatibleType;
-    abstract public Boolean activateElseActions(ArrayList<PropertiesToAction> props)throws DivisionByZeroException, IncompatibleAction, IncompatibleType;
+    abstract public Boolean activateThenActions(ArrayList<PropertiesToAction> props, int ticks)throws DivisionByZeroException, IncompatibleAction, IncompatibleType;
+    abstract public Boolean activateElseActions(ArrayList<PropertiesToAction> props, int ticks)throws DivisionByZeroException, IncompatibleAction, IncompatibleType;
 }

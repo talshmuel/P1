@@ -15,7 +15,6 @@ import run.result.PropertyResult;
 import run.result.Result;
 import world.api.AssistFunctions;
 import world.creator.WorldCreator;
-import world.creator.XMLFileException;
 import world.entity.Entity;
 import world.entity.EntityDefinition;
 import world.World;
@@ -57,7 +56,7 @@ public class Engine implements EngineInterface, Serializable {
         this.world = world;
     }
     @Override
-    public Boolean createSimulationByXMLFile(String fileName) throws FileDoesntExistException, InvalidXMLFileNameException, EnvironmentException, EntityException, PropertyException, MustBeNumberException, RuleException, TerminationException, XMLFileException {
+    public Boolean createSimulationByXMLFile(String fileName) throws FileDoesntExistException, InvalidXMLFileNameException, EnvironmentException, EntityException, PropertyException, MustBeNumberException, RuleException, TerminationException {
         XMLReader reader = new XMLReader();
         PRDWorld prdWorld = reader.validateXMLFileAndCreatePRDWorld(fileName);
 
@@ -108,20 +107,13 @@ public class Engine implements EngineInterface, Serializable {
         String formattedDateTime = currentDateTime.format(formatter);
 
         world.generateEntitiesByDefinitions();
-        // scatter the entities on the grid randomly
-        world.generateRandomPositionsOnGrid();
-        world.printMatrix(); // todo: delete later
-        System.out.println("-----------------------------------------------");
-
+        //world.generateRandomPositionsOnGrid(); // scatter the entities on the grid randomly
         long startTime = System.currentTimeMillis();
 
-        while (simulationShouldRun(startTime)) { // todo: change the loop like aviad said
-            world.moveAllEntitiesOnGrid();
-            world.printMatrix(); // todo: delete later
-            System.out.println("-----------------------------------------------");
+        while (simulationShouldRun(startTime)) {
             for (Rule rule : world.getRules()) {
                 if (ruleShouldRun(rule))
-                    runRule(rule);
+                    runRule(rule, ticks);
             }
             ticks++;
         }
@@ -130,6 +122,93 @@ public class Engine implements EngineInterface, Serializable {
         world.cleanup();
         return getEndSimulationData();
     }
+
+    private void runRule(Rule rule, int ticks)throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
+        ArrayList<Entity> entitiesToKill = new ArrayList<>();
+
+        for (Entity entity : world.getEntities()) {
+            for (Action action : rule.getActions()) {
+                if (actionShouldRunOnEntity(action, entity)) {
+                    setValueOfExpressionOnAction(action, entity);
+                    PropertiesToAction neededProperties = getNeededProperties(action, entity);
+                    //if (action.activate(getNeededProperties(action, entity))) { // need to kill
+                    if (action.activate(neededProperties, ticks)) { // need to kill
+                        entitiesToKill.add(entity);
+                    }
+                }
+            }
+        }
+        world.killEntities(entitiesToKill);
+    }
+
+//    @Override // new version -> gon
+    public EndSimulationData runSimulation2(DataFromUser detailsToRun) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
+        updateDataFromUser(detailsToRun);
+        ticks=1;
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy | HH.mm.ss");
+        String formattedDateTime = currentDateTime.format(formatter);
+
+        world.generateEntitiesByDefinitions();
+        world.generateRandomPositionsOnGrid(); // scatter the entities on the grid randomly
+
+        long startTime = System.currentTimeMillis();
+
+        while (simulationShouldRun(startTime)) {
+            functions.setNumOfTicksInSimulation(ticks); // update in functions on which tick we are
+
+            // 1. move all entities on grid
+            world.moveAllEntitiesOnGrid();
+
+            // 2. make a list of the rules that should run
+            List<Rule> rulesThatShouldRun = new ArrayList<>();
+            for (Rule rule : world.getRules()) {
+                if (ruleShouldRun(rule))
+                    rulesThatShouldRun.add(rule);
+            }
+
+            // 3. make a list of all the actions that should run
+            List<Action> actionsThatShouldRun = new ArrayList<>();
+            for (Rule rule : rulesThatShouldRun) {
+                actionsThatShouldRun.addAll(rule.getActions());
+            }
+
+            ArrayList<Entity> entitiesToKill = new ArrayList<>();
+            // 4. for each entity instance:
+            for(Entity entity : world.getEntities()) {
+                for(Action action : actionsThatShouldRun){
+                    // 5. check if the action works on the current instance
+                    if(actionShouldRunOnEntity(action, entity)){
+                        // 7. if yes -> check if there is a secondary entity regarding the action
+                        if(actionHasSecondaryEntity(action)){
+                            // 9. if yes:
+                            // -make a list of all the secondary entities needs to activate
+                            // -go over all the secondary entities instances and make the action on main entity and secondary entity
+                        } else {
+                            // 8. if not -> do the action on the current entity instance
+                            setValueOfExpressionOnAction(action, entity);
+                            PropertiesToAction neededProperties = getNeededProperties(action, entity);
+                            if (action.activate(neededProperties, ticks)) { // need to kill
+                                entitiesToKill.add(entity);
+                            }
+                        }
+                    }
+                    // 6. if not -> skip to the next action
+                }
+            }
+            world.killEntities(entitiesToKill);
+            ticks++;
+        }
+
+        saveRunResults(formattedDateTime);
+        world.cleanup();
+        return getEndSimulationData();
+    }
+
+    private boolean actionHasSecondaryEntity(Action action){
+        return false; // todo method
+    }
+
     private void updateDataFromUser(DataFromUser detailsToRun){
         detailsToRun.getPopulation().forEach((entityName, amount)->world.setEntitiesPopulation(entityName, amount));
         detailsToRun.getEnvironment().forEach((varName, value)-> {
@@ -200,8 +279,6 @@ public class Engine implements EngineInterface, Serializable {
         return new EndSimulationData(id, endCondition,endConditionVal );
     }
 
-
-
     @Override
     public ArrayList<RunResultInfo> displayRunResultsInformation() {
         ArrayList<RunResultInfo> res = new ArrayList<>();
@@ -241,7 +318,6 @@ public class Engine implements EngineInterface, Serializable {
         return new EntityResult(propsResults,entityDef.getNumOfInstances(), world.getNumOfEntitiesLeft(entityDef.getName()));
     }
 
-
     public Map<Object, Integer> createPropertyHistogram(String propName, String entityName){
         Map<Object, Integer> res = new HashMap<>();
         for(Entity entity : world.getEntities()){
@@ -258,20 +334,6 @@ public class Engine implements EngineInterface, Serializable {
     }
 
 
-    private void runRule(Rule rule)throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
-        ArrayList<Entity> entitiesToKill = new ArrayList<>();
-        for (Entity entity : world.getEntities()) {
-            for (Action action : rule.getActions()) {
-                if (actionShouldRunOnEntity(action, entity)) {
-                    setValueOfExpressionOnAction(action, entity);
-                    if (action.activate(getNeededProperties(action, entity))) { //need to kill
-                        entitiesToKill.add(entity);
-                    }
-                }
-            }
-        }
-        world.killEntities(entitiesToKill);
-    }
     private Boolean ruleShouldRun(Rule rule){
         return ticks%rule.getTicks()==0 && Math.random()<=rule.getProbability();
     }
@@ -375,12 +437,12 @@ public class Engine implements EngineInterface, Serializable {
     }
     private PropertiesToAction getNeededProperties(Action action, Entity entity) {
         PropertiesToAction res = null;
+
         if(!(action instanceof Condition)) {
             Property mainProp = entity.getPropertyByName(action.getPropToChangeName());
             res = new PropertiesToAction(mainProp);
         }
-
-        else{
+        else {
             ArrayList<Action> thenActions =((Condition)action).getThenActions();
             ArrayList<Action> elseActions = ((Condition)action).getElseActions();
 
@@ -400,7 +462,6 @@ public class Engine implements EngineInterface, Serializable {
         }
 
         return res;
-
     }
     private PropertiesToMultipleCondition getPropsFromMultipleConditionAction(MultipleCondition action,
                                                                               Entity entity, ArrayList<PropertiesToAction> thenProps,
@@ -429,8 +490,8 @@ public class Engine implements EngineInterface, Serializable {
     }
 
     private void setValueOfExpressionOnAction(Action action, Entity entity){
-
         Property actionProp = entity.getPropertyByName(action.getPropToChangeName());
+
         if(!(action instanceof MultipleCondition)) {
             action.setExpressionVal(getValueOfExpression(action.getExpression(), entity, actionProp));
             if (action instanceof Calculation) {
@@ -438,18 +499,17 @@ public class Engine implements EngineInterface, Serializable {
                 ((Calculation) action).setExpression2Val(expression2Val);
             }
         }
+
         if(action instanceof Condition){
             if(((Condition) action).getThenActions() != null)
                 for (Action thenAction : ((Condition) action).getThenActions())
                     setValueOfExpressionOnAction(thenAction, entity);
 
-
             if(((Condition) action).getElseActions() != null)
                 for (Action elseAction : ((Condition) action).getElseActions())
                     setValueOfExpressionOnAction(elseAction, entity);
-
-
         }
+
         if(action instanceof MultipleCondition){
             for(Condition condition : ((MultipleCondition)action).getConditions()){
                 setValueOfExpressionOnAction(condition, entity);
@@ -467,9 +527,18 @@ public class Engine implements EngineInterface, Serializable {
         else if (expression.startsWith("random"))
             return functions.random(Integer.parseInt(expression.substring(7, len-1)));
         else if (expression.startsWith("evaluate")){
-            // example: evaluate(ent-2.p1)
             functions.setEntities(world.getEntities());
             return functions.evaluate(expression.substring(9, len-1));
+        }
+        else if (expression.startsWith("percent")){
+            functions.setEntities(world.getEntities());
+            functions.setNumOfTicksInSimulation(ticks); // todo: maybe don't need?
+            return functions.percent(expression.substring(8, len-1));
+        }
+        else if (expression.startsWith("ticks")){
+            functions.setEntities(world.getEntities());
+            functions.setNumOfTicksInSimulation(ticks); // todo: maybe don't need?
+            return functions.ticks(expression.substring(6, len-1));
         }
         else if (entity.getPropertyByName(expression) != null)
             return entity.getPropertyByName(expression).getVal();

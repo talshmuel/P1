@@ -16,7 +16,7 @@ public class Proximity extends Action {
     }
 
     @Override
-    public Boolean activate(PropertiesToAction propsToChange) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
+    public Boolean activate(PropertiesToAction propsToChange, int ticks) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
         // todo
         return false;
     }

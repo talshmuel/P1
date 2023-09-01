@@ -132,10 +132,6 @@ public class Grid {
             return (!matrix[position.getRow()-1][position.getCol()]);
     }*/
 
-
-
-
-
     public Integer getNumOfRows() {
         return numOfRows;
     }
@@ -148,20 +144,20 @@ public class Grid {
         return matrix;
     }
 
-    //    public Collection<Coordinate> findEnvironmentCells(Coordinate source, int rank) {
-//        List<Coordinate> result = new ArrayList<>();
-//        for (int r = 1; r <= rank; r++) {
-//            for (int dx = -r; dx <= r; dx++) {
-//                for (int dy = -r; dy <= r; dy++) {
-//                    if (Math.abs(dx) == r || Math.abs(dy) == r) {
-//                        int newX = (source.getRow() + dx + numOfRows) % numOfRows;
-//                        int newY = (source.getCol() + dy + numOfCols) % numOfCols;
-//                        result.add(new Coordinate(newX, newY));
-//                    }
-//                }
-//            }
-//        }
-//        return result;
-//    }
-
+    public Collection<Coordinate> findEnvironmentCells(Coordinate source, int rank) {
+        // returns list of all the coordinates in the rank surrounding the source coordinate
+        List<Coordinate> result = new ArrayList<>();
+        for (int r = 1; r <= rank; r++) {
+            for (int dx = -r; dx <= r; dx++) {
+                for (int dy = -r; dy <= r; dy++) {
+                    if (Math.abs(dx) == r || Math.abs(dy) == r) {
+                        int newX = (source.getRow() + dx + numOfRows) % numOfRows;
+                        int newY = (source.getCol() + dy + numOfCols) % numOfCols;
+                        result.add(new Coordinate(newX, newY));
+                    }
+                }
+            }
+        }
+        return result;
+    }
 }

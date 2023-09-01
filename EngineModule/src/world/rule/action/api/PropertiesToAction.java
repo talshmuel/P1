@@ -10,7 +10,6 @@ public class PropertiesToAction {
         this.mainProp = mainProp;
 
     }
-
     public Property getMainProp() {
         return mainProp;
     }

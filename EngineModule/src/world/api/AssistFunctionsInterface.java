@@ -3,9 +3,10 @@ package world.api;
 
 public interface AssistFunctionsInterface {
     Object environment(String propName);
-    Object random(int max);
+    Integer random(int max);
     Object evaluate(String expression);
-    double percent(double whole, double part);
+    //Double percent(double whole, double part);
+    Double percent(String expression);
     int ticks(String expression);
 
 

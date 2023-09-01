@@ -17,7 +17,7 @@ public abstract class Calculation extends Action {
     }
 
     @Override
-    public abstract Boolean activate (PropertiesToAction propsToChange)throws DivisionByZeroException, IncompatibleType;
+    public abstract Boolean activate (PropertiesToAction propsToChange, int ticks)throws DivisionByZeroException, IncompatibleType;
 
     public void setExpression2Val(Object expression2Val) {
         this.expression2Val = expression2Val;
