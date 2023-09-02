@@ -3,7 +3,7 @@ package world.rule.action.api;
 import world.property.impl.Property;
 
 
-public class PropertiesToAction {
+public class PropertiesToAction { // todo: delete this
     Property mainProp;
 
     public PropertiesToAction(Property mainProp) {

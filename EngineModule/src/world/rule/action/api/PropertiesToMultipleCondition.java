@@ -5,7 +5,7 @@ import world.property.impl.Property;
 
 import java.util.ArrayList;
 
-public class PropertiesToMultipleCondition extends PropertiesToCondition {
+public class PropertiesToMultipleCondition extends PropertiesToCondition { // todo: delete this
     ArrayList<PropertiesToAction> conditionsProp;
 
     public PropertiesToMultipleCondition(Property mainProp, ArrayList<PropertiesToAction> thenProps, ArrayList<PropertiesToAction> elseProps,

@@ -4,10 +4,8 @@ import exception.DivisionByZeroException;
 import exception.IncompatibleAction;
 import exception.IncompatibleType;
 import world.rule.action.Action;
-import world.rule.action.api.ParametersForAction;
-import world.rule.action.api.ParametersForMultipleCondition;
-import world.rule.action.api.PropertiesToAction;
-import world.rule.action.api.PropertiesToMultipleCondition;
+import world.rule.action.api.*;
+
 import java.util.ArrayList;
 
 public class MultipleCondition extends Condition {
@@ -16,21 +14,21 @@ public class MultipleCondition extends Condition {
     ArrayList<Action> elseActions;
     public enum Logic {OR, AND}
     Logic logicSign;
-    public MultipleCondition(String mainEntity, String secondaryEntity, String propToChangeName,
+    public MultipleCondition(String mainEntity, SecondaryEntity secondEntityInfo, String propToChangeName,
                              ArrayList<Action> thenActions, ArrayList<Action> elseActions,
                              Logic logicSign, ArrayList<Condition> conditions){
-        super(mainEntity, secondaryEntity, propToChangeName, null);
+        super(mainEntity, secondEntityInfo, propToChangeName, null);
         this.conditions = conditions;
         this.elseActions = elseActions;
         this.thenActions = thenActions;
         this.logicSign = logicSign;
     }
-    public Boolean checkCondition(ParametersForAction parameters, PropertiesToAction propsToChange)throws IncompatibleAction, IncompatibleType {
+    public Boolean checkCondition(ParametersForAction parameters)throws IncompatibleAction, IncompatibleType {
         switch (logicSign) {
             case OR:
-                return checkORCondition((ParametersForMultipleCondition) parameters, (PropertiesToMultipleCondition) propsToChange);
+                return checkORCondition((ParametersForMultipleCondition) parameters);
             case AND: {
-                return checkANDCondition((ParametersForMultipleCondition) parameters, (PropertiesToMultipleCondition) propsToChange);
+                return checkANDCondition((ParametersForMultipleCondition) parameters);
             }
         }
         return false;
@@ -45,12 +43,12 @@ public class MultipleCondition extends Condition {
         return false;*/
     }
     @Override
-    public Boolean activate(ParametersForAction parameters, PropertiesToAction propsToChange)throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
-        if (checkCondition(parameters, propsToChange)) {
-            return activateThenActions(((ParametersForMultipleCondition)parameters).getThenParams(), ((PropertiesToMultipleCondition)propsToChange).getThenProps());
+    public Boolean activate(ParametersForAction parameters)throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
+        if (checkCondition(parameters)) {
+            return activateThenActions(((ParametersForMultipleCondition)parameters).getThenParams());
         }
         else if (elseActions != null)
-            return activateElseActions(((ParametersForMultipleCondition)parameters).getElseParams(), ((PropertiesToMultipleCondition)propsToChange).getElseProps());
+            return activateElseActions(((ParametersForMultipleCondition)parameters).getElseParams());
         else {
             return false;
         }
@@ -76,15 +74,16 @@ public class MultipleCondition extends Condition {
         return conditions;
     }
     @Override
-    public Boolean activateThenActions(ArrayList<ParametersForAction> parameters, ArrayList<PropertiesToAction> props) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
+    public Boolean activateThenActions(ArrayList<ParametersForAction> parameters) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
         boolean kill=false;
         int len = thenActions.size();
         for(int i=0; i<len;i++){
-            if(thenActions.get(i).activate(parameters.get(i), props.get(i)))
+            if(thenActions.get(i).activate(parameters.get(i)))
                 kill = true;
         }
         return kill;
 
+        // old version: parameter to method:  ArrayList<PropertiesToAction> props
         /*boolean kill=false; // old version
         int len = thenActions.size();
         for(int i=0; i<len;i++){
@@ -94,15 +93,16 @@ public class MultipleCondition extends Condition {
         return kill;*/
     }
     @Override
-    public Boolean activateElseActions(ArrayList<ParametersForAction> parameters, ArrayList<PropertiesToAction> props) throws DivisionByZeroException ,IncompatibleAction, IncompatibleType {
+    public Boolean activateElseActions(ArrayList<ParametersForAction> parameters) throws DivisionByZeroException ,IncompatibleAction, IncompatibleType {
         boolean kill=false;
         int len = elseActions.size();
         for(int i=0; i<len;i++){
-            if(elseActions.get(i).activate(parameters.get(i), props.get(i)))
+            if(elseActions.get(i).activate(parameters.get(i)))
                 kill = true;
         }
         return kill;
 
+        // old version: parameter to method:  ArrayList<PropertiesToAction> props
         /*boolean kill=false; // old version
         int len = elseActions.size();
         for(int i=0; i<len;i++){
@@ -111,11 +111,11 @@ public class MultipleCondition extends Condition {
         }
         return kill;*/
     }
-    Boolean checkORCondition(ParametersForMultipleCondition parameters, PropertiesToMultipleCondition props) throws IncompatibleAction, IncompatibleType{
+    Boolean checkORCondition(ParametersForMultipleCondition parameters) throws IncompatibleAction, IncompatibleType{
         boolean res = false;
         int len = conditions.size();
         for(int i=0; i<len; i++){
-            if(conditions.get(i).checkCondition(parameters.getConditionsParams().get(i), props.getConditionsProp().get(i)))
+            if(conditions.get(i).checkCondition(parameters.getConditionsParams().get(i)))
                 res = true;
         }
         return res;
@@ -128,11 +128,11 @@ public class MultipleCondition extends Condition {
         }
         return res;*/
     }
-    Boolean checkANDCondition(ParametersForMultipleCondition parameters, PropertiesToMultipleCondition props) throws IncompatibleAction, IncompatibleType{
+    Boolean checkANDCondition(ParametersForMultipleCondition parameters) throws IncompatibleAction, IncompatibleType{
         boolean res = true;
         int len = conditions.size();
         for(int i=0; i<len; i++){
-            if(!conditions.get(i).checkCondition(parameters.getConditionsParams().get(i), props.getConditionsProp().get(i)))
+            if(!conditions.get(i).checkCondition(parameters.getConditionsParams().get(i)))
                 res = false;
         }
         return res;

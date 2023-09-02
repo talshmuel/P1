@@ -11,16 +11,16 @@ import java.io.Serializable;
 
 abstract public class Action implements Serializable {
     String mainEntityName;
-    String secondaryEntityName; // todo maybe delete
-    SecondaryEntity secondEntityInfo;
+    //String secondEntityName;
+    SecondaryEntity secondEntityInfo; // if there's a second entity, in the xml we fill only name, count and selection
     String propToChangeName;
     String expression;
     protected Object expressionVal;
     int currentTick; // new
 
-    public Action(String mainEntityName, String secondaryEntityName, String propToChangeName, String expression) {
+    public Action(String mainEntityName, SecondaryEntity secondEntityInfo, String propToChangeName, String expression) {
         this.mainEntityName=mainEntityName;
-        this.secondaryEntityName=secondaryEntityName;
+        this.secondEntityInfo=secondEntityInfo;
         this.propToChangeName=propToChangeName;
         this.expression = expression;
     }
@@ -29,9 +29,6 @@ abstract public class Action implements Serializable {
     }
     public String getMainEntityName() {
         return mainEntityName;
-    }
-    public String getSecondaryEntityName() {
-        return secondaryEntityName;
     }
     public String getPropToChangeName() {
         return propToChangeName;
@@ -42,7 +39,7 @@ abstract public class Action implements Serializable {
     public void setSecondEntityInfo(SecondaryEntity secondEntityInfo) {
         this.secondEntityInfo = secondEntityInfo;
     }
-    abstract public Boolean activate(ParametersForAction parameters, PropertiesToAction propsToChange)throws DivisionByZeroException, IncompatibleAction, IncompatibleType;//return true if need to kill, return false else
+    abstract public Boolean activate(ParametersForAction parameters)throws DivisionByZeroException, IncompatibleAction, IncompatibleType;//return true if need to kill, return false else
     public String getExpression() {
         return expression;
     }

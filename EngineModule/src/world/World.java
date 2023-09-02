@@ -16,7 +16,7 @@ import java.io.Serializable;
 import java.util.*;
 
 public class World implements Serializable {
-    ArrayList<EntityDefinition> entitiesDefinition;
+    ArrayList<EntityDefinition> entitiesDefinition; // size as number of entities TYPES. describes each entity
     ArrayList<Entity> entities;
     Map<String, Property> environmentVariables;
     ArrayList<Rule> rules;
@@ -24,6 +24,7 @@ public class World implements Serializable {
     Map<String, Integer> endConditions;
 
     //////// new:
+
     Grid grid;
     //Integer numOfThreads;
 
@@ -50,6 +51,7 @@ public class World implements Serializable {
         this.entities = new ArrayList<>();
         this.grid = grid;
     }
+
 
     public void generateEntitiesByDefinitions(){
         for(EntityDefinition entityDef: entitiesDefinition) {

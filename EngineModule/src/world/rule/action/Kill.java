@@ -2,16 +2,16 @@ package world.rule.action;
 
 import world.rule.action.api.ParametersForAction;
 import world.rule.action.api.PropertiesToAction;
-
+import world.rule.action.api.SecondaryEntity;
 
 public class Kill extends Action{
 
-    public Kill(String mainEntity, String secondaryEntity, String propToChangeName){
-        super(mainEntity, secondaryEntity, propToChangeName, null);
+    public Kill(String mainEntity, SecondaryEntity secondEntityInfo, String propToChangeName){
+        super(mainEntity, secondEntityInfo, propToChangeName, null);
     }
 
     @Override
-    public Boolean activate(ParametersForAction parameters, PropertiesToAction propsToChange) {
+    public Boolean activate(ParametersForAction parameters) {
         return true;
     }
 }

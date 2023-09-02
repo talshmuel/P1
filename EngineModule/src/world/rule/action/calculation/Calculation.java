@@ -5,16 +5,17 @@ import exception.IncompatibleType;
 import world.rule.action.Action;
 import world.rule.action.api.ParametersForAction;
 import world.rule.action.api.PropertiesToAction;
+import world.rule.action.api.SecondaryEntity;
 
 public abstract class Calculation extends Action {
     String expression2;
     Object expression2Val;
-    public Calculation(String mainEntity, String secondaryEntity, String propToChangeName, String expression1, String expression2){
-        super(mainEntity, secondaryEntity, propToChangeName, expression1);
+    public Calculation(String mainEntity, SecondaryEntity secondEntityInfo, String propToChangeName, String expression1, String expression2){
+        super(mainEntity, secondEntityInfo, propToChangeName, expression1);
         this.expression2 = expression2;
     }
     @Override
-    public abstract Boolean activate (ParametersForAction parameters, PropertiesToAction propsToChange)throws DivisionByZeroException, IncompatibleType;
+    public abstract Boolean activate (ParametersForAction parameters)throws DivisionByZeroException, IncompatibleType;
     public void setExpression2Val(Object expression2Val) {
         this.expression2Val = expression2Val;
     }

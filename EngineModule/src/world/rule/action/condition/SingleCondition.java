@@ -4,10 +4,8 @@ import exception.DivisionByZeroException;
 import exception.IncompatibleAction;
 import exception.IncompatibleType;
 import world.rule.action.Action;
-import world.rule.action.api.ParametersForAction;
-import world.rule.action.api.ParametersForCondition;
-import world.rule.action.api.PropertiesToAction;
-import world.rule.action.api.PropertiesToCondition;
+import world.rule.action.api.*;
+
 import java.util.ArrayList;
 
 public class SingleCondition extends Condition {
@@ -15,15 +13,15 @@ public class SingleCondition extends Condition {
     Operator operator;
     ArrayList<Action> thenActions;
     ArrayList<Action> elseActions;
-    public SingleCondition(String mainEntity, String secondaryEntity, String propToChangeName, Operator operator,
+    public SingleCondition(String mainEntity, SecondaryEntity secondEntityInfo, String propToChangeName, Operator operator,
                            String expression, ArrayList<Action> thenActions, ArrayList<Action> elseActions) {
-        super(mainEntity, secondaryEntity, propToChangeName, expression);
+        super(mainEntity, secondEntityInfo, propToChangeName, expression);
         this.elseActions = elseActions;
         this.operator = operator;
         this.thenActions = thenActions;
 
     }
-    public Boolean checkCondition(ParametersForAction parameters, PropertiesToAction propsToChange)throws IncompatibleAction, IncompatibleType {
+    public Boolean checkCondition(ParametersForAction parameters)throws IncompatibleAction, IncompatibleType {
         switch (operator){
             case EQUAL: return parameters.getMainProp().getVal().equals(expressionVal);
             case NOTEQUAL: return !(parameters.getMainProp().getVal().equals(expressionVal));
@@ -39,11 +37,11 @@ public class SingleCondition extends Condition {
         return null;
     }
     @Override
-    public Boolean activate(ParametersForAction parameters, PropertiesToAction propsToChange) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
-        if(checkCondition(parameters, propsToChange))
-            return activateThenActions(((ParametersForCondition)parameters).getThenParams(), ((PropertiesToCondition)propsToChange).getThenProps());
+    public Boolean activate(ParametersForAction parameters) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
+        if(checkCondition(parameters))
+            return activateThenActions(((ParametersForCondition)parameters).getThenParams());
         else if (elseActions!=null)
-            return activateElseActions(((ParametersForCondition)parameters).getElseParams(), ((PropertiesToCondition)propsToChange).getElseProps());
+            return activateElseActions(((ParametersForCondition)parameters).getElseParams());
         else
             return false;
 
@@ -65,11 +63,11 @@ public class SingleCondition extends Condition {
         return thenActions;
     }
     @Override
-    public Boolean activateThenActions(ArrayList<ParametersForAction> parameters, ArrayList<PropertiesToAction> props) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
+    public Boolean activateThenActions(ArrayList<ParametersForAction> parameters) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
         boolean kill=false;
         int len = thenActions.size();
         for(int i=0; i<len;i++){
-            if(thenActions.get(i).activate(parameters.get(i), props.get(i)))
+            if(thenActions.get(i).activate(parameters.get(i)))
                 kill = true;
         }
         return kill;
@@ -83,11 +81,11 @@ public class SingleCondition extends Condition {
         return kill;*/
     }
     @Override
-    public Boolean activateElseActions(ArrayList<ParametersForAction> parameters, ArrayList<PropertiesToAction> props) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
+    public Boolean activateElseActions(ArrayList<ParametersForAction> parameters) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
         boolean kill=false;
         int len = elseActions.size();
         for(int i=0; i<len;i++){
-            if(elseActions.get(i).activate(parameters.get(i), props.get(i)))
+            if(elseActions.get(i).activate(parameters.get(i)))
                 kill = true;
         }
         return kill;

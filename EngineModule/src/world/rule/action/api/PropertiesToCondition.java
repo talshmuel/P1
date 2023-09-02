@@ -4,7 +4,7 @@ import world.property.impl.Property;
 
 import java.util.ArrayList;
 
-public class PropertiesToCondition extends PropertiesToAction{
+public class PropertiesToCondition extends PropertiesToAction{ // todo: delete this
     ArrayList<PropertiesToAction> thenProps;
     ArrayList<PropertiesToAction> elseProps;
 

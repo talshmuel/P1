@@ -12,7 +12,7 @@ public class SecondaryEntity {
     String name;
     EntityDefinition definition;
     Integer numOfSecondEntities; // if == null -> ALL -> translate it to population number
-    Condition selection; // describes how they are selected
+    Condition selection; // describes how they are selected, if it's null then it's randomly
     public SecondaryEntity(String name, Integer numOfSecondEntities, Condition selection) {
         // according to this info we'll create the secondary entities list in engine
         this.name = name;

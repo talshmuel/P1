@@ -3,13 +3,14 @@ package world.rule.action.calculation;
 import exception.IncompatibleType;
 import world.rule.action.api.ParametersForAction;
 import world.rule.action.api.PropertiesToAction;
+import world.rule.action.api.SecondaryEntity;
 
 public class Multiply extends Calculation {
-    public Multiply(String mainEntity, String secondaryEntity, String propToChangeName, String expression1, String expression2){
-        super(mainEntity, secondaryEntity, propToChangeName, expression1, expression2);
+    public Multiply(String mainEntity, SecondaryEntity secondEntityInfo, String propToChangeName, String expression1, String expression2){
+        super(mainEntity, secondEntityInfo, propToChangeName, expression1, expression2);
     }
     @Override
-    public Boolean activate(ParametersForAction parameters, PropertiesToAction propsToChange)throws IncompatibleType {
+    public Boolean activate(ParametersForAction parameters)throws IncompatibleType {
         if(expressionVal instanceof Integer && expression2Val instanceof Integer){
             parameters.getMainProp().set((Integer)expressionVal*(Integer)expression2Val);
             parameters.getMainProp().setTickNumThatHasChanged(this.getCurrentTick()); // update in which tick it has been changed

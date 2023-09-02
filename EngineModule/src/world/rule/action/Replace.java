@@ -8,6 +8,7 @@ import world.entity.Entity;
 import world.entity.EntityDefinition;
 import world.rule.action.api.ParametersForAction;
 import world.rule.action.api.PropertiesToAction;
+import world.rule.action.api.SecondaryEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,15 +16,17 @@ import java.util.function.Function;
 
 public class Replace extends Action{
     String mode;
-    public Replace(String entityToKill, String secondaryEntity, String mode) {
+    String entityToCreateName;
+    public Replace(String entityToKill, SecondaryEntity secondEntityInfo, String entityToCreateName, String mode) {
         // note: main entity is the entity to kill
         // note: second entity is the entity to create
-        super(entityToKill, secondaryEntity, null, null);
+        super(entityToKill, secondEntityInfo, null, null);
+        this.entityToCreateName = entityToCreateName;
         this.mode = mode;
     }
 
     @Override
-    public Boolean activate(ParametersForAction parameters, PropertiesToAction propsToChange) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
+    public Boolean activate(ParametersForAction parameters) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
         if(mode.equals("scratch")){
             // todo: לברוא ישות חדשה לגמרי לפי החוקים הרגילים
         } else if(mode.equals("derived")){

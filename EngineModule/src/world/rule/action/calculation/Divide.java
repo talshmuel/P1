@@ -4,13 +4,14 @@ import exception.DivisionByZeroException;
 import exception.IncompatibleType;
 import world.rule.action.api.ParametersForAction;
 import world.rule.action.api.PropertiesToAction;
+import world.rule.action.api.SecondaryEntity;
 
 public class Divide extends Calculation {
-    public Divide(String mainEntity, String secondaryEntity, String propToChangeName, String expression1, String expression2){
-        super(mainEntity, secondaryEntity, propToChangeName, expression1, expression2);
+    public Divide(String mainEntity, SecondaryEntity secondEntityInfo, String propToChangeName, String expression1, String expression2){
+        super(mainEntity, secondEntityInfo, propToChangeName, expression1, expression2);
     }
     @Override
-    public Boolean activate(ParametersForAction parameters, PropertiesToAction propsToChange) throws DivisionByZeroException, IncompatibleType {
+    public Boolean activate(ParametersForAction parameters) throws DivisionByZeroException, IncompatibleType {
         if(expression2Val instanceof Integer && (Integer)expression2Val == 0)
             throw new DivisionByZeroException();
         else if(expression2Val instanceof Double && (Double)expression2Val == 0)
