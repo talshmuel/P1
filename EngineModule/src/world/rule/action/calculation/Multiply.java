@@ -11,23 +11,31 @@ public class Multiply extends Calculation {
     @Override
     public Boolean activate(ParametersForAction parameters, PropertiesToAction propsToChange)throws IncompatibleType {
         if(expressionVal instanceof Integer && expression2Val instanceof Integer){
-            propsToChange.getMainProp().set((Integer)expressionVal*(Integer)expression2Val);
-            propsToChange.getMainProp().setTickNumThatHasChanged(this.getCurrentTick()); // update in which tick it has been changed
+            parameters.getMainProp().set((Integer)expressionVal*(Integer)expression2Val);
+            parameters.getMainProp().setTickNumThatHasChanged(this.getCurrentTick()); // update in which tick it has been changed
+
+            //propsToChange.getMainProp().set((Integer)expressionVal*(Integer)expression2Val); // old version
             return false;
         }
         else if(expressionVal instanceof Double && expression2Val instanceof Double){
-            propsToChange.getMainProp().set((Double)expressionVal*(Double)expression2Val);
-            propsToChange.getMainProp().setTickNumThatHasChanged(this.getCurrentTick()); // update in which tick it has been changed
+            parameters.getMainProp().set((Double)expressionVal*(Double)expression2Val);
+            parameters.getMainProp().setTickNumThatHasChanged(this.getCurrentTick()); // update in which tick it has been changed
+
+            //propsToChange.getMainProp().set((Double)expressionVal*(Double)expression2Val); // old version
             return false;
         }
         else if(expressionVal instanceof Integer && expression2Val instanceof Double){
-            propsToChange.getMainProp().set((Integer)expressionVal*(Double)expression2Val);
-            propsToChange.getMainProp().setTickNumThatHasChanged(this.getCurrentTick()); // update in which tick it has been changed
+            parameters.getMainProp().set((Integer)expressionVal*(Double)expression2Val);
+            parameters.getMainProp().setTickNumThatHasChanged(this.getCurrentTick()); // update in which tick it has been changed
+
+            //propsToChange.getMainProp().set((Integer)expressionVal*(Double)expression2Val); // old version
             return false;
         }
         else if(expressionVal instanceof Double && expression2Val instanceof Integer){
-            propsToChange.getMainProp().set((Double)expressionVal*(Integer)expression2Val);
-            propsToChange.getMainProp().setTickNumThatHasChanged(this.getCurrentTick()); // update in which tick it has been changed
+            parameters.getMainProp().set((Double)expressionVal*(Integer)expression2Val);
+            parameters.getMainProp().setTickNumThatHasChanged(this.getCurrentTick()); // update in which tick it has been changed
+
+            //propsToChange.getMainProp().set((Double)expressionVal*(Integer)expression2Val); // old version
             return false;
         }
         else

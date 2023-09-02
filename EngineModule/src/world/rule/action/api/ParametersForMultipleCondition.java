@@ -6,20 +6,20 @@ import world.property.impl.Property;
 import java.util.ArrayList;
 
 public class ParametersForMultipleCondition extends ParametersForCondition{
-    ArrayList<ParametersForCondition> conditionsParams;
+    ArrayList<ParametersForAction> conditionsParams;
 
     public ParametersForMultipleCondition(Property mainProp, Entity mainEntity, Entity secondaryEntity, int currentTicks,
-                                          ArrayList<ParametersForAction> thenProps, ArrayList<ParametersForAction> elseProps,
-                                          ArrayList<ParametersForCondition> conditionsParams) {
-        super(mainProp, mainEntity, secondaryEntity, currentTicks, thenProps, elseProps);
+                                          ArrayList<ParametersForAction> thenParams, ArrayList<ParametersForAction> elseParams,
+                                          ArrayList<ParametersForAction> conditionsParams) {
+        super(mainProp, mainEntity, secondaryEntity, currentTicks, thenParams, elseParams);
         this.conditionsParams = conditionsParams;
     }
 
-    public ArrayList<ParametersForCondition> getConditionsParams() {
+    public ArrayList<ParametersForAction> getConditionsParams() {
         return conditionsParams;
     }
 
-    public void setConditionsParams(ArrayList<ParametersForCondition> conditionsParams) {
+    public void setConditionsParams(ArrayList<ParametersForAction> conditionsParams) {
         this.conditionsParams = conditionsParams;
     }
 }

@@ -6,8 +6,8 @@ import world.property.impl.Property;
 import java.util.ArrayList;
 
 public class ParametersForCondition extends ParametersForAction {
-    ArrayList<ParametersForAction> thenParams; // todo: needs to think about this
-    ArrayList<ParametersForAction> elseParams; // todo: needs to think about this
+    ArrayList<ParametersForAction> thenParams;
+    ArrayList<ParametersForAction> elseParams;
 
     public ParametersForCondition(Property mainProp, Entity mainEntity, Entity secondaryEntity, int currentTicks,
                                   ArrayList<ParametersForAction> thenParams, ArrayList<ParametersForAction> elseParams) {

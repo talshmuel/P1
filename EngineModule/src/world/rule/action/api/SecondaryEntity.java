@@ -9,11 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SecondaryEntity {
+    String name;
     EntityDefinition definition;
     Integer numOfSecondEntities; // if == null -> ALL -> translate it to population number
     Condition selection; // describes how they are selected
-    public SecondaryEntity(Integer numOfSecondEntities, Condition selection) {
+    public SecondaryEntity(String name, Integer numOfSecondEntities, Condition selection) {
         // according to this info we'll create the secondary entities list in engine
+        this.name = name;
         this.numOfSecondEntities = numOfSecondEntities;
         this.selection = selection;
     }
@@ -34,5 +36,13 @@ public class SecondaryEntity {
     }
     public void setSelection(Condition selection) {
         this.selection = selection;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

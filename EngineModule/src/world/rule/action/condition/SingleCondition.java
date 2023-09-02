@@ -5,6 +5,7 @@ import exception.IncompatibleAction;
 import exception.IncompatibleType;
 import world.rule.action.Action;
 import world.rule.action.api.ParametersForAction;
+import world.rule.action.api.ParametersForCondition;
 import world.rule.action.api.PropertiesToAction;
 import world.rule.action.api.PropertiesToCondition;
 import java.util.ArrayList;
@@ -22,23 +23,38 @@ public class SingleCondition extends Condition {
         this.thenActions = thenActions;
 
     }
-    public Boolean checkCondition(PropertiesToAction propsToChange)throws IncompatibleAction, IncompatibleType {
+    public Boolean checkCondition(ParametersForAction parameters, PropertiesToAction propsToChange)throws IncompatibleAction, IncompatibleType {
         switch (operator){
+            case EQUAL: return parameters.getMainProp().getVal().equals(expressionVal);
+            case NOTEQUAL: return !(parameters.getMainProp().getVal().equals(expressionVal));
+            case LESSTHAN:  return parameters.getMainProp().isSmaller(expressionVal);
+            case BIGGERTHAN: return parameters.getMainProp().isBigger(expressionVal);
+        }
+        /*switch (operator){ // old version
             case EQUAL: return propsToChange.getMainProp().getVal().equals(expressionVal);
             case NOTEQUAL: return !(propsToChange.getMainProp().getVal().equals(expressionVal));
             case LESSTHAN:  return propsToChange.getMainProp().isSmaller(expressionVal);
             case BIGGERTHAN: return propsToChange.getMainProp().isBigger(expressionVal);
-        }
+        }*/
         return null;
     }
     @Override
-    public Boolean activate(ParametersForAction parameters, PropertiesToAction propsToChange)throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
+    public Boolean activate(ParametersForAction parameters, PropertiesToAction propsToChange) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
+        if(checkCondition(parameters, propsToChange))
+            return activateThenActions(((ParametersForCondition)parameters).getThenParams(), ((PropertiesToCondition)propsToChange).getThenProps());
+        else if (elseActions!=null)
+            return activateElseActions(((ParametersForCondition)parameters).getElseParams(), ((PropertiesToCondition)propsToChange).getElseProps());
+        else
+            return false;
+
+        /* // old version
         if(checkCondition(propsToChange))
             return activateThenActions(((PropertiesToCondition)propsToChange).getThenProps());
         else if (elseActions!=null)
             return activateElseActions(((PropertiesToCondition)propsToChange).getElseProps());
         else
             return false;
+         */
     }
     @Override
     public ArrayList<Action> getElseActions() {
@@ -49,23 +65,39 @@ public class SingleCondition extends Condition {
         return thenActions;
     }
     @Override
-    public Boolean activateThenActions(ArrayList<PropertiesToAction> props)throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
+    public Boolean activateThenActions(ArrayList<ParametersForAction> parameters, ArrayList<PropertiesToAction> props) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
         boolean kill=false;
+        int len = thenActions.size();
+        for(int i=0; i<len;i++){
+            if(thenActions.get(i).activate(parameters.get(i), props.get(i)))
+                kill = true;
+        }
+        return kill;
+
+        /*boolean kill=false; // old version
         int len = thenActions.size();
         for(int i=0; i<len;i++){
             if(thenActions.get(i).activate(null, props.get(i)))
                 kill = true;
         }
-        return kill;
+        return kill;*/
     }
     @Override
-    public Boolean activateElseActions(ArrayList<PropertiesToAction> props)throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
+    public Boolean activateElseActions(ArrayList<ParametersForAction> parameters, ArrayList<PropertiesToAction> props) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
         boolean kill=false;
+        int len = elseActions.size();
+        for(int i=0; i<len;i++){
+            if(elseActions.get(i).activate(parameters.get(i), props.get(i)))
+                kill = true;
+        }
+        return kill;
+
+        /*boolean kill=false; // old version
         int len = elseActions.size();
         for(int i=0; i<len;i++){
             if(elseActions.get(i).activate(null, props.get(i)))
                 kill = true;
         }
-        return kill;
+        return kill;*/
     }
 }

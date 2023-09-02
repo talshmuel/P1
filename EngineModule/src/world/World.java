@@ -9,6 +9,8 @@ import world.entity.EntityDefinition;
 import world.property.api.PropertyDefinition;
 import world.property.impl.*;
 import world.rule.Rule;
+import world.rule.action.Action;
+import world.rule.action.condition.Condition;
 
 import java.io.Serializable;
 import java.util.*;
@@ -148,6 +150,21 @@ public class World implements Serializable {
                     e.setPosition(position);
                     grid.updateGrid(position);
                     entityInPlace=true;
+                }
+            }
+        }
+    }
+
+    public void generateDefinitionForSecondaryEntity(){
+        for(Rule rule : rules){
+            for(Action action : rule.getActions()){
+                if(action.getSecondEntityInfo() != null){
+                    for(EntityDefinition d : entitiesDefinition){
+                        if(d.getName().equals(action.getSecondEntityInfo().getName())){
+                            EntityDefinition definition = new EntityDefinition(d.getName(), d.getNumOfInstances(), d.getPropsDef());
+                            action.getSecondEntityInfo().setDefinition(definition);
+                        }
+                    }
                 }
             }
         }

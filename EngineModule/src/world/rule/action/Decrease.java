@@ -11,8 +11,10 @@ public class Decrease extends Action{
 
     @Override
     public Boolean activate(ParametersForAction parameters, PropertiesToAction propsToChange)throws IncompatibleAction, IncompatibleType {
-        propsToChange.getMainProp().decrease(expressionVal);
-        propsToChange.getMainProp().setTickNumThatHasChanged(currentTick); // update in which tick it has been changed
+        parameters.getMainProp().decrease(expressionVal);
+        parameters.getMainProp().setTickNumThatHasChanged(currentTick); // update in which tick it has been changed
+
+        //propsToChange.getMainProp().decrease(expressionVal); // old version
         return false;
     }
 }

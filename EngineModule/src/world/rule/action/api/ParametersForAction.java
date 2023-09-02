@@ -5,8 +5,8 @@ import world.property.impl.Property;
 
 public class ParametersForAction {
     Property mainProp;
-    Entity mainEntity;
-    Entity secondaryEntity;
+    Entity mainEntity; // instance
+    Entity secondaryEntity; // instance
     int currentTicks;
 
     public ParametersForAction(Property mainProp, Entity mainEntity, Entity secondaryEntity, int currentTicks) {

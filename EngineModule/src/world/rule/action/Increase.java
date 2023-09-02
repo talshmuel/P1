@@ -11,8 +11,10 @@ public class Increase extends Action {
     }
     @Override
     public Boolean activate(ParametersForAction parameters, PropertiesToAction propsToChange) throws IncompatibleAction, IncompatibleType {
-        propsToChange.getMainProp().increase(expressionVal);
-        propsToChange.getMainProp().setTickNumThatHasChanged(currentTick); // update in which tick it has been changed
+        parameters.getMainProp().increase(expressionVal);
+        parameters.getMainProp().setTickNumThatHasChanged(currentTick); // update in which tick it has been changed
+
+        //propsToChange.getMainProp().increase(expressionVal); // old version
         return false;
     }
 }

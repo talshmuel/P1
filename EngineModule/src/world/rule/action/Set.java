@@ -11,8 +11,10 @@ public class Set extends Action{
 
     @Override
     public Boolean activate(ParametersForAction parameters, PropertiesToAction propsToChange)throws IncompatibleType {
-        propsToChange.getMainProp().set(expressionVal);
-        propsToChange.getMainProp().setTickNumThatHasChanged(currentTick); // update in which tick it has been changed
+        parameters.getMainProp().set(expressionVal);
+        parameters.getMainProp().setTickNumThatHasChanged(currentTick); // update in which tick it has been changed
+
+        //propsToChange.getMainProp().set(expressionVal); // old version
         return false;
     }
 }
