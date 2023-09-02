@@ -24,7 +24,7 @@ public class World implements Serializable {
     Map<String, Integer> endConditions;
 
     //////// new:
-
+    Map<String, ArrayList<Entity>> allEntities; // new: map by string - name of entity TYPE, to an array of the entity INSTANCES
     Grid grid;
     //Integer numOfThreads;
 
@@ -42,6 +42,8 @@ public class World implements Serializable {
         return environmentVariables;
     }
 
+
+
     public World(ArrayList<EntityDefinition> entitiesDefinition, Map<String, Property> environmentVariables,
                  ArrayList<Rule> rules, Map<String, Integer> endConditions, Grid grid){
         this.rules = rules;
@@ -49,7 +51,24 @@ public class World implements Serializable {
         this.entitiesDefinition = entitiesDefinition;
         this.endConditions = endConditions;
         this.entities = new ArrayList<>();
+        this.allEntities = new HashMap<>();
         this.grid = grid;
+    }
+
+    public void generateAllEntitiesMapByDefinition(){ // adding to the map: the name of entity, and the array list of instances.
+        for(EntityDefinition entityDef : entitiesDefinition){
+            String entityName = entityDef.getName(); // key
+            ArrayList<Entity> instancesList = new ArrayList<>(); // value
+            int population = entityDef.getNumOfInstances();
+            for(int i=0 ; i < population ; i++){
+                Map <String, Property> entityProps = new HashMap<>();
+                for(PropertyDefinition propDef : entityDef.getPropsDef().values()){
+                    entityProps.put(propDef.getName(), generatePropertyByDefinitions(propDef));
+                }
+                instancesList.add(new Entity(entityDef.getName(),entityProps));
+            }
+            allEntities.put(entityName, instancesList);
+        }
     }
 
 
@@ -178,6 +197,12 @@ public class World implements Serializable {
             //System.out.println("DEBUG: new position is: (" + e.getPosition().getRow() + ", " + e.getPosition().getCol() + ")");
         }
     }
+
+    public Grid getGrid() {
+        return grid;
+    }
+
+
 
 
 }

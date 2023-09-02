@@ -65,8 +65,8 @@ public class Engine implements EngineInterface, Serializable {
         // if file opened successfully, but the data is incorrect, then prdWorld would be null
         if(prdWorld != null){
             WorldCreator worldCreator = new WorldCreator();
-            /*world = worldCreator.createWorldFromXMLFile(prdWorld);*/
-            hardCodedMaster2(); // delete later
+            /*world = worldCreator.createWorldFromXMLFile(prdWorld);*/ // todo: להחזיר את זה !
+            hardCodedMaster2(); // todo delete later
             functions.setEnvironmentVariables(world.getEnvironmentVariables());
             return true;
         } else {
@@ -145,10 +145,10 @@ public class Engine implements EngineInterface, Serializable {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy | HH.mm.ss");
         String formattedDateTime = currentDateTime.format(formatter);
 
-        world.generateEntitiesByDefinitions();
+        world.generateEntitiesByDefinitions(); // todo : delete
+        world.generateAllEntitiesMapByDefinition(); // new
         world.generateDefinitionForSecondaryEntity(); // todo: add generate secondary entities in actions (in world)
         world.generateRandomPositionsOnGrid(); // scatter the entities on the grid randomly
-
         long startTime = System.currentTimeMillis();
 
         while (simulationShouldRun(startTime)) {
@@ -195,6 +195,8 @@ public class Engine implements EngineInterface, Serializable {
 
     public void runActions(List<Action> actionsThatShouldRun) throws IncompatibleAction, DivisionByZeroException, IncompatibleType {
         ArrayList<Entity> entitiesToKill = new ArrayList<>();
+        ArrayList<Entity> entitiesToCreate = new ArrayList<>();
+
         for(Entity entity : world.getEntities()) { // 3. for each entity instance:
             for(Action action : actionsThatShouldRun) {
                 if (actionShouldRunOnEntity(action, entity)) { // 4. check if the action works on the current instance
@@ -221,6 +223,10 @@ public class Engine implements EngineInterface, Serializable {
         }
         world.killEntities(entitiesToKill);
     }
+
+
+
+
     ParametersForAction getParametersForAction(Action action, Entity mainEntity, Entity secondaryEntity){
         ParametersForAction params;
 
@@ -644,10 +650,14 @@ public class Engine implements EngineInterface, Serializable {
         Property actionProp = entity.getPropertyByName(action.getPropToChangeName());
 
         if(!(action instanceof MultipleCondition)) {
-            action.setExpressionVal(getValueOfExpression(action.getExpression(), entity, actionProp));
-            if (action instanceof Calculation) {
-                Object expression2Val = getValueOfExpression(((Calculation) action).getExpression2(), entity, actionProp);
-                ((Calculation) action).setExpression2Val(expression2Val);
+            if(action instanceof Proximity){
+                action.setExpressionVal(world.getGrid());
+            } else {
+                action.setExpressionVal(getValueOfExpression(action.getExpression(), entity, actionProp));
+                if (action instanceof Calculation) {
+                    Object expression2Val = getValueOfExpression(((Calculation) action).getExpression2(), entity, actionProp);
+                    ((Calculation) action).setExpression2Val(expression2Val);
+                }
             }
         }
 

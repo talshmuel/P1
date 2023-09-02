@@ -6,7 +6,7 @@ import world.property.impl.Property;
 public class ParametersForAction {
     Property mainProp;
     Entity mainEntity; // instance
-    Entity secondaryEntity; // instance
+    Entity secondaryEntity; // instance, if there isn't -> it's null
     int currentTicks;
 
     public ParametersForAction(Property mainProp, Entity mainEntity, Entity secondaryEntity, int currentTicks) {

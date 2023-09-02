@@ -25,10 +25,24 @@ public class Replace extends Action{
         this.mode = mode;
     }
 
+    /*
+    Property mainProp;
+    Entity mainEntity; // instance
+    Entity secondaryEntity; // instance, if there isn't -> it's null
+    int currentTicks;
+     */
     @Override
     public Boolean activate(ParametersForAction parameters) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
-        if(mode.equals("scratch")){
-            // todo: לברוא ישות חדשה לגמרי לפי החוקים הרגילים
+        if(mode.equals("scratch")){ // todo: לברוא ישות חדשה לגמרי לפי החוקים הרגילים
+            Entity toKill = parameters.getMainEntity();
+            /*
+            String name;
+            Map <String, Property> properties;
+            Coordinate position;
+             */
+
+
+
         } else if(mode.equals("derived")){
             // todo: מייצרים את היישות החדשה כך שאם וככל שיש לה מאפיינים הזהים על פי שמם וסוגם לאלה של היישות שנהרגה – היא לוקחת את ערכם.
         }

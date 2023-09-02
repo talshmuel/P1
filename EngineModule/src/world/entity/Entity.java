@@ -2,6 +2,7 @@ package world.entity;
 import world.property.impl.Property;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 public class Entity implements Serializable {
@@ -35,4 +36,6 @@ public class Entity implements Serializable {
     public Map<String, Property> getProperties() {
         return properties;
     }
+
+
 }

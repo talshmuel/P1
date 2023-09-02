@@ -144,8 +144,14 @@ public class Grid {
         return matrix;
     }
 
-    public Collection<Coordinate> findEnvironmentCells(Coordinate source, int rank) {
+    public List<Coordinate> findEnvironmentCells(Coordinate source, int rank) {
         // returns list of all the coordinates in the rank surrounding the source coordinate
+        if(rank > numOfRows){ // todo: check this.....
+            rank = rank%numOfRows;
+        } else if (rank > numOfCols) {
+            rank = rank%numOfCols;
+        }
+
         List<Coordinate> result = new ArrayList<>();
         for (int r = 1; r <= rank; r++) {
             for (int dx = -r; dx <= r; dx++) {
