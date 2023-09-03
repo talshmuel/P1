@@ -50,7 +50,7 @@ public class World implements Serializable {
         this.environmentVariables = environmentVariables;
         this.entitiesDefinition = entitiesDefinition;
         this.endConditions = endConditions;
-        this.entities = new ArrayList<>();
+        this.entities = new ArrayList<>(); // todo: delete later
         this.allEntities = new HashMap<>();
         this.grid = grid;
     }
@@ -72,7 +72,7 @@ public class World implements Serializable {
     }
 
 
-    public void generateEntitiesByDefinitions(){
+    public void generateEntitiesByDefinitions(){ // todo delete
         for(EntityDefinition entityDef: entitiesDefinition) {
             for (int i = 0; i <entityDef.getNumOfInstances();i++){
                 Map <String, Property> entityProps = new HashMap<>();
@@ -102,10 +102,27 @@ public class World implements Serializable {
         for(Entity entity : entitiesToKill){
             entities.remove(entity);
         }
+
+        // new version
+        for(Entity entityToKill : entitiesToKill){ // todo: לא יעיל ככ אולי לחפש משהו אחר
+            for(Map.Entry<String, ArrayList<Entity>> entry : allEntities.entrySet()){
+                ArrayList<Entity> entityList = entry.getValue();
+
+                for(Entity entity : entityList){
+                    if(entity.equals(entityToKill)){
+                        entityList.remove(entity);
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     public ArrayList<Entity> getEntities() {
         return entities;
+    }
+    public Map<String, ArrayList<Entity>> getAllEntities() {
+        return allEntities;
     }
 
     public final ArrayList<EntityDefinition> getEntitiesDefinition() {
@@ -137,11 +154,23 @@ public class World implements Serializable {
         return res;
     }
 
-    public int getNumOfEntitiesLeft(String entityName){
+    public int getNumOfEntitiesLeft(String entityName){ // todo: delete
         int count = 0;
         for(Entity entity : entities)
             if(entity.getName().equals(entityName))
                 count++;
+        return count;
+    }
+
+    public int getNumOfEntitiesLeft2(String entityName){ // new version
+        int count = 0;
+        for(Map.Entry<String, ArrayList<Entity>> entry : allEntities.entrySet()) {
+            ArrayList<Entity> entityList = entry.getValue();
+            for(Entity entity : entityList){
+                if(entity.getName().equals(entityName))
+                    count++;
+            }
+        }
         return count;
     }
 
@@ -153,27 +182,44 @@ public class World implements Serializable {
         }
     }
     public void cleanup(){
-        entities.clear();
+        entities.clear(); // todo: delete
+        allEntities.clear();
     }
 
     public void generateRandomPositionsOnGrid(){ // scatter the entities on the grid randomly
         Random random = new Random();
 
-        for(Entity e : entities){
+        for(Entity e : entities){ // todo: delete
             boolean entityInPlace = false;
-
             while(!entityInPlace){
                 int newRow = random.nextInt(grid.getNumOfRows()-1)+1;
                 int newCol = random.nextInt(grid.getNumOfCols()-1)+1;
                 if(grid.isPositionAvailable(newRow, newCol)){ // if the place is empty -> place the entity there
                     Coordinate position = new Coordinate(newRow, newCol);
-                    //System.out.println("new position is: (" + position.getRow() + ", " + position.getCol() + ")");
                     e.setPosition(position);
                     grid.updateGrid(position);
-                    entityInPlace=true;
+                    entityInPlace = true;
                 }
             }
         }
+        /////////////////////////////////////////////////////////////
+        allEntities.forEach((entityType, entityList) -> { // new version
+            entityList.forEach(e -> {
+                boolean entityInPlace = false;
+
+                while (!entityInPlace) {
+                    int newRow = random.nextInt(grid.getNumOfRows() - 1) + 1;
+                    int newCol = random.nextInt(grid.getNumOfCols() - 1) + 1;
+
+                    if (grid.isPositionAvailable(newRow, newCol)) {
+                        Coordinate position = new Coordinate(newRow, newCol);
+                        e.setPosition(position);
+                        grid.updateGrid(position);
+                        entityInPlace = true;
+                    }
+                }
+            });
+        });
     }
 
     public void generateDefinitionForSecondaryEntity(){
@@ -192,17 +238,16 @@ public class World implements Serializable {
     }
 
     public void moveAllEntitiesOnGrid() {
-        for(Entity e : entities){
+        for(Entity e : entities){ // todo: delete
             e.setPosition(grid.moveEntityOnGrid(e));
-            //System.out.println("DEBUG: new position is: (" + e.getPosition().getRow() + ", " + e.getPosition().getCol() + ")");
         }
+
+        allEntities.forEach((entityType, entityList) -> { // new version
+            entityList.forEach(e -> e.setPosition(grid.moveEntityOnGrid(e)));
+        });
     }
 
     public Grid getGrid() {
         return grid;
     }
-
-
-
-
 }

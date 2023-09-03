@@ -36,6 +36,7 @@ import xml.reader.schema.generated.PRDWorld;
 import xml.reader.validator.*;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -150,41 +151,13 @@ public class Engine implements EngineInterface, Serializable {
         world.generateDefinitionForSecondaryEntity(); // todo: add generate secondary entities in actions (in world)
         world.generateRandomPositionsOnGrid(); // scatter the entities on the grid randomly
         long startTime = System.currentTimeMillis();
-
+        int i=1;
         while (simulationShouldRun(startTime)) {
+            System.out.println("rule #" + i++);
             functions.setNumOfTicksInSimulation(ticks); // update in functions on which tick we are
             world.moveAllEntitiesOnGrid(); // 1. move all entities on grid
             List<Action> actionsThatShouldRun = makeListOfAllActionsThatShouldRun(); // 2. make a list of all the actions that should run
             runActions(actionsThatShouldRun);
-            /*ArrayList<Entity> entitiesToKill = new ArrayList<>();
-            for(Entity entity : world.getEntities()) { // 3. for each entity instance:
-                for(Action action : actionsThatShouldRun) {
-                    //runaction
-                    if(actionShouldRunOnEntity(action, entity)) { // 4. check if the action works on the current instance
-                        if(actionHasSecondaryEntity(action)) { // 4.a if yes -> check if there is a secondary entity regarding the action
-                            // 5.a if yes:
-                            // - make a list of all the secondary entities needs to activate
-                            List<Entity> secondaryEntities = makeListOfSecondaryEntities(action);
-                            // - go over all the secondary entities instances and make the action on main entity and secondary entity
-                            for(Entity secondary : secondaryEntities){
-                                PropertiesToAction propsToAction = getNeededProperties(action, entity);//todo:maybedelete
-                                ParametersForAction params = getParametersForAction(action, entity, secondary, ticks);
-                                action.activate(params, propsToAction);// need to send main and secondary entities to activate
-                            }
-                        } else {
-                            // 5.b if not -> do the action on the current entity instance
-                            setValueOfExpressionOnAction(action, entity);
-                            PropertiesToAction propsToAction = getNeededProperties(action, entity);//todo:maybedelete
-                            ParametersForAction params = getParametersForAction(action, entity, null, ticks);
-                            if (action.activate(params, propsToAction)) { // need to kill
-                                entitiesToKill.add(entity);
-                            }
-                        }
-                    } // 4.b if not -> skip to the next action
-                }
-
-            }
-            world.killEntities(entitiesToKill);*/
             ticks++;
         }
 
@@ -196,36 +169,72 @@ public class Engine implements EngineInterface, Serializable {
     public void runActions(List<Action> actionsThatShouldRun) throws IncompatibleAction, DivisionByZeroException, IncompatibleType {
         ArrayList<Entity> entitiesToKill = new ArrayList<>();
         ArrayList<Entity> entitiesToCreate = new ArrayList<>();
+        int i=1;
 
-        for(Entity entity : world.getEntities()) { // 3. for each entity instance:
-            for(Action action : actionsThatShouldRun) {
-                if (actionShouldRunOnEntity(action, entity)) { // 4. check if the action works on the current instance
-                    if (actionHasSecondaryEntity(action)) { // 4.a if yes -> check if there is a secondary entity regarding the action
-                        // 5.a if yes:
-                        List<Entity> secondaryEntities = makeListOfSecondaryEntities(action); // make a list of all the secondary entities needs to activate
-                        for (Entity secondary : secondaryEntities) { // go over all the secondary entities instances and make the action on main entity and secondary entity
+        // map of entities version
+        for (Map.Entry<String, ArrayList<Entity>> entry : world.getAllEntities().entrySet()) {
+            //String entityName = entry.getKey();
+            ArrayList<Entity> entityList = entry.getValue();
+            System.out.println("entity #" + i++ + " : " + entry.getKey());
+            int j=1;
+
+            for(Entity entity : entityList){
+                for(Action action : actionsThatShouldRun) {
+                    System.out.println("action #" + j++);
+                    if (actionShouldRunOnEntity(action, entity)) { // 4. check if the action works on the current instance
+                        if (actionHasSecondaryEntity(action)) { // 4.a if yes -> check if there is a secondary entity regarding the action
+                            // 5.a if yes:
+                            List<Entity> secondaryEntities = makeListOfSecondaryEntities(action); // make a list of all the secondary entities needs to activate
+                            for (Entity secondary : secondaryEntities) { // go over all the secondary entities instances and make the action on main entity and secondary entity
+                                setValueOfExpressionOnAction(action, entity);
+                                ParametersForAction params = getParametersForAction(action, entity, secondary);
+                                // need to send main and secondary entities to activate
+                                if (action.activate(params)) { // need to kill
+                                    entitiesToKill.add(entity);
+                                }
+                            }
+                        }
+                        else { // 5.b if not -> do the action on the current entity instance
                             setValueOfExpressionOnAction(action, entity);
-                            ParametersForAction params = getParametersForAction(action, entity, secondary);
-                            // need to send main and secondary entities to activate
+                            ParametersForAction params = getParametersForAction(action, entity, null);
                             if (action.activate(params)) { // need to kill
                                 entitiesToKill.add(entity);
                             }
                         }
-                    } else { // 5.b if not -> do the action on the current entity instance
-                        setValueOfExpressionOnAction(action, entity);
-                        ParametersForAction params = getParametersForAction(action, entity, null);
-                        if (action.activate(params)) { // need to kill
-                            entitiesToKill.add(entity);
-                        }
                     }
-                } // 4.b if not -> skip to the next action
+                }  // 4.b if not -> skip to the next action
             }
         }
+        // array list of entities version
+//        for(Entity entity : world.getEntities()) { // 3. for each entity instance:
+//            System.out.println("entity #" + i++);
+//            int j=1;
+//            for(Action action : actionsThatShouldRun) {
+//                System.out.println("action #" + j++);
+//                if (actionShouldRunOnEntity(action, entity)) { // 4. check if the action works on the current instance
+//                    if (actionHasSecondaryEntity(action)) { // 4.a if yes -> check if there is a secondary entity regarding the action
+//                        // 5.a if yes:
+//                        List<Entity> secondaryEntities = makeListOfSecondaryEntities(action); // make a list of all the secondary entities needs to activate
+//                        for (Entity secondary : secondaryEntities) { // go over all the secondary entities instances and make the action on main entity and secondary entity
+//                            setValueOfExpressionOnAction(action, entity);
+//                            ParametersForAction params = getParametersForAction(action, entity, secondary);
+//                            // need to send main and secondary entities to activate
+//                            if (action.activate(params)) { // need to kill
+//                                entitiesToKill.add(entity);
+//                            }
+//                        }
+//                    } else { // 5.b if not -> do the action on the current entity instance
+//                        setValueOfExpressionOnAction(action, entity);
+//                        ParametersForAction params = getParametersForAction(action, entity, null);
+//                        if (action.activate(params)) { // need to kill
+//                            entitiesToKill.add(entity);
+//                        }
+//                    }
+//                } // 4.b if not -> skip to the next action
+//            }
+//        }
         world.killEntities(entitiesToKill);
     }
-
-
-
 
     ParametersForAction getParametersForAction(Action action, Entity mainEntity, Entity secondaryEntity){
         ParametersForAction params;
@@ -270,7 +279,6 @@ public class Engine implements EngineInterface, Serializable {
     private ParametersForMultipleCondition getParamsForMulCon(MultipleCondition action, Entity mainEntity, Entity secondEntity,
                                                               ArrayList<ParametersForAction> thenParams, ArrayList<ParametersForAction> elseParams){
         ArrayList<ParametersForAction> conditionParams = new ArrayList<>();
-
         ArrayList<Condition> conditions = action.getConditions();
 
         for(Condition c : conditions){
@@ -305,40 +313,52 @@ public class Engine implements EngineInterface, Serializable {
         return actionsThatShouldRun;
     }
     private List<Entity> makeListOfSecondaryEntities(Action action) throws IncompatibleAction, IncompatibleType {
-        SecondaryEntity secondaryEntity = action.getSecondEntityInfo();
-        Integer count = secondaryEntity.getNumOfSecondEntities();
+        SecondaryEntity secondaryEntityInfo = action.getSecondEntityInfo();
+        Integer count = secondaryEntityInfo.getNumOfSecondEntities();
         List<Entity> secondEntityList = new ArrayList<>();
 
-        if(count == null || count == secondaryEntity.getDefinition().getNumOfInstances()){
-            for(Entity entity : world.getEntities()){
-                if(entity.getName().equals(secondaryEntity.getName()))
+        if(count == null || count == secondaryEntityInfo.getDefinition().getNumOfInstances()){ // add all
+            // map version
+            ArrayList<Entity> entityList = world.getAllEntities().get(secondaryEntityInfo.getName());
+            secondEntityList.addAll(entityList);
+            /*for(Entity entity : world.getEntities()){ // array list version
+                if(entity.getName().equals(secondaryEntityInfo.getName()))
                     secondEntityList.add(entity);
+            }*/
+        } else if(secondaryEntityInfo.getSelection() == null){ // add randomly by the number
+            Random random = new Random();
+            //int max = secondaryEntityInfo.getDefinition().getNumOfInstances();
+
+            // map version:
+            ArrayList<Entity> entityList = world.getAllEntities().get(secondaryEntityInfo.getName());
+            // randomly add entities, until we get to count
+            while(secondEntityList.size() < count) {
+                int randomIndex = random.nextInt(entityList.size());
+                secondEntityList.add(entityList.get(randomIndex));
             }
-        } else if(secondaryEntity.getSelection() == null){
-            // add randomly by the number
-            while(secondEntityList.size() < count){
+            /*while(secondEntityList.size() < count){ // array list version
                 Random random = new Random();
-                int max = secondaryEntity.getDefinition().getNumOfInstances();
+                int max = secondaryEntityInfo.getDefinition().getNumOfInstances();
                 int randomIndex = random.nextInt(max + 1);
 
                 // go over all entities and randomly select one
                 // if it's of the same type, add it to the list
                 Entity entityToAdd = world.getEntities().get(randomIndex);
-                if(entityToAdd.getName().equals(secondaryEntity.getName())){ // todo: change entities to map
+                if(entityToAdd.getName().equals(secondaryEntityInfo.getName())){ // todo: change entities to map
                     secondEntityList.add(entityToAdd);
                 }
-            }
-
+            }*/
         } else { // add according to the condition
             Random random = new Random();
-            int max = secondaryEntity.getDefinition().getNumOfInstances();
+            //int max = secondaryEntityInfo.getDefinition().getNumOfInstances();
+            // map version:
+            ArrayList<Entity> entityList = world.getAllEntities().get(secondaryEntityInfo.getName());
+            Condition condition = action.getSecondEntityInfo().getSelection();
+            while(secondEntityList.size() < count){
+                int randomIndex = random.nextInt(entityList.size());
+                Entity secondEntityToAdd = entityList.get(randomIndex);
 
-            // todo: add check if someone answers the terms -> if 0 then add 0 and give up the second entity...
-
-            while(secondEntityList.size() < count){ // todo: if nobody answers the terms... need to add less
-                int randomIndex = random.nextInt(max + 1) + 9; // todo: change entities to map
-                Entity secondEntityToAdd = world.getEntities().get(randomIndex);
-                Condition condition = action.getSecondEntityInfo().getSelection();
+                setValueOfExpressionOnAction(condition, secondEntityToAdd);
                 ParametersForAction params = fillParamsForSelection(secondEntityToAdd, condition);
 
                 boolean selectionTrue;
@@ -348,10 +368,29 @@ public class Engine implements EngineInterface, Serializable {
                     selectionTrue = ((MultipleCondition)condition).checkCondition(params);
                 }
 
-                if(secondEntityToAdd.getName().equals(secondaryEntity.getName()) && selectionTrue){
+                if(selectionTrue){
                     secondEntityList.add(secondEntityToAdd);
                 }
             }
+//            // todo: add check if someone answers the terms -> if 0 then add 0 and give up the second entity...
+//            while(secondEntityList.size() < count){ // todo: if nobody answers the terms... need to add less
+//                int randomIndex = random.nextInt(max + 1) + 9; // todo: change entities to map
+//                Entity secondEntityToAdd = world.getEntities().get(randomIndex);
+//                Condition condition = action.getSecondEntityInfo().getSelection();
+//                setValueOfExpressionOnAction(condition, secondEntityToAdd);
+//                ParametersForAction params = fillParamsForSelection(secondEntityToAdd, condition);
+//
+//                boolean selectionTrue;
+//                if(condition instanceof SingleCondition){
+//                    selectionTrue = ((SingleCondition)condition).checkCondition(params);
+//                } else {
+//                    selectionTrue = ((MultipleCondition)condition).checkCondition(params);
+//                }
+//
+//                if(secondEntityToAdd.getName().equals(secondaryEntityInfo.getName()) && selectionTrue){
+//                    secondEntityList.add(secondEntityToAdd);
+//                }
+//            }
         }
         return secondEntityList;
     }
@@ -362,9 +401,7 @@ public class Engine implements EngineInterface, Serializable {
         // the main entity for this selection is actually the secondary entity for the action........ imale!!!
     }
 
-
-
-
+    /// todo: from here -> continue changing entities to map
 
     private void updateDataFromUser(DataFromUser detailsToRun){
         detailsToRun.getPopulation().forEach((entityName, amount)->world.setEntitiesPopulation(entityName, amount));
