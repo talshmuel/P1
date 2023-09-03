@@ -10,10 +10,10 @@ import world.property.api.PropertyDefinition;
 import world.property.impl.*;
 import world.rule.Rule;
 import world.rule.action.Action;
-import world.rule.action.condition.Condition;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class World implements Serializable {
     ArrayList<EntityDefinition> entitiesDefinition; // size as number of entities TYPES. describes each entity
@@ -68,6 +68,31 @@ public class World implements Serializable {
                 instancesList.add(new Entity(entityDef.getName(),entityProps));
             }
             allEntities.put(entityName, instancesList);
+        }
+
+        // todo delete later
+        int i=1;
+        for (Map.Entry<String, ArrayList<Entity>> entry : allEntities.entrySet()){
+            System.out.println("-----------------------------------------------");
+            System.out.println("Entity #" + i++ + ": " + entry.getKey());
+            ArrayList<Entity> instancesList = entry.getValue();
+            int j=1;
+            for(Entity entity : instancesList){
+                System.out.println("    Instance #" + j++ + ":");
+                System.out.println("    Name:" + entity.getName());
+                System.out.println("    Position: " + entity.getPosition());
+                System.out.println("    Properties: ");
+                int k=1;
+                for (Map.Entry<String, Property> propMap : entity.getProperties().entrySet()){
+                    Property p = propMap.getValue();
+                    System.out.println("        Property #" + k++ + ":");
+                    System.out.println("        Name: " + propMap.getKey());
+                    System.out.println("        Name: " + p.getName());
+                    System.out.println("        Type: " + p.getType());
+                    System.out.println("        Value: " + p.getVal() + "\n");
+                }
+            }
+            System.out.println("-----------------------------------------------");
         }
     }
 
@@ -203,8 +228,14 @@ public class World implements Serializable {
             }
         }
         /////////////////////////////////////////////////////////////
+        AtomicInteger j = new AtomicInteger(1);
         allEntities.forEach((entityType, entityList) -> { // new version
+            System.out.println("entity #" + j.getAndIncrement());
+
+            AtomicInteger i = new AtomicInteger(1);
             entityList.forEach(e -> {
+                System.out.println("instance #" + i.getAndIncrement());
+                System.out.println("Name: " + e.getName());
                 boolean entityInPlace = false;
 
                 while (!entityInPlace) {
@@ -214,12 +245,14 @@ public class World implements Serializable {
                     if (grid.isPositionAvailable(newRow, newCol)) {
                         Coordinate position = new Coordinate(newRow, newCol);
                         e.setPosition(position);
+                        System.out.println("new position: (" + e.getPosition().getRow() + ", " + e.getPosition().getCol() + ")");
                         grid.updateGrid(position);
                         entityInPlace = true;
                     }
                 }
             });
         });
+        System.out.println("--------------------------------------------------------------------------------------");
     }
 
     public void generateDefinitionForSecondaryEntity(){

@@ -73,6 +73,11 @@ public class MultipleCondition extends Condition {
     public ArrayList<Condition> getConditions() {
         return conditions;
     }
+
+    public Logic getLogicSign() {
+        return logicSign;
+    }
+
     @Override
     public Boolean activateThenActions(ArrayList<ParametersForAction> parameters) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
         boolean kill=false;

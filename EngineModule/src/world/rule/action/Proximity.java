@@ -5,6 +5,7 @@ import exception.IncompatibleAction;
 import exception.IncompatibleType;
 import world.Grid;
 import world.entity.Coordinate;
+import world.entity.Entity;
 import world.rule.action.api.ParametersForAction;
 import world.rule.action.api.ParametersForCondition;
 import world.rule.action.api.SecondaryEntity;
@@ -20,16 +21,17 @@ public class Proximity extends Action { // todo: maybe make it as heir of Single
 
      works similarly to condition, it has a list of action to perform if the condition is true.
      so if the entities are close to each other, the actions will be performed.
+
+     Proximity will ALWAYS have a secondary entity, which is the target entity
     **/
 
     ArrayList<Action> actions;
-    String targetEntityName;
+    Entity secondEntityInstance; // todo maybe delete
 
     public Proximity(String mainEntity, SecondaryEntity secondEntityInfo, String targetEntityName, String propToChangeName, String depth, ArrayList<Action> actions){
         /*note: main entity is source entity
         note: second entity is target entity*/
         super(mainEntity, secondEntityInfo, propToChangeName, depth); // note: depth is expression
-        this.targetEntityName = targetEntityName;
         this.actions = actions;
     }
 

@@ -19,7 +19,7 @@ public class Replace extends Action{
     String entityToCreateName;
     public Replace(String entityToKill, SecondaryEntity secondEntityInfo, String entityToCreateName, String mode) {
         // note: main entity is the entity to kill
-        // note: second entity is the entity to create
+        // note: secondary entity is the entity to create
         super(entityToKill, secondEntityInfo, null, null);
         this.entityToCreateName = entityToCreateName;
         this.mode = mode;
