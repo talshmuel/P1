@@ -213,46 +213,55 @@ public class World implements Serializable {
 
     public void generateRandomPositionsOnGrid(){ // scatter the entities on the grid randomly
         Random random = new Random();
+        int i=1;
+        boolean entityInPlace;
 
-        for(Entity e : entities){ // todo: delete
-            boolean entityInPlace = false;
-            while(!entityInPlace){
-                int newRow = random.nextInt(grid.getNumOfRows()-1)+1;
-                int newCol = random.nextInt(grid.getNumOfCols()-1)+1;
-                if(grid.isPositionAvailable(newRow, newCol)){ // if the place is empty -> place the entity there
-                    Coordinate position = new Coordinate(newRow, newCol);
-                    e.setPosition(position);
-                    grid.updateGrid(position);
-                    entityInPlace = true;
-                }
-            }
-        }
-        /////////////////////////////////////////////////////////////
-        AtomicInteger j = new AtomicInteger(1);
-        allEntities.forEach((entityType, entityList) -> { // new version
-            System.out.println("entity #" + j.getAndIncrement());
+        for (Map.Entry<String, ArrayList<Entity>> entry : allEntities.entrySet()){
+            String entityName = entry.getKey();
+            ArrayList<Entity> entityList = entry.getValue();
 
-            AtomicInteger i = new AtomicInteger(1);
-            entityList.forEach(e -> {
-                System.out.println("instance #" + i.getAndIncrement());
-                System.out.println("Name: " + e.getName());
-                boolean entityInPlace = false;
-
-                while (!entityInPlace) {
-                    int newRow = random.nextInt(grid.getNumOfRows() - 1) + 1;
-                    int newCol = random.nextInt(grid.getNumOfCols() - 1) + 1;
+            System.out.println("Entity #" + i++ + ": " + entityName + ":");
+            int j=1;
+            for(Entity e : entityList){
+                entityInPlace = false;
+                while(!entityInPlace){
+                    int newRow = random.nextInt(grid.getNumOfRows());
+                    int newCol = random.nextInt(grid.getNumOfCols());
 
                     if (grid.isPositionAvailable(newRow, newCol)) {
                         Coordinate position = new Coordinate(newRow, newCol);
                         e.setPosition(position);
-                        System.out.println("new position: (" + e.getPosition().getRow() + ", " + e.getPosition().getCol() + ")");
-                        grid.updateGrid(position);
+                        System.out.println("Instance #" + j++ + ": new position: (" + e.getPosition().getRow() + ", " + e.getPosition().getCol() + ")");
+                        grid.updateGridCoordinateIsTaken(position);
                         entityInPlace = true;
                     }
                 }
-            });
-        });
-        System.out.println("--------------------------------------------------------------------------------------");
+            }
+        }
+//        allEntities.forEach((entityType, entityList) -> { // new version
+//            System.out.println("entity #" + j.getAndIncrement() + " name: " + entityType);
+//
+//            AtomicInteger i = new AtomicInteger(1);
+//            entityList.forEach(e -> {
+//                System.out.println("instance #" + i.getAndIncrement());
+//                System.out.println("Name: " + e.getName());
+//                boolean entityInPlace = false;
+//
+//                while (!entityInPlace) {
+//                    int newRow = random.nextInt(grid.getNumOfRows() - 1) + 1;
+//                    int newCol = random.nextInt(grid.getNumOfCols() - 1) + 1;
+//
+//                    if (grid.isPositionAvailable(newRow, newCol)) {
+//                        Coordinate position = new Coordinate(newRow, newCol);
+//                        e.setPosition(position);
+//                        System.out.println("new position: (" + e.getPosition().getRow() + ", " + e.getPosition().getCol() + ")");
+//                        grid.updateGrid(position);
+//                        entityInPlace = true;
+//                    }
+//                }
+//            });
+//        });
+        System.out.println("8--------------------------------------------------------------------------------------");
     }
 
     public void generateDefinitionForSecondaryEntity(){
@@ -271,13 +280,19 @@ public class World implements Serializable {
     }
 
     public void moveAllEntitiesOnGrid() {
-        for(Entity e : entities){ // todo: delete
-            e.setPosition(grid.moveEntityOnGrid(e));
-        }
+        for(Map.Entry<String, ArrayList<Entity>> entityMap : allEntities.entrySet()){
+            ArrayList<Entity> entityList = entityMap.getValue();
+            for(Entity e : entityList){
+                Coordinate prevPos = e.getPosition();
+                Coordinate newPos = grid.moveEntityOnGrid(e);
 
-        allEntities.forEach((entityType, entityList) -> { // new version
-            entityList.forEach(e -> e.setPosition(grid.moveEntityOnGrid(e)));
-        });
+                if(!newPos.equals(prevPos)){ // if we moved the entity
+                    e.setPosition(newPos); // set its new location
+                    grid.updateGridCoordinateIsAvailable(prevPos); // update that the previous location is free
+                    grid.updateGridCoordinateIsTaken(newPos); // update that the new location is now taken
+                }
+            }
+        }
     }
 
     public Grid getGrid() {

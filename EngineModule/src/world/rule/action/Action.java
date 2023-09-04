@@ -16,7 +16,7 @@ abstract public class Action implements Serializable {
     String propToChangeName;
     String expression;
     protected Object expressionVal;
-    int currentTick; // new
+    int currentTick; // todo: maybe can delete because we get it in the ParametersForAction
 
     public Action(String mainEntityName, SecondaryEntity secondEntityInfo, String propToChangeName, String expression) {
         this.mainEntityName=mainEntityName;
@@ -43,6 +43,11 @@ abstract public class Action implements Serializable {
     public String getExpression() {
         return expression;
     }
+
+    public Object getExpressionVal() {
+        return expressionVal;
+    }
+
     public void setExpressionVal(Object expressionVal) {
         this.expressionVal = expressionVal;
     }

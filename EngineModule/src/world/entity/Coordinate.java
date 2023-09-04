@@ -13,6 +13,10 @@ public class Coordinate {
         return row;
     }
 
+    public boolean isEqual(Coordinate other) {
+       return other.getRow().equals(row) && other.getCol().equals(col);
+    }
+
     public void setRow(Integer row) {
         this.row = row;
     }

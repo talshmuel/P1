@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 public class Entity implements Serializable {
+    private static int nextId = 1;
     String name;
+    int ID;
     Map <String, Property> properties;
     Coordinate position; // describes the position of the entity on the grid
 
@@ -14,6 +16,7 @@ public class Entity implements Serializable {
         this.name = name;
         this.properties = properties;
         this.position = null; // at the beginning it's null, and when the simulation starts, it will be randomized
+        this.ID = nextId++;
     }
 
     public String getName() {
@@ -37,5 +40,11 @@ public class Entity implements Serializable {
         return properties;
     }
 
+    public int getID() {
+        return ID;
+    }
 
+    public void setID(int ID) {
+        this.ID = ID;
+    }
 }

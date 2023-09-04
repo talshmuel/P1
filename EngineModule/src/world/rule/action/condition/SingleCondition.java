@@ -71,7 +71,6 @@ public class SingleCondition extends Condition {
                 kill = true;
         }
         return kill;
-
         /*boolean kill=false; // old version
         int len = thenActions.size();
         for(int i=0; i<len;i++){
@@ -89,7 +88,6 @@ public class SingleCondition extends Condition {
                 kill = true;
         }
         return kill;
-
         /*boolean kill=false; // old version
         int len = elseActions.size();
         for(int i=0; i<len;i++){
