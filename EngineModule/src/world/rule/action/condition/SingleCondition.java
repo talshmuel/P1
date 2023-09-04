@@ -44,7 +44,6 @@ public class SingleCondition extends Condition {
             return activateElseActions(((ParametersForCondition)parameters).getElseParams());
         else
             return false;
-
         /* // old version
         if(checkCondition(propsToChange))
             return activateThenActions(((PropertiesToCondition)propsToChange).getThenProps());

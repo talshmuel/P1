@@ -23,6 +23,7 @@ public class WorldCreator {
     ArrayList<EntityDefinition> entityDefList;
     ArrayList<Rule> rulesList;
     Map<String, Integer> endConditionsMap;
+    Grid grid;
 
     public void setEnvironmentVarMap(Map<String, Property> environmentVarMap) {
         this.environmentVarMap = environmentVarMap;

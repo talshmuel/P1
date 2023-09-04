@@ -57,4 +57,8 @@ abstract public class Action implements Serializable {
     public void setCurrentTick(int currentTick) {
         this.currentTick = currentTick;
     }
+
+    public void setMainEntityName(String mainEntityName) {
+        this.mainEntityName = mainEntityName;
+    }
 }

@@ -31,13 +31,14 @@ import world.rule.action.calculation.Divide;
 import world.rule.action.calculation.Multiply;
 import world.rule.action.condition.Condition;
 import world.rule.action.condition.MultipleCondition;
-import world.rule.action.condition.Proximity;
+import world.rule.action.Proximity;
 import world.rule.action.condition.SingleCondition;
 import xml.reader.XMLReader;
 import xml.reader.schema.generated.PRDWorld;
 import xml.reader.validator.*;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -284,7 +285,15 @@ public class Engine implements EngineInterface, Serializable {
 
     ParametersForAction getParametersForAction(Action action, Entity mainEntity, Entity secondaryEntity){
         ParametersForAction params;
-        if(!(action instanceof Condition)) {
+
+        if(action instanceof Proximity){
+            ((Proximity) action).setSourcePos(mainEntity.getPosition());
+
+            ArrayList<Action> thenActions = ((Proximity)action).getThenActions();
+            ArrayList<ParametersForAction> thenParams = getParametersForCondition(thenActions, mainEntity, secondaryEntity);
+            params = new ParametersForCondition(null, mainEntity, secondaryEntity, ticks, thenParams, null);
+        }
+        else if(!(action instanceof Condition)) {
             Property mainProp = null;
             if(!(action instanceof Replace)){
                 mainProp = mainEntity.getPropertyByName(action.getPropToChangeName());
@@ -300,11 +309,6 @@ public class Engine implements EngineInterface, Serializable {
             ArrayList<Action> elseActions = ((Condition)action).getElseActions();
             ArrayList<ParametersForAction> elseParams = getParametersForCondition(elseActions, mainEntity, secondaryEntity);
 
-            if(action instanceof  Proximity){ // todo
-                ((Proximity) action).setSourcePos(mainEntity.getPosition());
-                ((Proximity) action).setTargetPos(new Coordinate(0, 0)); // todo!!!!!!!!!!!!!!!!
-            }
-
             if(action instanceof SingleCondition) {
                 Property mainProp = mainEntity.getPropertyByName(action.getPropToChangeName());
                 params = new ParametersForCondition(mainProp, mainEntity, secondaryEntity, ticks, thenParams, elseParams);
@@ -317,6 +321,7 @@ public class Engine implements EngineInterface, Serializable {
     }
 
     ArrayList<ParametersForAction> getParametersForCondition(ArrayList<Action> actionList, Entity mainEntity, Entity secondEntity){
+        // todo: maybe change the name to get parameters for list of actions
         ArrayList<ParametersForAction> params = null;
 
         if(actionList != null){
@@ -739,33 +744,35 @@ public class Engine implements EngineInterface, Serializable {
     }
 
     private void setValueOfExpressionOnAction(Action action, Entity entity){
-        Property actionProp = entity.getPropertyByName(action.getPropToChangeName());
-
-        if(!(action instanceof MultipleCondition)) {
-            action.setExpressionVal(getValueOfExpression(action.getExpression(), entity, actionProp));
-            if (action instanceof Calculation) {
-                Object expression2Val = getValueOfExpression(((Calculation) action).getExpression2(), entity, actionProp);
-                ((Calculation) action).setExpression2Val(expression2Val);
-            }
+        if(action instanceof Proximity){ // there is no property
+            // TODO של החיים
+            action.setExpressionVal(Integer.parseInt(action.getExpression()));
         }
+        else {
+            Property actionProp = entity.getPropertyByName(action.getPropToChangeName());
 
-        if(action instanceof Condition){ // todo
-            if(action instanceof Proximity){
-                action.setExpressionVal(world.getGrid());
+            if(!(action instanceof MultipleCondition)) {
+                action.setExpressionVal(getValueOfExpression(action.getExpression(), entity, actionProp));
+                if (action instanceof Calculation) {
+                    Object expression2Val = getValueOfExpression(((Calculation) action).getExpression2(), entity, actionProp);
+                    ((Calculation) action).setExpression2Val(expression2Val);
+                }
             }
 
-            if(((Condition) action).getThenActions() != null)
-                for (Action thenAction : ((Condition) action).getThenActions())
-                    setValueOfExpressionOnAction(thenAction, entity);
+            if(action instanceof Condition){ // todo
+                if(((Condition) action).getThenActions() != null)
+                    for (Action thenAction : ((Condition) action).getThenActions())
+                        setValueOfExpressionOnAction(thenAction, entity);
 
-            if(((Condition) action).getElseActions() != null)
-                for (Action elseAction : ((Condition) action).getElseActions())
-                    setValueOfExpressionOnAction(elseAction, entity);
-        }
+                if(((Condition) action).getElseActions() != null)
+                    for (Action elseAction : ((Condition) action).getElseActions())
+                        setValueOfExpressionOnAction(elseAction, entity);
+            }
 
-        if(action instanceof MultipleCondition){
-            for(Condition condition : ((MultipleCondition)action).getConditions()){
-                setValueOfExpressionOnAction(condition, entity);
+            if(action instanceof MultipleCondition){
+                for(Condition condition : ((MultipleCondition)action).getConditions()){
+                    setValueOfExpressionOnAction(condition, entity);
+                }
             }
         }
     }
@@ -813,16 +820,18 @@ public class Engine implements EngineInterface, Serializable {
     /////////////////////////////////////// HARD CODED /////////////////////////////////////////////////////////////////////////////////
 
     private void hardCodedMaster2(){
+        Grid grid = new Grid(3, 3);
+
         Map<String, Property> environmentVariables = hardCodedMaster2Environment();
         ArrayList<EntityDefinition> entitiesDefinition = hardCodedMaster2EntitiesDefinitions();
-        ArrayList<Rule> rules = hardCodedMaster2Rules();
+        ArrayList<Rule> rules = hardCodedMaster2Rules(grid);
 
         Map<String, Integer> termination = new HashMap<>();
         termination.put("ticks", 5);
         termination.put("seconds", 10);
 
 
-        Grid grid = new Grid(3, 3);
+
         setWorld(new World(entitiesDefinition, environmentVariables, rules, termination, grid));
     }
 
@@ -930,7 +939,7 @@ public class Engine implements EngineInterface, Serializable {
         actionsR2.add(m1);
         return new Rule("r2", actionsR2, 1, 1);
     }
-    private Rule hardChardCodedMaster2Rule3(){
+    private Rule hardChardCodedMaster2Rule3(Grid grid){
         Increase r3a1 = new Increase("ent-1", null, "p1", "percent(evaluate(ent-2.p1),environment(e1))");
         Decrease r3a2 = new Decrease("ent-2", null, "p2", "evaluate(ent-1.p1)");
         Replace r3a3 = new Replace("ent-1", null, "ent-2", "scratch");
@@ -940,16 +949,17 @@ public class Engine implements EngineInterface, Serializable {
         proximityActions.add(r3a2);
         proximityActions.add(r3a3);
 
-        Proximity proximity = new Proximity("ent-1", null, null, "1", proximityActions, "ent-2");
+        Proximity proximity = new Proximity("ent-1", null, null, "1", proximityActions, "ent-2", grid);
+
         ArrayList<Action> actionsR3 = new ArrayList<>();
         actionsR3.add(proximity);
         return new Rule("r3", actionsR3, 1, 1);
     }
-    private ArrayList<Rule> hardCodedMaster2Rules(){
+    private ArrayList<Rule> hardCodedMaster2Rules(Grid grid){
         ArrayList<Rule> rules = new ArrayList<>();
         rules.add(hardChardCodedMaster2Rule1());
         rules.add(hardChardCodedMaster2Rule2());
-        rules.add(hardChardCodedMaster2Rule3());
+        rules.add(hardChardCodedMaster2Rule3(grid));
         return rules;
     }
 
