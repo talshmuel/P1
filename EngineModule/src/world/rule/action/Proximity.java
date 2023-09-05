@@ -6,6 +6,7 @@ import exception.IncompatibleType;
 import world.Grid;
 import world.entity.Coordinate;
 import world.entity.Entity;
+import world.property.impl.Property;
 import world.rule.action.api.Expression;
 import world.rule.action.api.ParametersForAction;
 import world.rule.action.api.ParametersForCondition;
@@ -17,11 +18,11 @@ import java.util.List;
 public class Proximity extends Action{
     /**
      EXPLANATION:
-     the "expression" field is the "of"
+     mainEntityName -> source entity
+     expression -> by
 
-     works similarly to condition, it has a list of action to perform if the condition is true (thenActions)
-     so if the entities are close to each other, the actions will be performed.
-
+     works similarly to condition, it has a list of action to perform if the condition is true (thenActions).
+     if the entities are close to each other, the actions will be performed.
      **/
     ArrayList<Action> thenActions;
     String targetEntityName;
@@ -50,16 +51,19 @@ public class Proximity extends Action{
         List<Coordinate> surroundingCells = grid.findEnvironmentCells(sourcePos, (Integer)expression.getValue());
         Entity[][] entityMatrix = grid.getEntityMatrix();
 
-        // if in one of those cells there is an entity of target type -> perform the actions)\
+        // if in one of those cells there is an entity of target type -> perform the actions)
         for(Coordinate c : surroundingCells){
             if(entityMatrix[c.getRow()][c.getCol()] != null){
                 if(entityMatrix[c.getRow()][c.getCol()].getName().equals(targetEntityName)){
-                    // todo
+                    // one of the thenActions contain the target entity-> similar to SecondaryEntity.
                     Entity targetEntity = entityMatrix[c.getRow()][c.getCol()];
                     ArrayList<ParametersForAction> thenParams = ((ParametersForCondition)parameters).getThenParams();
                     for(int i=0 ; i<thenActions.size() ; i++){
                         if(thenActions.get(i).getMainEntityName().equals(targetEntityName)){
-                            System.out.println("@@@@");
+                            // edit the parameters for action
+                            String propertyName = thenActions.get(i).getPropToChangeName();
+                            thenParams.get(i).setMainProp(targetEntity.getPropertyByName(propertyName));
+                            thenParams.get(i).setMainEntity(targetEntity);
                         }
                     }
                     return activateThenActions(((ParametersForCondition)parameters).getThenParams());

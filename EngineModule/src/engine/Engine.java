@@ -258,23 +258,21 @@ public class Engine implements EngineInterface, Serializable {
         if (action.activate(params)) { // need to kill
             entitiesToKill.add(entity);
             if(action instanceof Replace){
-                // meanwhile without position, so it won't take space on grid !
+                // meanwhile without position, so it won't take space on grid ! (the new entities don't exist yet)
                 entitiesToCreate.add(((Replace)action).getEntityToCreate());
             }
         }
     }
     private void setValueOfExpressionOnAction(Action action, Entity entity){ // todo -> לפצל לפונקציות בצורה יפה יותררר
-        if(action instanceof Decrease){
+        if(action instanceof Decrease || action instanceof Increase || action instanceof Set || action instanceof Calculation){
             String expression = action.getExpressionNew().getName();
             Property actionProp = entity.getPropertyByName(action.getPropToChangeName());
             action.getExpressionNew().setValue(getValueOfExpression(expression, entity, actionProp));
-        } else if(action instanceof Increase){
-            String expression = action.getExpressionNew().getName();
-            Property actionProp = entity.getPropertyByName(action.getPropToChangeName());
-            action.getExpressionNew().setValue(getValueOfExpression(expression, entity, actionProp));
-        } else if(action instanceof Kill){
-            return;
-        } else if(action instanceof Proximity){ // there is no property
+            if(action instanceof Calculation) {
+                Object expression2Val = getValueOfExpression(((Calculation) action).getExpression2().getName(), entity, actionProp);
+                ((Calculation) action).getExpression2().setValue(expression2Val);
+            }
+        } else if(action instanceof Proximity) { // there is no property
             String expression = action.getExpressionNew().getName();
             action.getExpressionNew().setValue(Integer.parseInt(expression));
 
@@ -283,21 +281,8 @@ public class Engine implements EngineInterface, Serializable {
                     setValueOfExpressionOnAction(thenAction, entity);
                 }
             }
-        } else if(action instanceof Replace) {
-            // todo
-            return;
-        } else if(action instanceof Set){
-            String expression = action.getExpressionNew().getName();
-            Property actionProp = entity.getPropertyByName(action.getPropToChangeName());
-            action.getExpressionNew().setValue(getValueOfExpression(expression, entity, actionProp));
-        } else if(action instanceof Calculation) {
-            Property actionProp = entity.getPropertyByName(action.getPropToChangeName());
-
-            String expression = action.getExpressionNew().getName();
-            action.getExpressionNew().setValue(getValueOfExpression(expression, entity, actionProp));
-
-            Object expression2Val = getValueOfExpression(((Calculation) action).getExpression2().getName(), entity, actionProp);
-            ((Calculation) action).getExpression2().setValue(expression2Val);
+        } else if(action instanceof Kill || action instanceof Replace) {
+            return; // todo
         }
 
         if(action instanceof Condition){
@@ -379,12 +364,6 @@ public class Engine implements EngineInterface, Serializable {
             Entity toCreate = new Entity(nameToCreate, null); // fill properties in Replace
             ((Replace)action).setEntityToCreate(toCreate);
             params = new ParametersForAction(null, null, null, ticks);
-
-            for(EntityDefinition d : world.getEntitiesDefinition()){
-                if(d.getName().equals(nameToCreate))
-                    System.out.println("@@");
-            }
-
         }
         else if(!(action instanceof Condition)) {
             Property mainProp = mainEntity.getPropertyByName(action.getPropToChangeName());
@@ -943,7 +922,7 @@ public class Engine implements EngineInterface, Serializable {
         ArrayList<Rule> rules = new ArrayList<>();
         rules.add(hardChardCodedMaster2Rule1());
         rules.add(hardChardCodedMaster2Rule2(entitiesDefinition));
-        //rules.add(hardChardCodedMaster2Rule3(grid, entitiesDefinition));
+        rules.add(hardChardCodedMaster2Rule3(grid, entitiesDefinition));
         rules.add(hardChardCodedMaster2Rule4(entitiesDefinition));
         return rules;
     }
@@ -957,7 +936,7 @@ public class Engine implements EngineInterface, Serializable {
             }
         }
 
-        Replace replace = new Replace("ent-1", null, nameToCreate, "scratch", defToCreate);
+        Replace replace = new Replace("ent-1", null, nameToCreate, "derived", defToCreate);
         ArrayList<Action> actions = new ArrayList<>();
         actions.add(replace);
         return new Rule("r3", actions, 1, 1);
