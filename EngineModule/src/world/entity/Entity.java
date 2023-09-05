@@ -47,4 +47,8 @@ public class Entity implements Serializable {
     public void setID(int ID) {
         this.ID = ID;
     }
+
+    public void setProperties(Map<String, Property> properties) {
+        this.properties = properties;
+    }
 }

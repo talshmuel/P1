@@ -1,6 +1,7 @@
 package world.rule.action.api;
 
 import world.entity.Entity;
+import world.entity.EntityDefinition;
 import world.property.impl.Property;
 
 public class ParametersForAction {
@@ -15,7 +16,6 @@ public class ParametersForAction {
         this.secondaryEntity = secondaryEntity;
         this.currentTicks = currentTicks;
     }
-
     public Property getMainProp() {
         return mainProp;
     }

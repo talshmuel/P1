@@ -13,11 +13,10 @@ import world.rule.action.Action;
 
 import java.io.Serializable;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class World implements Serializable {
     ArrayList<EntityDefinition> entitiesDefinition; // size as number of entities TYPES. describes each entity
-    ArrayList<Entity> entities;
+    ArrayList<Entity> entities; // todo: delete
     Map<String, Property> environmentVariables;
     ArrayList<Rule> rules;
     //ArrayList<EndCondition> endConditions;
@@ -41,8 +40,6 @@ public class World implements Serializable {
     public Map<String, Property> getEnvironmentVariables() {
         return environmentVariables;
     }
-
-
 
     public World(ArrayList<EntityDefinition> entitiesDefinition, Map<String, Property> environmentVariables,
                  ArrayList<Rule> rules, Map<String, Integer> endConditions, Grid grid){
@@ -70,7 +67,6 @@ public class World implements Serializable {
             allEntities.put(entityName, instancesList);
         }
 
-        // todo delete later
         int i=1;
         for (Map.Entry<String, ArrayList<Entity>> entry : allEntities.entrySet()){
             System.out.println("-----------------------------------------------");
@@ -129,12 +125,13 @@ public class World implements Serializable {
         }
 
         // new version
-        for(Entity entityToKill : entitiesToKill){ // todo: לא יעיל ככ אולי לחפש משהו אחר
+        for(Entity entityToKill : entitiesToKill){
             for(Map.Entry<String, ArrayList<Entity>> entry : allEntities.entrySet()){
                 ArrayList<Entity> entityList = entry.getValue();
 
                 for(Entity entity : entityList){
                     if(entity.equals(entityToKill)){
+                        grid.updateGridCoordinateIsAvailableMATRIX(entity.getPosition());
                         entityList.remove(entity);
                         break;
                     }
@@ -143,24 +140,37 @@ public class World implements Serializable {
         }
     }
 
+    public void createEntities(ArrayList<Entity> entitiesToCreate){
+        for(Entity entityToCreate : entitiesToCreate){
+            for(Map.Entry<String, ArrayList<Entity>> entry : allEntities.entrySet()){
+                ArrayList<Entity> entityList = entry.getValue();
+
+                for(Entity entity : entityList){
+                    if(entity.equals(entityToCreate)){
+                        entity.setPosition(grid.findNewAvailableCell());
+                        grid.updateGridCoordinateIsTakenMATRIX(entity.getPosition(), entity);
+                        entityList.add(entityToCreate);
+                        break;
+                    }
+                }
+            }
+        }
+    }
     public ArrayList<Entity> getEntities() {
         return entities;
     }
     public Map<String, ArrayList<Entity>> getAllEntities() {
         return allEntities;
     }
-
     public final ArrayList<EntityDefinition> getEntitiesDefinition() {
         return entitiesDefinition;
     }
-
     public ArrayList<Rule> getRules() {
         return rules;
     }
     public Integer getEndConditionValueByType(String endConditionType){
         return endConditions.get(endConditionType);
     }
-
     public ArrayList<PropertyDefinition> getEnvironmentDefinition(){
         ArrayList<PropertyDefinition> res = new ArrayList<>();
         for(Property environmentProp : environmentVariables.values()){
@@ -168,7 +178,6 @@ public class World implements Serializable {
         }
         return res;
     }
-
     public void setEnvironmentValue(String name, Object val) throws IncompatibleType {
         environmentVariables.get(name).set(val);
     }
@@ -178,7 +187,6 @@ public class World implements Serializable {
             res.add(new PropertyValueInfo(name, property.getVal()));});
         return res;
     }
-
     public int getNumOfEntitiesLeft(String entityName){ // todo: delete
         int count = 0;
         for(Entity entity : entities)
@@ -186,7 +194,6 @@ public class World implements Serializable {
                 count++;
         return count;
     }
-
     public int getNumOfEntitiesLeft2(String entityName){ // new version -> map
         int count = 0;
         for(Map.Entry<String, ArrayList<Entity>> entry : allEntities.entrySet()) {
@@ -221,8 +228,10 @@ public class World implements Serializable {
 
             System.out.println("Entity #" + i++ + ": " + entityName + ":");
             int j=1;
-            for(Entity e : entityList){
-                entityInPlace = false;
+            for(Entity entity : entityList){
+                entity.setPosition(grid.findNewAvailableCell());
+                System.out.println("Instance #" + j++ + ": new position: (" + entity.getPosition().getRow() + ", " + entity.getPosition().getCol() + ")");
+                /*entityInPlace = false;
                 while(!entityInPlace){
                     int newRow = random.nextInt(grid.getNumOfRows());
                     int newCol = random.nextInt(grid.getNumOfCols());
@@ -231,11 +240,11 @@ public class World implements Serializable {
                         Coordinate position = new Coordinate(newRow, newCol);
                         e.setPosition(position);
                         System.out.println("Instance #" + j++ + ": new position: (" + e.getPosition().getRow() + ", " + e.getPosition().getCol() + ")");
-                        grid.updateGridCoordinateIsTaken(position); // todo: delete
+                        //grid.updateGridCoordinateIsTaken(position); // todo: delete
                         grid.updateGridCoordinateIsTakenMATRIX(position, e);
                         entityInPlace = true;
                     }
-                }
+                }*/
             }
         }
         System.out.println("--------------------------------------------------------------------------------------");
@@ -245,12 +254,12 @@ public class World implements Serializable {
             ArrayList<Entity> entityList = entityMap.getValue();
             for(Entity e : entityList){
                 Coordinate prevPos = e.getPosition();
-                Coordinate newPos = grid.moveEntityOnGrid(e);
+                Coordinate newPos = grid.moveEntityOnGridMATRIX(e);
 
                 if(!newPos.equals(prevPos)){ // if we moved the entity
                     e.setPosition(newPos); // set its new location
-                    grid.updateGridCoordinateIsAvailable(prevPos); // update that the previous location is free // todo delete
-                    grid.updateGridCoordinateIsTaken(newPos); // update that the new location is now taken // todo delete
+                    //grid.updateGridCoordinateIsAvailable(prevPos); // update that the previous location is free // todo delete
+                    //grid.updateGridCoordinateIsTaken(newPos); // update that the new location is now taken // todo delete
 
                     grid.updateGridCoordinateIsAvailableMATRIX(prevPos); // update that the previous location is free
                     grid.updateGridCoordinateIsTakenMATRIX(newPos, e); // update that the new location is now taken
@@ -270,6 +279,15 @@ public class World implements Serializable {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    public void addEntity(Entity entityToAdd){
+        for(Map.Entry<String, ArrayList<Entity>> entry : allEntities.entrySet()){
+            String name = entry.getKey();
+            if(name.equals(entityToAdd.getName())){
+                entry.getValue().add(entityToAdd);
             }
         }
     }

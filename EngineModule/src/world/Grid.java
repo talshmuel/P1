@@ -24,9 +24,7 @@ public class Grid {
             }
         }
 
-
         matrix = new Boolean[numOfRows][numOfCols];
-
         // populate the matrix - at the beginning the matrix is "empty" so it's false
         for (int i = 0; i < numOfRows; i++) {
             for (int j = 0; j < numOfCols; j++) {
@@ -57,10 +55,10 @@ public class Grid {
     }
     public Coordinate moveEntityOnGridMATRIX(Entity entity){
         List<Coordinate> availableCoordinates = new ArrayList<>();
-        Coordinate right = canMoveRight(entity.getPosition());
-        Coordinate left = canMoveLeft(entity.getPosition());
-        Coordinate down = canMoveDown(entity.getPosition());
-        Coordinate up = canMoveUp(entity.getPosition());
+        Coordinate right = canMoveRightMATRIX(entity.getPosition());
+        Coordinate left = canMoveLeftMATRIX(entity.getPosition());
+        Coordinate down = canMoveDownMATRIX(entity.getPosition());
+        Coordinate up = canMoveUpMATRIX(entity.getPosition());
 
         if(right != null)
             availableCoordinates.add(right);
@@ -129,12 +127,12 @@ public class Grid {
 
         List<Coordinate> result = new ArrayList<>();
         for (int r = 1; r <= rank; r++) {
-            for (int dx = -r; dx <= r; dx++) {
-                for (int dy = -r; dy <= r; dy++) {
-                    if (Math.abs(dx) == r || Math.abs(dy) == r) {
-                        int newX = (source.getRow() + dx + numOfRows) % numOfRows;
-                        int newY = (source.getCol() + dy + numOfCols) % numOfCols;
-                        result.add(new Coordinate(newX, newY));
+            for (int row = -r; row <= r; row++) {
+                for (int col = -r; col <= r; col++) {
+                    if (Math.abs(row) == r || Math.abs(col) == r) {
+                        int newRow = (source.getRow() + row + numOfRows) % numOfRows;
+                        int newCol = (source.getCol() + col + numOfCols) % numOfCols;
+                        result.add(new Coordinate(newRow, newCol));
                     }
                 }
             }
@@ -142,7 +140,21 @@ public class Grid {
         return result;
     }
 
+    public Coordinate findNewAvailableCell(){ // without updating anything, only saying it's free
+        Random random = new Random();
+        boolean entityInPlace=false;
 
+        while(!entityInPlace){
+            int newRow = random.nextInt(numOfRows);
+            int newCol = random.nextInt(numOfCols);
+            if (isPositionAvailableMATRIX(newRow, newCol)) {
+                Coordinate position = new Coordinate(newRow, newCol);
+                System.out.println("new position: (" + newRow + ", " + newCol + ")");
+                return position;
+            }
+        }
+        return null; // exception?
+    }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

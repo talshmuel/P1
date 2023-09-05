@@ -1,5 +1,6 @@
 package engine;
 
+import com.sun.corba.se.impl.ior.WireObjectKeyTemplate;
 import data.transfer.object.EndSimulationData;
 import data.transfer.object.DataFromUser;
 import data.transfer.object.definition.*;
@@ -127,37 +128,37 @@ public class Engine implements EngineInterface, Serializable {
 
     public void runRulesOnEachEntity(List<Action> actionsThatShouldRun) throws IncompatibleAction, DivisionByZeroException, IncompatibleType {
         ArrayList<Entity> entitiesToKill = new ArrayList<>();
-        // todo: ArrayList<Entity> entitiesToCreate = new ArrayList<>();
+        ArrayList<Entity> entitiesToCreate = new ArrayList<>();
 
         for (Map.Entry<String, ArrayList<Entity>> entry : world.getAllEntities().entrySet()) {
             ArrayList<Entity> entityList = entry.getValue();
             for(Entity entity : entityList) {
                 for(Action action : actionsThatShouldRun) {
                     if (actionShouldRunOnEntity(action, entity)) { // 4. check if the action works on the current instance
-                        runAction(action, entity, entitiesToKill);
+                        runAction(action, entity, entitiesToKill, entitiesToCreate);
                     }
                 }  // 4.b if not -> skip to the next action
             }
         }
         world.killEntities(entitiesToKill);
-        // todo: world.createNewEntities(entitiesToCreate);
+        world.createEntities(entitiesToCreate);
     }
-    public void runAction(Action action, Entity entity, ArrayList<Entity> entitiesToKill) throws IncompatibleAction, IncompatibleType, DivisionByZeroException {
+    public void runAction(Action action, Entity entity, ArrayList<Entity> entitiesToKill, ArrayList<Entity> entitiesToCreate) throws IncompatibleAction, IncompatibleType, DivisionByZeroException {
         if (actionHasSecondaryEntity(action)) { // 4.a if yes -> check if there is a secondary entity regarding the action
             // 5.a if yes:
             List<Entity> secondaryEntities = makeListOfSecondaryEntities(action); // make a list of all the secondary entities needs to activate
             if(secondaryEntities.isEmpty()){ // if no second entity has answered the condition
                 Action newAction = createNewActionWithoutSecondaryEntity(action, entity);
-                activateAction(newAction, entity, null, entitiesToKill);
+                activateAction(newAction, entity, null, entitiesToKill, entitiesToCreate);
             }
             else {
                 for (Entity secondary : secondaryEntities) { // go over all the secondary entities instances and make the action on main entity and secondary entity
-                    activateAction(action, entity, secondary, entitiesToKill); // need to send main and secondary entities to activate
+                    activateAction(action, entity, secondary, entitiesToKill, entitiesToCreate); // need to send main and secondary entities to activate
                 }
             }
         }
         else { // 5.b if not -> do the action on the current entity instance
-            activateAction(action, entity, null, entitiesToKill);
+            activateAction(action, entity, null, entitiesToKill, entitiesToCreate);
         }
     }
     private List<Entity> makeListOfSecondaryEntities(Action action) throws IncompatibleAction, IncompatibleType {
@@ -251,11 +252,15 @@ public class Engine implements EngineInterface, Serializable {
 
         return newAction;
     }
-    public void activateAction(Action action, Entity entity, Entity secondary, ArrayList<Entity> entitiesToKill) throws IncompatibleAction, DivisionByZeroException, IncompatibleType {
+    public void activateAction(Action action, Entity entity, Entity secondary, ArrayList<Entity> entitiesToKill, ArrayList<Entity> entitiesToCreate) throws IncompatibleAction, DivisionByZeroException, IncompatibleType {
         setValueOfExpressionOnAction(action, entity);
         ParametersForAction params = getParametersForAction(action, entity, secondary);
         if (action.activate(params)) { // need to kill
             entitiesToKill.add(entity);
+            if(action instanceof Replace){
+                // meanwhile without position, so it won't take space on grid !
+                entitiesToCreate.add(((Replace)action).getEntityToCreate());
+            }
         }
     }
     private void setValueOfExpressionOnAction(Action action, Entity entity){ // todo -> לפצל לפונקציות בצורה יפה יותררר
@@ -368,12 +373,21 @@ public class Engine implements EngineInterface, Serializable {
             ArrayList<Action> thenActions = ((Proximity)action).getThenActions();
             ArrayList<ParametersForAction> thenParams = getParametersForCondition(thenActions, mainEntity, secondaryEntity);
             params = new ParametersForCondition(null, mainEntity, secondaryEntity, ticks, thenParams, null);
+        } else if(action instanceof Replace){
+            // in main entity send an entity to create
+            String nameToCreate = ((Replace)action).getEntityToCreateName();
+            Entity toCreate = new Entity(nameToCreate, null); // fill properties in Replace
+            ((Replace)action).setEntityToCreate(toCreate);
+            params = new ParametersForAction(null, null, null, ticks);
+
+            for(EntityDefinition d : world.getEntitiesDefinition()){
+                if(d.getName().equals(nameToCreate))
+                    System.out.println("@@");
+            }
+
         }
         else if(!(action instanceof Condition)) {
-            Property mainProp = null;
-            if(!(action instanceof Replace)){
-                mainProp = mainEntity.getPropertyByName(action.getPropToChangeName());
-            }
+            Property mainProp = mainEntity.getPropertyByName(action.getPropToChangeName());
             params = new ParametersForAction(mainProp, mainEntity, secondaryEntity, ticks);
         }
         else { // add parameters for conditions:
@@ -790,12 +804,11 @@ public class Engine implements EngineInterface, Serializable {
 
         Map<String, Property> environmentVariables = hardCodedMaster2Environment();
         ArrayList<EntityDefinition> entitiesDefinition = hardCodedMaster2EntitiesDefinitions();
-        ArrayList<Rule> rules = hardCodedMaster2Rules(grid);
+        ArrayList<Rule> rules = hardCodedMaster2Rules(grid, entitiesDefinition);
 
         Map<String, Integer> termination = new HashMap<>();
         termination.put("ticks", 5);
         termination.put("seconds", 10);
-
 
 
         setWorld(new World(entitiesDefinition, environmentVariables, rules, termination, grid));
@@ -857,7 +870,7 @@ public class Engine implements EngineInterface, Serializable {
         actionsR1.add(r1a4);
         return new Rule("r1", actionsR1, 0.4, 1);
     }
-    private Rule hardChardCodedMaster2Rule2(){
+    private Rule hardChardCodedMaster2Rule2(ArrayList<EntityDefinition> entitiesDefinition){
         // todo: property of condition is expression
         SingleCondition r2a1 = new SingleCondition("ent-1", null, "p1",
                 SingleCondition.Operator.BIGGERTHAN, new Expression("4"), null, null);
@@ -903,10 +916,18 @@ public class Engine implements EngineInterface, Serializable {
         actionsR2.add(m1);
         return new Rule("r2", actionsR2, 1, 1);
     }
-    private Rule hardChardCodedMaster2Rule3(Grid grid){
+    private Rule hardChardCodedMaster2Rule3(Grid grid, ArrayList<EntityDefinition> entitiesDefinition){
         Increase r3a1 = new Increase("ent-1", null, "p1", new Expression("percent(evaluate(ent-2.p1),environment(e1))"));
         Decrease r3a2 = new Decrease("ent-2", null, "p2", new Expression("evaluate(ent-1.p1)"));
-        Replace r3a3 = new Replace("ent-1", null, "ent-2", "scratch");
+
+        String nameToCreate="ent-2";
+        EntityDefinition defToCreate=null;
+        for(EntityDefinition def : entitiesDefinition){
+            if(def.getName().equals(nameToCreate)){
+                defToCreate = def;
+            }
+        }
+        Replace r3a3 = new Replace("ent-1", null, nameToCreate, "scratch", defToCreate);
 
         ArrayList<Action> proximityActions = new ArrayList<>();
         proximityActions.add(r3a1);
@@ -918,13 +939,30 @@ public class Engine implements EngineInterface, Serializable {
         actionsR3.add(proximity);
         return new Rule("r3", actionsR3, 1, 1);
     }
-    private ArrayList<Rule> hardCodedMaster2Rules(Grid grid){
+    private ArrayList<Rule> hardCodedMaster2Rules(Grid grid, ArrayList<EntityDefinition> entitiesDefinition){
         ArrayList<Rule> rules = new ArrayList<>();
         rules.add(hardChardCodedMaster2Rule1());
-        rules.add(hardChardCodedMaster2Rule2());
-        rules.add(hardChardCodedMaster2Rule3(grid));
+        rules.add(hardChardCodedMaster2Rule2(entitiesDefinition));
+        //rules.add(hardChardCodedMaster2Rule3(grid, entitiesDefinition));
+        rules.add(hardChardCodedMaster2Rule4(entitiesDefinition));
         return rules;
     }
+
+    private Rule hardChardCodedMaster2Rule4(ArrayList<EntityDefinition> entitiesDefinition){
+        String nameToCreate="ent-2";
+        EntityDefinition defToCreate=null;
+        for(EntityDefinition def : entitiesDefinition){
+            if(def.getName().equals(nameToCreate)){
+                defToCreate = def;
+            }
+        }
+
+        Replace replace = new Replace("ent-1", null, nameToCreate, "scratch", defToCreate);
+        ArrayList<Action> actions = new ArrayList<>();
+        actions.add(replace);
+        return new Rule("r3", actions, 1, 1);
+    }
+
 
 
 
