@@ -1,24 +1,17 @@
 package xml.reader;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
-import xml.reader.schema.generated.*;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
+//import xml.reader.schema.generated.v1.ObjectFactory;
+//import xml.reader.schema.generated.v1.PRDWorld;
 import xml.reader.validator.*;
+import xml.reader.schema.generated.v2.*;
 
 public class XMLReader {
     private final static String JAXB_XML_GAME_PACKAGE_NAME = "xml.reader.schema.generated";
+    private final static String JAXB_XML_GAME_PACKAGE_NAME_NEW = "xml.reader.schema.generatedNew";
 
     public PRDWorld validateXMLFileAndCreatePRDWorld(String fileName) throws InvalidXMLFileNameException, FileDoesntExistException {
         if (!fileName.toLowerCase().endsWith(".xml")){
@@ -36,6 +29,21 @@ public class XMLReader {
         try {
             JAXBContext context = JAXBContext.newInstance(ObjectFactory.class);
             Unmarshaller unmarshaller = context.createUnmarshaller();
+            FileInputStream xmlFileInputStream = new FileInputStream(fullPath);
+            return (PRDWorld) unmarshaller.unmarshal(xmlFileInputStream);
+        } catch (JAXBException e) {
+            e.printStackTrace();
+            return null;
+        } catch (FileNotFoundException e) {
+            return null;
+        }
+    }
+
+    // old version
+    /*public PRDWorld fromXmlFileToObject(String fullPath) { // old version
+        try {
+            JAXBContext context = JAXBContext.newInstance(ObjectFactory.class);
+            Unmarshaller unmarshaller = context.createUnmarshaller();
 
             FileInputStream xmlFileInputStream = new FileInputStream(fullPath);
 
@@ -49,5 +57,5 @@ public class XMLReader {
         } catch (FileNotFoundException e) {
             return null;
         }
-    }
+    }*/
 }

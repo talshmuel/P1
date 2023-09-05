@@ -1,6 +1,5 @@
 package engine;
 
-import com.sun.corba.se.impl.ior.WireObjectKeyTemplate;
 import data.transfer.object.EndSimulationData;
 import data.transfer.object.DataFromUser;
 import data.transfer.object.definition.*;
@@ -16,8 +15,8 @@ import run.result.PropertyResult;
 import run.result.Result;
 import world.Grid;
 import world.api.AssistFunctions;
-import world.creator.WorldCreator;
-import world.entity.Coordinate;
+import world.creator.WorldCreatorXML;
+import world.creator.XMLFileException;
 import world.entity.Entity;
 import world.entity.EntityDefinition;
 import world.World;
@@ -35,11 +34,9 @@ import world.rule.action.condition.MultipleCondition;
 import world.rule.action.Proximity;
 import world.rule.action.condition.SingleCondition;
 import xml.reader.XMLReader;
-import xml.reader.schema.generated.PRDWorld;
+import xml.reader.schema.generated.v2.*;
 import xml.reader.validator.*;
-
 import java.io.*;
-import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -62,16 +59,24 @@ public class Engine implements EngineInterface, Serializable {
         this.world = world;
     }
     @Override
-    public Boolean createSimulationByXMLFile(String fileName) throws FileDoesntExistException, InvalidXMLFileNameException, EnvironmentException, EntityException, PropertyException, MustBeNumberException, RuleException, TerminationException {
+    public Boolean createSimulationByXMLFile(String fileName) throws FileDoesntExistException, InvalidXMLFileNameException, EnvironmentException, EntityException, PropertyException, MustBeNumberException, RuleException, TerminationException, XMLFileException {
         XMLReader reader = new XMLReader();
         PRDWorld prdWorld = reader.validateXMLFileAndCreatePRDWorld(fileName);
 
         // if file opened successfully, but the data is incorrect, then prdWorld would be null
         if(prdWorld != null){
-            WorldCreator worldCreator = new WorldCreator();
-            /*world = worldCreator.createWorldFromXMLFile(prdWorld);*/ // todo: להחזיר את זה !
-            hardCodedMaster2(); // todo delete later
-            functions.setEnvironmentVariables(world.getEnvironmentVariables());
+            WorldCreatorXML worldCreator = new WorldCreatorXML(); // new version
+            worldCreator.createWorldFromXMLFile(prdWorld); // new version
+
+
+            //WorldCreator worldCreator = new WorldCreator();
+            //world = worldCreator.createWorldFromXMLFile(prdWorld);
+
+            //hardCodedMaster2(); // todo delete later
+
+            //functions.setEnvironmentVariables(world.getEnvironmentVariables());
+
+
             return true;
         } else {
             // something wrong with the data
@@ -359,11 +364,11 @@ public class Engine implements EngineInterface, Serializable {
             ArrayList<ParametersForAction> thenParams = getParametersForCondition(thenActions, mainEntity, secondaryEntity);
             params = new ParametersForCondition(null, mainEntity, secondaryEntity, ticks, thenParams, null);
         } else if(action instanceof Replace){
-            // in main entity send an entity to create
             String nameToCreate = ((Replace)action).getEntityToCreateName();
             Entity toCreate = new Entity(nameToCreate, null); // fill properties in Replace
             ((Replace)action).setEntityToCreate(toCreate);
-            params = new ParametersForAction(null, null, null, ticks);
+            // in main entity send an entity to KILL
+            params = new ParametersForAction(null, mainEntity, null, ticks);
         }
         else if(!(action instanceof Condition)) {
             Property mainProp = mainEntity.getPropertyByName(action.getPropToChangeName());
@@ -545,7 +550,8 @@ public class Engine implements EngineInterface, Serializable {
                     entityDef.getName()));
             propsResults.put(propDef.getName(), propResult);
         }
-        return new EntityResult(propsResults,entityDef.getNumOfInstances(), world.getNumOfEntitiesLeft(entityDef.getName()));
+        //return new EntityResult(propsResults,entityDef.getNumOfInstances(), world.getNumOfEntitiesLeft(entityDef.getName()));
+        return new EntityResult(propsResults,entityDef.getNumOfInstances(), world.getNumOfEntitiesLeft2(entityDef.getName()));
     }
 
     public Map<Object, Integer> createPropertyHistogram(String propName, String entityName){
@@ -790,7 +796,7 @@ public class Engine implements EngineInterface, Serializable {
         termination.put("seconds", 10);
 
 
-        setWorld(new World(entitiesDefinition, environmentVariables, rules, termination, grid));
+        setWorld(new World(entitiesDefinition, environmentVariables, rules, termination, grid, 3));
     }
 
     private Map<String, Property> hardCodedMaster2Environment(){
@@ -819,7 +825,7 @@ public class Engine implements EngineInterface, Serializable {
         pArr.put("p2", pd2);
         pArr.put("p3", pd3);
         pArr.put("p4", pd4);
-        return new EntityDefinition("ent-1", 3, pArr);
+        return new EntityDefinition("ent-1", 2, pArr);
     }
     private EntityDefinition hardCodedMaster2EntityDefinitionEnt2() {
         FloatPropertyDefinition pd1 = new FloatPropertyDefinition("p1", false, 0.0, 100.0, 0.0);

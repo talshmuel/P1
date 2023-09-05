@@ -1,4 +1,4 @@
-package xml.reader;
+package world.creator;
 
 public class XMLFileException extends Exception{
     private final String msg;

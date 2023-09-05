@@ -6,7 +6,7 @@
 //
 
 
-package xml.reader.schema.generated;
+package xml.reader.schema.generated.v1;
 
 import javax.xml.bind.annotation.*;
 
@@ -23,7 +23,6 @@ import javax.xml.bind.annotation.*;
  *       &lt;sequence>
  *         &lt;element ref="{}PRD-name"/>
  *         &lt;element ref="{}PRD-range" minOccurs="0"/>
- *         &lt;element ref="{}PRD-value"/>
  *       &lt;/sequence>
  *       &lt;attribute name="type" use="required">
  *         &lt;simpleType>
@@ -45,18 +44,15 @@ import javax.xml.bind.annotation.*;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
     "prdName",
-    "prdRange",
-    "prdValue"
+    "prdRange"
 })
-@XmlRootElement(name = "PRD-property")
-public class PRDProperty {
+@XmlRootElement(name = "PRD-env-property")
+public class PRDEnvProperty {
 
     @XmlElement(name = "PRD-name", required = true)
     protected String prdName;
     @XmlElement(name = "PRD-range")
     protected PRDRange prdRange;
-    @XmlElement(name = "PRD-value", required = true)
-    protected PRDValue prdValue;
     @XmlAttribute(name = "type", required = true)
     protected String type;
 
@@ -106,30 +102,6 @@ public class PRDProperty {
      */
     public void setPRDRange(PRDRange value) {
         this.prdRange = value;
-    }
-
-    /**
-     * Gets the value of the prdValue property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link PRDValue }
-     *     
-     */
-    public PRDValue getPRDValue() {
-        return prdValue;
-    }
-
-    /**
-     * Sets the value of the prdValue property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link PRDValue }
-     *     
-     */
-    public void setPRDValue(PRDValue value) {
-        this.prdValue = value;
     }
 
     /**

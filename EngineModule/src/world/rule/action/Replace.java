@@ -45,31 +45,83 @@ public class Replace extends Action{ // todo של החייםםםםםםםםםםם
 
     @Override
     public Boolean activate(ParametersForAction parameters) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
+        Map<String, Property> propertiesToCreate = new HashMap<>();
+
         if(mode.equals("scratch")){
-            Map <String, Property> properties = new HashMap<>();
-            Map<String, PropertyDefinition> propsDef = definitionToCreate.getPropsDef();
-            for(Map.Entry<String, PropertyDefinition> d : propsDef.entrySet()){
-                String type = d.getValue().getType();
-                switch (type){
+            for(Map.Entry<String, PropertyDefinition> mapEntry : definitionToCreate.getPropsDef().entrySet()){
+                String type = mapEntry.getValue().getType();
+                PropertyDefinition definition = mapEntry.getValue();
+                propertiesToCreate.put(mapEntry.getKey(), createPropertyByDefault(type, definition));
+                /*switch (type){
                     case "Decimal":{}
                     case "Float": {
-                        properties.put(d.getKey(), new FloatProperty(d.getValue()));
+                        propertiesToCreate.put(mapEntry.getKey(), new FloatProperty(mapEntry.getValue()));
                         break;
                     }
                     case "Boolean": {
-                        properties.put(d.getKey(), new BooleanProperty(d.getValue()));
+                        propertiesToCreate.put(mapEntry.getKey(), new BooleanProperty(mapEntry.getValue()));
                         break;
                     }
                     case "String":{
-                        properties.put(d.getKey(), new StringProperty(d.getValue()));
+                        propertiesToCreate.put(mapEntry.getKey(), new StringProperty(mapEntry.getValue()));
                         break;
                     }
+                }*/
+            }
+        } else if(mode.equals("derived")) {
+            /**
+             *  נעבור על כל אחד מהמאפיינים של הישות שצריך לברוא
+             * אם יש מאפיין שזהה בשם ובסוג למאפיין של הישות להרוג -> לקחת את הערכים שלו
+             */
+            Entity entityToKill = parameters.getMainEntity();
+
+            for(Map.Entry<String, PropertyDefinition> mapEntry : definitionToCreate.getPropsDef().entrySet()){
+                String propertyType = mapEntry.getValue().getType();
+                String propertyName = mapEntry.getKey();
+                PropertyDefinition definition = mapEntry.getValue();
+
+                // check if the entity to kill has an identical property (in name and type)
+                Property propertyToKill = entityToKill.getPropertyByName(propertyName);
+                if(propertyToKill.getName().equals(propertyName) && propertyToKill.getType().equals(propertyType)){
+                    propertiesToCreate.put(propertyName, propertyToKill); // if it does -> take its values
+                    // todo: check it doesn't die with the entity
+                } else { // else -> create regularly
+                    propertiesToCreate.put(propertyName, createPropertyByDefault(propertyType, definition));
+                    /*switch (propertyType){
+                        case "Decimal":{}
+                        case "Float": {
+                            propertiesToCreate.put(propertyName, new FloatProperty(d.getValue()));
+                            break;
+                        }
+                        case "Boolean": {
+                            propertiesToCreate.put(propertyName, new BooleanProperty(d.getValue()));
+                            break;
+                        }
+                        case "String":{
+                            propertiesToCreate.put(propertyName, new StringProperty(d.getValue()));
+                            break;
+                        }
+                    }*/
                 }
             }
-            entityToCreate.setProperties(properties);
-        } else if(mode.equals("derived")){
-            // todo: מייצרים את היישות החדשה כך שאם וככל שיש לה מאפיינים הזהים על פי שמם וסוגם לאלה של היישות שנהרגה – היא לוקחת את ערכם.
         }
+
+        entityToCreate.setProperties(propertiesToCreate);
         return true; // needs to kill main entity
+    }
+
+    public Property createPropertyByDefault(String type, PropertyDefinition definition){
+        switch (type){
+            case "Decimal":{} // תקף לשניהם
+            case "Float": {
+                return new FloatProperty(definition);
+            }
+            case "Boolean": {
+                return new BooleanProperty(definition);
+            }
+            default: { // case "String"
+                return new StringProperty(definition);
+            }
+        }
     }
 }

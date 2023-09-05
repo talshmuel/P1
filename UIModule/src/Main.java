@@ -9,6 +9,7 @@ import engine.EngineInterface;
 import exception.IncompatibleType;
 import exception.PathDoesntExistException;
 import world.Grid;
+import world.creator.XMLFileException;
 import world.entity.Coordinate;
 import xml.reader.validator.*;
 
@@ -410,14 +411,15 @@ public class Main {
 
     private static void handleLoadXMLChoice() {
         Scanner scanner = new Scanner(System.in);
-        String fileName;
+        //String fileName;
         engine.cleanResults();
         while (true) {
             System.out.println("Please enter the full path of your simulation settings file " +
                     "(note that the file must be of XML type)");
             System.out.println("or enter 0 to return to main menu");
             //fileName = scanner.nextLine();
-            fileName = "C:\\Users\\gonet\\OneDrive\\שולחן העבודה\\גון\\master-ex1 - Copy.xml";
+            //fileName = "C:\\Users\\gonet\\OneDrive\\שולחן העבודה\\גון\\master-ex1 - Copy.xml";
+            String fileName = "C:\\Users\\gonet\\OneDrive - The Academic College of Tel-Aviv Jaffa - MTA\\ג'אווה בדרייב\\מטלות\\תרגיל 2\\master-ex2.xml";
 
             if(fileName.equals("0"))
             {
@@ -443,6 +445,8 @@ public class Main {
                 System.out.println(m.getMessage());
             } catch (TerminationException terminationException) {
                 System.out.println(terminationException.getMessage());
+            } catch (XMLFileException e) {
+                System.out.println(e.getMessage());
             }
         }
     }

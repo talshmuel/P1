@@ -6,7 +6,7 @@
 //
 
 
-package xml.reader.schema.generated;
+package xml.reader.schema.generated.v1;
 
 import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ import java.util.List;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element ref="{}PRD-rule" maxOccurs="unbounded"/>
+ *         &lt;element ref="{}PRD-env-property" maxOccurs="unbounded"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -34,41 +34,41 @@ import java.util.List;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "prdRule"
+    "prdEnvProperty"
 })
-@XmlRootElement(name = "PRD-rules")
-public class PRDRules {
+@XmlRootElement(name = "PRD-evironment")
+public class PRDEvironment {
 
-    @XmlElement(name = "PRD-rule", required = true)
-    protected List<PRDRule> prdRule;
+    @XmlElement(name = "PRD-env-property", required = true)
+    protected List<PRDEnvProperty> prdEnvProperty;
 
     /**
-     * Gets the value of the prdRule property.
+     * Gets the value of the prdEnvProperty property.
      * 
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the prdRule property.
+     * This is why there is not a <CODE>set</CODE> method for the prdEnvProperty property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
-     *    getPRDRule().add(newItem);
+     *    getPRDEnvProperty().add(newItem);
      * </pre>
      * 
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link PRDRule }
+     * {@link PRDEnvProperty }
      * 
      * 
      */
-    public List<PRDRule> getPRDRule() {
-        if (prdRule == null) {
-            prdRule = new ArrayList<PRDRule>();
+    public List<PRDEnvProperty> getPRDEnvProperty() {
+        if (prdEnvProperty == null) {
+            prdEnvProperty = new ArrayList<PRDEnvProperty>();
         }
-        return this.prdRule;
+        return this.prdEnvProperty;
     }
 
 }

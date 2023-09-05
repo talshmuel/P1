@@ -4,7 +4,6 @@ import java.io.Serializable;
 
 public abstract class PropertyDefinition implements Serializable {
     String name;
-    //String type;
     Boolean isRandomlyInitialized;
     public abstract String getType();
     public PropertyDefinition(String name, Boolean isRandomlyInitialized){

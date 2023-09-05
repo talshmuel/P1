@@ -5,7 +5,6 @@ import world.World;
 import world.entity.EntityDefinition;
 import world.property.impl.Property;
 import world.rule.Rule;
-import world.api.AssistFunctions;
 import world.property.api.*;
 import world.property.impl.*;
 import world.rule.action.*;
@@ -13,9 +12,9 @@ import world.rule.action.Set;
 import world.rule.action.api.Expression;
 import world.rule.action.calculation.*;
 import world.rule.action.condition.*;
+import xml.reader.schema.generated.v1.*;
 import xml.reader.validator.*;
-import xml.reader.schema.generated.*;
-import java.lang.reflect.Method;
+
 import java.util.*;
 
 
@@ -25,36 +24,25 @@ public class WorldCreator {
     ArrayList<Rule> rulesList;
     Map<String, Integer> endConditionsMap;
     Grid grid;
-
     public void setEnvironmentVarMap(Map<String, Property> environmentVarMap) {
         this.environmentVarMap = environmentVarMap;
     }
-
     public void setEntityDefList(ArrayList<EntityDefinition> entityDefList) {
         this.entityDefList = entityDefList;
     }
-
     public void setRulesList(ArrayList<Rule> rulesList) {
         this.rulesList = rulesList;
-        /*// todo: delete later hard coded
-        ArrayList<Action> actions = new ArrayList<>();
-        EntityDefinition entityToKill = entityDefList.get(0);
-        EntityDefinition entityToCreate = entityDefList.get(1);
-        actions.add(new Replace(entityToKill.getName(), entityToCreate.getName(), "scratch"));
-        this.rulesList.add(new Rule("r4", actions, 1, 1));*/
     }
-
     public void setEndConditionsMap(Map<String, Integer> endConditionsMap) {
         this.endConditionsMap = endConditionsMap;
     }
-
     public World createWorldFromXMLFile(PRDWorld prdWorld) throws EnvironmentException, EntityException, PropertyException, MustBeNumberException, RuleException, TerminationException {
         setEnvironmentVarMap(validateAndCreateEnvironment(prdWorld.getPRDEvironment().getPRDEnvProperty()));
         setEntityDefList(validateAndCreateEntities(prdWorld.getPRDEntities().getPRDEntity()));
         setRulesList(validateAndCreateRules(prdWorld.getPRDRules().getPRDRule(), entityDefList));
         setEndConditionsMap(validateAndCreateTermination(prdWorld.getPRDTermination()));
         Grid grid = new Grid(10, 10); // todo: change hard coded
-        return (new World(entityDefList, environmentVarMap, rulesList, endConditionsMap, grid));
+        return (new World(entityDefList, environmentVarMap, rulesList, endConditionsMap, grid, 3));
     }
     /** CREATE ENVIRONMENT **/
     public Map<String, Property> validateAndCreateEnvironment(List<PRDEnvProperty> prdEnvironment) throws EnvironmentException{
@@ -93,15 +81,6 @@ public class WorldCreator {
             throw new EnvironmentException("Error: Environment variable cannot contain spaces!\n");
         }
         return envName.trim();
-    }
-    public IntegerProperty createIntegerEnvironmentProperty(PRDEnvProperty p, String propName) {
-        Integer from=null, to=null;
-
-        if(p.getPRDRange() != null){ // a range was given
-            from = (int) p.getPRDRange().getFrom();
-            to = (int) p.getPRDRange().getTo();
-        }
-        return new IntegerProperty(new IntegerPropertyDefinition(propName, true, null, to, from));
     }
     public FloatProperty createFloatEnvironmentProperty(PRDEnvProperty p, String propName) {
         Double from=null, to=null;
@@ -174,21 +153,6 @@ public class WorldCreator {
             throw new PropertyException("Error: Property names cannot contain spaces!\n");
         }
         return newPropName;
-    }
-    public IntegerPropertyDefinition createIntegerPropertyDefinition(PRDProperty p, String pName) {
-        Integer to=null, from=null;
-
-        if(p.getPRDRange() != null){ // a range was given
-            from = (int) p.getPRDRange().getFrom();
-            to = (int) p.getPRDRange().getTo();
-        }
-
-        Integer init = null;
-        if(p.getPRDValue().getInit() != null){
-            init = Integer.parseInt(p.getPRDValue().getInit());
-        }
-
-        return new IntegerPropertyDefinition(pName, p.getPRDValue().isRandomInitialize(), init, to, from);
     }
     public FloatPropertyDefinition createFloatPropertyDefinition(PRDProperty p, String pName) {
         Double to=null, from=null;

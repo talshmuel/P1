@@ -6,7 +6,7 @@
 //
 
 
-package xml.reader.schema.generated;
+package xml.reader.schema.generated.v1;
 
 import java.util.ArrayList;
 import java.util.List;

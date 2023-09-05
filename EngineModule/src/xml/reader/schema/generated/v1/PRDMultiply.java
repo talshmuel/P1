@@ -6,7 +6,7 @@
 //
 
 
-package xml.reader.schema.generated;
+package xml.reader.schema.generated.v1;
 
 import javax.xml.bind.annotation.*;
 
@@ -31,8 +31,8 @@ import javax.xml.bind.annotation.*;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "")
-@XmlRootElement(name = "PRD-divide")
-public class PRDDivide {
+@XmlRootElement(name = "PRD-multiply")
+public class PRDMultiply {
 
     @XmlAttribute(name = "arg2", required = true)
     protected String arg2;
