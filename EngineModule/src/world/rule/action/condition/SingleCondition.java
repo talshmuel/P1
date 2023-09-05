@@ -14,7 +14,7 @@ public class SingleCondition extends Condition {
     ArrayList<Action> thenActions;
     ArrayList<Action> elseActions;
     public SingleCondition(String mainEntity, SecondaryEntity secondEntityInfo, String propToChangeName, Operator operator,
-                           String expression, ArrayList<Action> thenActions, ArrayList<Action> elseActions) {
+                           Expression expression, ArrayList<Action> thenActions, ArrayList<Action> elseActions) {
         super(mainEntity, secondEntityInfo, propToChangeName, expression);
         this.elseActions = elseActions;
         this.operator = operator;
@@ -23,10 +23,10 @@ public class SingleCondition extends Condition {
     }
     public Boolean checkCondition(ParametersForAction parameters)throws IncompatibleAction, IncompatibleType {
         switch (operator){
-            case EQUAL: return parameters.getMainProp().getVal().equals(expressionVal);
-            case NOTEQUAL: return !(parameters.getMainProp().getVal().equals(expressionVal));
-            case LESSTHAN:  return parameters.getMainProp().isSmaller(expressionVal);
-            case BIGGERTHAN: return parameters.getMainProp().isBigger(expressionVal);
+            case EQUAL: return parameters.getMainProp().getVal().equals(expression.getValue());
+            case NOTEQUAL: return !(parameters.getMainProp().getVal().equals(expression.getValue()));
+            case LESSTHAN:  return parameters.getMainProp().isSmaller(expression.getValue());
+            case BIGGERTHAN: return parameters.getMainProp().isBigger(expression.getValue());
         }
         /*switch (operator){ // old version
             case EQUAL: return propsToChange.getMainProp().getVal().equals(expressionVal);

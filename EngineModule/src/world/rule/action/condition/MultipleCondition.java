@@ -32,7 +32,6 @@ public class MultipleCondition extends Condition {
             }
         }
         return false;
-
         /*switch (logicSign) { // old version
             case OR:
                 return checkORCondition((PropertiesToMultipleCondition) propsToChange);
@@ -52,7 +51,6 @@ public class MultipleCondition extends Condition {
         else {
             return false;
         }
-
         /*if (checkCondition(propsToChange)) { // old version
             return activateThenActions(((PropertiesToMultipleCondition)propsToChange).getThenProps());
         }
@@ -87,9 +85,8 @@ public class MultipleCondition extends Condition {
                 kill = true;
         }
         return kill;
-
-        // old version: parameter to method:  ArrayList<PropertiesToAction> props
-        /*boolean kill=false; // old version
+        /* old version: parameter to method:  ArrayList<PropertiesToAction> props
+        boolean kill=false; // old version
         int len = thenActions.size();
         for(int i=0; i<len;i++){
             if(thenActions.get(i).activate(null, props.get(i)))
@@ -106,9 +103,8 @@ public class MultipleCondition extends Condition {
                 kill = true;
         }
         return kill;
-
-        // old version: parameter to method:  ArrayList<PropertiesToAction> props
-        /*boolean kill=false; // old version
+        /* old version: parameter to method:  ArrayList<PropertiesToAction> props
+        boolean kill=false; // old version
         int len = elseActions.size();
         for(int i=0; i<len;i++){
             if(elseActions.get(i).activate(null, props.get(i)))
@@ -124,7 +120,6 @@ public class MultipleCondition extends Condition {
                 res = true;
         }
         return res;
-
         /*boolean res = false; // old version
         int len = conditions.size();
         for(int i=0; i<len; i++){
@@ -141,7 +136,6 @@ public class MultipleCondition extends Condition {
                 res = false;
         }
         return res;
-
         /*boolean res = true; // old version
         int len = conditions.size();
         for(int i=0; i<len; i++){

@@ -6,7 +6,7 @@ import exception.IncompatibleType;
 import world.Grid;
 import world.entity.Coordinate;
 import world.entity.Entity;
-import world.rule.action.Action;
+import world.rule.action.api.Expression;
 import world.rule.action.api.ParametersForAction;
 import world.rule.action.api.ParametersForCondition;
 import world.rule.action.api.SecondaryEntity;
@@ -28,15 +28,13 @@ public class Proximity extends Action{
     Coordinate sourcePos;
     Grid grid;
 
-    public Proximity(String mainEntityName, SecondaryEntity secondEntityInfo, String propToChangeName, String expression,
+    public Proximity(String mainEntityName, SecondaryEntity secondEntityInfo, String propToChangeName, Expression expression,
                      ArrayList<Action> thenActions, String targetEntityName, Grid grid) {
         super(mainEntityName, secondEntityInfo, propToChangeName, expression);
         this.thenActions = thenActions;
         this.targetEntityName = targetEntityName;
         this.grid = grid;
     }
-    // need to add: grid? or maybe just the list of cells
-
 
     public ArrayList<Action> getThenActions() {
         return thenActions;
@@ -49,15 +47,15 @@ public class Proximity extends Action{
     @Override
     public Boolean activate(ParametersForAction parameters) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
         // get the surrounding cells of the main entity (source entity)
-        List<Coordinate> surroundingCells = grid.findEnvironmentCells(sourcePos, (Integer)expressionVal);
+        List<Coordinate> surroundingCells = grid.findEnvironmentCells(sourcePos, (Integer)expression.getValue());
         Entity[][] entityMatrix = grid.getEntityMatrix();
 
         // if in one of those cells there is an entity of target type -> perform the actions)\
         for(Coordinate c : surroundingCells){
             if(entityMatrix[c.getRow()][c.getCol()] != null){
                 if(entityMatrix[c.getRow()][c.getCol()].getName().equals(targetEntityName)){
+                    // todo
                     Entity targetEntity = entityMatrix[c.getRow()][c.getCol()];
-
                     ArrayList<ParametersForAction> thenParams = ((ParametersForCondition)parameters).getThenParams();
                     for(int i=0 ; i<thenActions.size() ; i++){
                         if(thenActions.get(i).getMainEntityName().equals(targetEntityName)){
@@ -69,8 +67,7 @@ public class Proximity extends Action{
             }
         }
 
-        // we haven't found any of the target entities
-        return false;
+        return false; // we haven't found any of the target entities
     }
 
     public Boolean activateThenActions(ArrayList<ParametersForAction> parameters) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {

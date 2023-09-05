@@ -32,7 +32,7 @@ public class Replace extends Action{ // todo של החייםםםםםםםםםםם
      * in the XML reading: fill NULL in the EntityInfo section
      * when in the runActions loop: create the instance from the getParametersForAction...
      * **/
-    String mode; // todo maybe delete
+    String mode;
     String entityToCreateName;
     public Replace(String entityToKill, SecondaryEntity secondEntityInfo, String entityToCreateName, String mode) {
         // note: main entity is the entity to kill
@@ -41,11 +41,6 @@ public class Replace extends Action{ // todo של החייםםםםםםםםםםם
         this.entityToCreateName = entityToCreateName;
         this.mode = mode;
     }
-
-    public String getEntityToCreateName() {
-        return entityToCreateName;
-    }
-
     @Override
     public Boolean activate(ParametersForAction parameters) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
         if(mode.equals("scratch")){ // todo: לברוא ישות חדשה לגמרי לפי החוקים הרגילים

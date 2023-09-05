@@ -10,6 +10,7 @@ import world.property.api.*;
 import world.property.impl.*;
 import world.rule.action.*;
 import world.rule.action.Set;
+import world.rule.action.api.Expression;
 import world.rule.action.calculation.*;
 import world.rule.action.condition.*;
 import xml.reader.validator.*;
@@ -64,12 +65,7 @@ public class WorldCreator {
             envName = validateEnvironmentName(environmentMap, p.getPRDName());
 
             switch (p.getType()){
-                case "decimal":{
-                    //IntegerProperty intProp = createIntegerEnvironmentProperty(p, envName);
-                    FloatProperty floatProp = createFloatEnvironmentProperty(p, envName);
-                    environmentMap.put(floatProp.getName(), floatProp);
-                    break;
-                }
+                case "decimal": // works for both
                 case "float":{
                     FloatProperty floatProp = createFloatEnvironmentProperty(p, envName);
                     environmentMap.put(floatProp.getName(), floatProp);
@@ -254,19 +250,20 @@ public class WorldCreator {
         if(rules.stream().anyMatch(rule -> rule.getName().equals(ruleName))){
             throw new RuleException("Error: File cannot contain duplicated rules names.\n");
         }
-//        if(ruleName.contains(" ")){ // rule name can't have spaces
-//            throw new RuleException("Error: Rule's name cannot contain spaces!\n");
-//        }
         return ruleName;
     }
     /** EXPLANATION: checks if the by expression is a name of a function **/
     Boolean isNameOfFunction(String expression){ //
-        Class<?> assist = AssistFunctions.class;
-        Method[] methods = assist.getDeclaredMethods();
-        return Arrays.stream(methods)
-                .anyMatch(m -> expression.startsWith(m.getName()));
+        Expression exp = new Expression(expression);
+        return exp.isNameOfFunction();
+
+//        Class<?> assist = AssistFunctions.class;
+//        Method[] methods = assist.getDeclaredMethods();
+//        return Arrays.stream(methods)
+//                .anyMatch(m -> expression.startsWith(m.getName()));
 
     }
+
     /** CREATE ACTION **/
     /** explanation: this function creates the actions list of a rule or a multiple condition action. **/
     public ArrayList<Action> validateAndCreateActionsList(List<PRDAction> prdActions, ArrayList<EntityDefinition> entities)
@@ -289,12 +286,12 @@ public class WorldCreator {
             case "increase": {
                 Map<String, PropertyDefinition> propertiesInWorld = validatePropertyInAction(a.getProperty(), entityDefinitionInWorld);
                 if(validateExpressionIsANumber(a, propertiesInWorld, "increase"))
-                    return new Increase(entityNameInAction, null, a.getProperty(), a.getBy());
+                    return new Increase(entityNameInAction, null, a.getProperty(), new Expression(a.getBy()));
             }
             case "decrease":{
                 Map<String, PropertyDefinition> propertiesInWorld = validatePropertyInAction(a.getProperty(), entityDefinitionInWorld);
                 if(validateExpressionIsANumber(a, propertiesInWorld, "decrease"))
-                    return new Decrease(entityNameInAction, null, a.getProperty(), a.getBy());
+                    return new Decrease(entityNameInAction, null, a.getProperty(), new Expression(a.getBy()));
             }
             case "kill":{
                 String propertyNameInAction = a.getProperty();
@@ -304,7 +301,7 @@ public class WorldCreator {
                 String propertyNameInAction = a.getProperty();
                 Map<String, PropertyDefinition> propertiesInWorld = validatePropertyInAction(propertyNameInAction, entityDefinitionInWorld);
                 String valToSet = validateExpressionAndPropertyTypes(a.getValue(), propertyNameInAction, propertiesInWorld);
-                return new Set(entityNameInAction, null, propertyNameInAction, valToSet);
+                return new Set(entityNameInAction, null, propertyNameInAction, new Expression(valToSet));
             }
             case "calculation":{
                 Map<String, PropertyDefinition> propertiesInWorld = validatePropertyInAction(a.getResultProp(), entityDefinitionInWorld);
@@ -380,10 +377,10 @@ public class WorldCreator {
         if(mainCond){ // if not a main condition -> doesn't have then/else actions.
             ArrayList<Action> thenActions = validateAndCreateThenActions(a, entities);
             ArrayList<Action> elseActions = validateAndCreateElseActions(a, entities);
-            return new SingleCondition(c.getEntity(), null, property, operator, expression, thenActions, elseActions);
+            return new SingleCondition(c.getEntity(), null, property, operator, new Expression(expression), thenActions, elseActions);
 
         } else {
-            return new SingleCondition(c.getEntity(), null, property, operator, expression, null, null); // thenActions, elseActions);
+            return new SingleCondition(c.getEntity(), null, property, operator, new Expression(expression), null, null); // thenActions, elseActions);
         }
 
     }
@@ -553,13 +550,13 @@ public class WorldCreator {
         checkIfPropertyIsNumeric(propertiesMap, a.getResultProp()); // check if the result property is of numeric type
         String arg1 = validateCalculationExpression(a.getPRDMultiply().getArg1(), propertiesMap);
         String arg2 = validateCalculationExpression(a.getPRDMultiply().getArg2(), propertiesMap);
-        return new Multiply(entityInAction, null, a.getResultProp(), arg1, arg2);
+        return new Multiply(entityInAction, null, a.getResultProp(), new Expression(arg1), new Expression(arg2));
     }
     public Divide validateAndCreatesDivideAction(PRDAction a, String entityInAction, Map<String, PropertyDefinition> propertiesMap) throws MustBeNumberException{
         checkIfPropertyIsNumeric(propertiesMap, a.getResultProp()); // check if the result property is of numeric type
         String arg1 = validateCalculationExpression(a.getPRDDivide().getArg1(), propertiesMap);
         String arg2 = validateCalculationExpression(a.getPRDDivide().getArg2(), propertiesMap);
-        return new Divide(entityInAction,null, a.getResultProp(), arg1, arg2);
+        return new Divide(entityInAction,null, a.getResultProp(), new Expression(arg1), new Expression(arg2));
     }
     /** EXPLANATION: checks if this entity exists in world, and if so -> returns the EntityDefinition **/
     public EntityDefinition validateEntityOfAction(String entityInAction, ArrayList<EntityDefinition> entities) throws EntityException {

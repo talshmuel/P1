@@ -50,13 +50,6 @@ public class AssistFunctions implements AssistFunctionsInterface, Serializable {
         return null; // todo: maybe exception?
     }
 
-//    @Override
-//    public Double percent(double whole, double part) {
-//        // example: percent(evaluate(ent-2.p1),environment(e1))
-//        return (part / 100) * whole;
-//    }
-
-
     @Override
     public Double percent(String expression) { // todo: check the hell out of this method!!!
         String[] splitExpression = expression.split(",");
