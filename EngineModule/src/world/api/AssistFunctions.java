@@ -42,7 +42,7 @@ public class AssistFunctions implements AssistFunctionsInterface, Serializable {
         String entityName = splitExpression[0];
         String propertyName = splitExpression[1];
 
-        for(Entity e : entities){
+        for(Entity e : entities){ // TODO: CHNAGE TO MAP
             if(e.getName().equals(entityName)){
                 return e.getPropertyByName(propertyName).getVal();
             }
@@ -81,7 +81,7 @@ public class AssistFunctions implements AssistFunctionsInterface, Serializable {
     }
 
 
-    /**Explanation: each property has a field of "Integer tickNumThatHasChanged"
+    /** Explanation: each property has a field of "Integer tickNumThatHasChanged"
      in each action that can change a property value (increase, decrease, multiply, divide, set) we update in which tick the property was changed.
      so in this function we take the number of ticks in the simulation and subtract the property's field of tickNumThatHasChanged.**/
     @Override

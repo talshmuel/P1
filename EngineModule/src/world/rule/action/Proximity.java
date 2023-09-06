@@ -26,12 +26,12 @@ public class Proximity extends Action{
      **/
     ArrayList<Action> thenActions;
     String targetEntityName;
-    Coordinate sourcePos;
+    Coordinate sourcePos; // updated dynamically (in simulation loop)
     Grid grid;
 
-    public Proximity(String mainEntityName, SecondaryEntity secondEntityInfo, String propToChangeName, Expression expression,
+    public Proximity(String sourceEntityName, SecondaryEntity secondEntityInfo, String propToChangeName, Expression depth,
                      ArrayList<Action> thenActions, String targetEntityName, Grid grid) {
-        super(mainEntityName, secondEntityInfo, propToChangeName, expression);
+        super(sourceEntityName, secondEntityInfo, propToChangeName, depth);
         this.thenActions = thenActions;
         this.targetEntityName = targetEntityName;
         this.grid = grid;

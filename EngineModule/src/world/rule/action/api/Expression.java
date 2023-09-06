@@ -1,7 +1,11 @@
 package world.rule.action.api;
 
 import world.api.AssistFunctions;
+import world.entity.EntityDefinition;
+import world.property.api.PropertyDefinition;
 import world.rule.action.Proximity;
+
+import java.util.Map;
 
 public class Expression {
     String name;
@@ -22,15 +26,6 @@ public class Expression {
         return value;
     }
 
-    public void extractValueFromExpression(){
-        if(!isNameOfFunction()){
-
-        } else if(!isNameOfProperty()){
-
-        }
-        //this.value = ...
-    }
-
     public boolean isNameOfFunction(){
         if(name.startsWith("environment")){
             return true;
@@ -43,8 +38,26 @@ public class Expression {
         } else return name.startsWith("ticks");
     }
 
-    public boolean isNameOfProperty(){
-        return false;
+    public String getStringInParenthesis(){
+        if(name.startsWith("environment")){
+            return name.substring(12, name.length()-1);
+        } else if(name.startsWith("random")){
+            return name.substring(7, name.length()-1);
+        } else if(name.startsWith("evaluate")){
+            return name.substring(9, name.length()-1);
+        } else if(name.startsWith("percent")){
+            return name.substring(8, name.length()-1);
+        } else { //if (name.startsWith("ticks")){
+            return name.substring(6, name.length()-1);
+        }
+    }
+
+    public boolean isNameOfProperty(EntityDefinition entityDefinition){
+        return entityDefinition.getPropsDef().containsKey(name);
+    }
+
+    public boolean isANumber(){
+        return name.matches("\\d+");
     }
 
 

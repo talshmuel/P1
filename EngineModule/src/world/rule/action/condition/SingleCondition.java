@@ -13,6 +13,9 @@ public class SingleCondition extends Condition {
     Operator operator;
     ArrayList<Action> thenActions;
     ArrayList<Action> elseActions;
+    //Expression property; // todo של החיים
+    // צריך להפוך את הפרופרטי לאקספרשן
+    // וזה כולל גם בלולאת הסימולציה לתרגם אותו כל פעם
     public SingleCondition(String mainEntity, SecondaryEntity secondEntityInfo, String propToChangeName, Operator operator,
                            Expression expression, ArrayList<Action> thenActions, ArrayList<Action> elseActions) {
         super(mainEntity, secondEntityInfo, propToChangeName, expression);
@@ -21,7 +24,7 @@ public class SingleCondition extends Condition {
         this.thenActions = thenActions;
 
     }
-    public Boolean checkCondition(ParametersForAction parameters)throws IncompatibleAction, IncompatibleType {
+    public Boolean checkCondition(ParametersForAction parameters) throws IncompatibleAction, IncompatibleType {
         switch (operator){
             case EQUAL: return parameters.getMainProp().getVal().equals(expression.getValue());
             case NOTEQUAL: return !(parameters.getMainProp().getVal().equals(expression.getValue()));

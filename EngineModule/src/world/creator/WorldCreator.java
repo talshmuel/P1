@@ -126,8 +126,8 @@ public class WorldCreator {
             switch (p.getType()) {
                 case "decimal":{
                     //propDefsMap.put(propName, createIntegerPropertyDefinition(p, propName));
-                    propDefsMap.put(propName, createFloatPropertyDefinition(p, propName));
-                    break;
+                    //propDefsMap.put(propName, createFloatPropertyDefinition(p, propName));
+                    //break;
                 }
                 case "float":{
                     propDefsMap.put(propName, createFloatPropertyDefinition(p, propName));
