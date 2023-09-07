@@ -48,9 +48,8 @@ public class AssistFunctions implements AssistFunctionsInterface, Serializable {
         } else if (thirdEntity != null) {
             return thirdEntity.getPropertyByName(propertyName).getVal(); // only in proximity and replace
         } else {
-            System.out.println("TODO: problem in ticks function");
+            System.out.println("פלסטררררררר בפונקציה של evaluate");
             return mainEntity.getPropertyByName(propertyName).getVal();
-            //return null;
         }
 
     }
@@ -99,8 +98,9 @@ public class AssistFunctions implements AssistFunctionsInterface, Serializable {
             int tickNumThatHasChanged = entity.getPropertyByName(propertyName).getTickNumThatHasChanged();
             return (this.numOfTicksInSimulation-tickNumThatHasChanged);
         } else {
-            System.out.println("TODO: problem in ticks function");
-            return 0;
+            System.out.println("פלסטררררר בפונקציה של ticks");
+            int tickNumThatHasChanged = entity.getPropertyByName(propertyName).getTickNumThatHasChanged();
+            return (this.numOfTicksInSimulation-tickNumThatHasChanged);
         }
     }
 }

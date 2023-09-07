@@ -418,8 +418,8 @@ public class Main {
                     "(note that the file must be of XML type)");
             System.out.println("or enter 0 to return to main menu");
             //fileName = scanner.nextLine();
-            //String fileName = "C:\\Users\\gonet\\OneDrive - The Academic College of Tel-Aviv Jaffa - MTA\\ג'אווה בדרייב\\מטלות\\תרגיל 2\\master-ex2 - Copy.xml";
-            String fileName = "C:\\Users\\gonet\\OneDrive - The Academic College of Tel-Aviv Jaffa - MTA\\ג'אווה בדרייב\\מטלות\\תרגיל 2\\ex2-virus.xml";
+            String fileName = "C:\\Users\\gonet\\OneDrive - The Academic College of Tel-Aviv Jaffa - MTA\\ג'אווה בדרייב\\מטלות\\תרגיל 2\\master-ex2 - Copy.xml";
+            //String fileName = "C:\\Users\\gonet\\OneDrive - The Academic College of Tel-Aviv Jaffa - MTA\\ג'אווה בדרייב\\מטלות\\תרגיל 2\\ex2-virus.xml";
 
             if(fileName.equals("0"))
             {

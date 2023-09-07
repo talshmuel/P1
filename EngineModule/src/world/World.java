@@ -150,7 +150,7 @@ public class World implements Serializable {
         return res;
     }
 
-    public int getNumOfEntitiesLeft2(String entityName){ // new version -> map
+    public int getNumOfEntitiesLeft(String entityName){ // new version -> map
         int count = 0;
         for(Map.Entry<String, ArrayList<Entity>> entry : allEntities.entrySet()) {
             ArrayList<Entity> entityList = entry.getValue();
@@ -224,12 +224,5 @@ public class World implements Serializable {
                 entities.add(new Entity(entityDef.getName(),entityProps)); // todo delete
             }
         }
-    }
-    public int getNumOfEntitiesLeft(String entityName){ // todo: delete
-        int count = 0;
-        for(Entity entity : entities)
-            if(entity.getName().equals(entityName))
-                count++;
-        return count;
     }
 }

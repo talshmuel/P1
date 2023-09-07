@@ -401,7 +401,6 @@ public class WorldCreatorXML {
                 elseActions = validateAndCreateActionsList(prdAction.getPRDElse().getPRDAction());
         }
 
-        // todo: property is now an expression, needs to change in the action itself -> check it
         return new SingleCondition(mainEntityName, secondaryEntity, propExpression, operator, valueExpression, thenActions, elseActions);
     }
     public SingleCondition.Operator validateOperatorInSingleCondition(String prdOperation) throws XMLFileException {
@@ -471,7 +470,6 @@ public class WorldCreatorXML {
             PRDCondition prdCondition = prdSelection.getPRDCondition(); // validate
             Condition selection = validateSelectionConditionInSecondaryEntity(prdCondition);
 
-
             return new SecondaryEntity(secondEntityDefinition.getName(), numOfSecondEntities, selection);
         }
         else
@@ -505,7 +503,7 @@ public class WorldCreatorXML {
             return new SingleCondition(entityDefinition.getName(), null, propExpression, operator, valueExpression, null, null);
         }
         else{
-            System.out.println("HASHEM ISHMOR"); // todo
+            System.out.println("todo: multiple condition in secondary entity! HASHEM ISHMOR"); // todo
             return null;
         }
     }
@@ -536,10 +534,9 @@ public class WorldCreatorXML {
     }
     /** END OF RULES **/
     public Expression validateExpressionIsANumber(String prdExpression, EntityDefinition entityDefinition, String actionName) throws XMLFileException {
-        // todo: maybe move to expression class
         Expression expression = new Expression(prdExpression);
         if(expression.isNameOfFunction()){ // check function returns a number
-            validateFunctionExpressionIsANumber(expression);
+            validateFunctionExpressionIsANumber(expression, entityDefinition);
         } else if(expression.isNameOfProperty(entityDefinition)){ // check the property is a number
             if(!(entityDefinition.getPropsDef().get(expression.getName()) instanceof FloatPropertyDefinition))
                 throw new XMLFileException("XML File Error: Property " + expression.getName() + " used in action " + actionName + " is not of a number type!\n");
@@ -549,8 +546,7 @@ public class WorldCreatorXML {
         }
         return expression;
     }
-    public void validateFunctionExpressionIsANumber(Expression expression) throws XMLFileException{
-        // todo: maybe move to Expression class
+    public void validateFunctionExpressionIsANumber(Expression expression, EntityDefinition entityDefinition) throws XMLFileException{
         if(expression.getName().startsWith("environment")){
             String envName = expression.getStringInParenthesis();
             if(!(environmentVarMap.containsKey(envName)))
@@ -570,8 +566,11 @@ public class WorldCreatorXML {
             if(!(entDef.getPropsDef().get(propertyName) instanceof FloatPropertyDefinition))
                 throw new XMLFileException("XML File Error: the value returning from function 'evaluate' is not a number!\n");
         } else if (expression.getName().startsWith("percent")) {
-            System.out.println("~~~@@@ need to do @@@~~~");
-            // todo :(((
+            String[] valueInParenthesis = expression.getStringInParenthesis().split(",");
+            Expression val1 = new Expression(valueInParenthesis[0]);
+            Expression val2 = new Expression(valueInParenthesis[0]);
+            validateFunctionExpressionIsANumber(val1, entityDefinition);
+            validateFunctionExpressionIsANumber(val2, entityDefinition);
         } else { // ticks function. just checking if it gets the right values
             String[] valueInParenthesis = expression.getStringInParenthesis().split("\\.");
             EntityDefinition entDef = findEntityDefinitionInWorld(valueInParenthesis[0]);
@@ -579,7 +578,6 @@ public class WorldCreatorXML {
         }
     }
     public Expression validateExpressionIsABoolean(String prdExpression, EntityDefinition entityDefinition, String actionName) throws XMLFileException {
-        // todo: maybe move to Expression class
         Expression expression = new Expression(prdExpression);
 
         if(expression.isNameOfFunction()){ // check function returns a boolean
@@ -611,7 +609,6 @@ public class WorldCreatorXML {
     }
 
     public Expression validateExpressionIsAString(String prdExpression, EntityDefinition entityDefinition, String actionName) throws XMLFileException {
-        // todo: maybe move to Expression class
         Expression expression = new Expression(prdExpression);
 
         if (expression.isNameOfFunction()) { // check function returns a boolean
