@@ -14,6 +14,7 @@ abstract public class Action implements Serializable {
     String mainEntityName;
     SecondaryEntity secondEntityInfo; // if there's a second entity, in the xml we fill only name, count and selection
     String propToChangeName;
+
     protected Expression expression;
     public Action(String mainEntityName, SecondaryEntity secondEntityInfo, String propToChangeName, Expression expression) {
         this.mainEntityName=mainEntityName;

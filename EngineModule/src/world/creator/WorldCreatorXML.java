@@ -1,8 +1,7 @@
 package world.creator;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import world.Grid;
-import world.entity.Entity;
+import world.World;
 import world.entity.EntityDefinition;
 import world.property.api.*;
 import world.property.impl.*;
@@ -34,78 +33,57 @@ public class WorldCreatorXML {
     ArrayList<Rule> rulesList;
     Map<String, Integer> endConditionsMap;
     Grid grid;
-    ////////////////////////////////////////////// GENERAL METHODS /////////////////////////////////////////////////////
-    public void setEnvironmentVarMap(Map<String, Property> environmentVarMap) {
-        this.environmentVarMap = environmentVarMap;
-    }
-    public void setEntityDefList(ArrayList<EntityDefinition> entityDefList) {
-        this.entityDefList = entityDefList;
-    }
-    public void setRulesList(ArrayList<Rule> rulesList) {
-        this.rulesList = rulesList;
-    }
-    public void setEndConditionsMap(Map<String, Integer> endConditionsMap) {
-        this.endConditionsMap = endConditionsMap;
-    }
-    public void setGrid(Grid grid) {
-        this.grid = grid;
-    }
-    ////////////////////////////////////////////////////////////////////////////////////
-    public void printDELETELATER(){
-        System.out.println("Grid: num of rows: " + grid.getNumOfRows() + " , num of cols: " + grid.getNumOfCols() + "\n");
 
-        System.out.println("Environment Variables Map:");
-        int i=1;
-        for(Map.Entry<String, Property> envMap : environmentVarMap.entrySet()){
-            String name = envMap.getKey();
-            Property property = envMap.getValue();
-            System.out.println("Environment Variable #" + i++);
-            System.out.println("Name: " + name);
-            System.out.println("Type: " + property.getType());
-            if(property.getType().equals("float")){
-                System.out.println("Range: " + property.getDefinition().getBottomLimit() + " - " + property.getDefinition().getTopLimit());
-            }
-            System.out.println("Value: " + property.getVal() + "\n");
-        }
-        System.out.println("\n------------------------------------------------------");
-
-        int j=1;
-        System.out.println("Entity Definition List:");
-        for(EntityDefinition entityDefinition : entityDefList){
-            System.out.println("Entity #" + j++ + " Name: " + entityDefinition.getName());
-            System.out.println("Population: " + entityDefinition.getNumOfInstances());
-            Map<String, PropertyDefinition> propsDef = entityDefinition.getPropsDef();
-            System.out.println("    Properties Definition:");
-            for(Map.Entry<String, PropertyDefinition> props : propsDef.entrySet()){
-                PropertyDefinition propertyDefinition = props.getValue();
-                System.out.println("    Name: " + propertyDefinition.getName());
-                System.out.println("    Type: " + propertyDefinition.getType());
-                System.out.println("    Random?: " + propertyDefinition.getRandomlyInitialized());
-                if(propertyDefinition instanceof FloatPropertyDefinition){
-                    System.out.println("    Range: " + propertyDefinition.getBottomLimit() + " - " + propertyDefinition.getTopLimit());
-                }
-                System.out.println("    Init Value: " + propertyDefinition.getInitValue() + "\n");
-            }
-        }
-
-        System.out.println("\n------------------------------------------------------");
-
-
-    }
-
-    //public World createWorldFromXMLFile(PRDWorld prdWorld) {
-    public void createWorldFromXMLFile(PRDWorld prdWorld) throws XMLFileException {
+    public World createWorldFromXMLFile(PRDWorld prdWorld) throws XMLFileException {
         int threads = prdWorld.getPRDThreadCount();
-        System.out.println("num of threads: " + threads);
+        grid = validateAndCreateGrid(prdWorld.getPRDGrid());
+        environmentVarMap = validateAndCreateEnvironment(prdWorld.getPRDEnvironment().getPRDEnvProperty());
+        entityDefList = validateAndCreateEntities(prdWorld.getPRDEntities().getPRDEntity());
+        for(EntityDefinition e : entityDefList){ // todo: delete later
+            e.setNumOfInstances(30);
+        }
 
-        setGrid(validateAndCreateGrid(prdWorld.getPRDGrid()));
-        setEnvironmentVarMap(validateAndCreateEnvironment(prdWorld.getPRDEnvironment().getPRDEnvProperty()));
-        setEntityDefList(validateAndCreateEntities(prdWorld.getPRDEntities().getPRDEntity()));
-        setRulesList(validateAndCreateRules(prdWorld.getPRDRules().getPRDRule()));
-        printDELETELATER();
-        /*
-        setEndConditionsMap(validateAndCreateTermination(prdWorld.getPRDTermination()));
-        return (new World(entityDefList, environmentVarMap, rulesList, endConditionsMap, grid, threads));*/
+        rulesList = validateAndCreateRules(prdWorld.getPRDRules().getPRDRule());
+        //endConditionsMap = validateAndCreateTermination(prdWorld.getPRDTermination());
+        // todo: delete later -> hard coded
+        Map<String, Integer> endConditions = new HashMap<>();
+        Integer ticks = 480;
+        Integer seconds = 10;
+        endConditions.put("ticks", ticks);
+        endConditions.put("seconds", seconds);
+        endConditionsMap = endConditions;
+
+        return (new World(entityDefList, environmentVarMap, rulesList, endConditionsMap, grid, threads));
+    }
+
+    public Map<String, Integer> validateAndCreateTermination(PRDTermination prdTermination) throws XMLFileException {
+        if(prdTermination.getPRDByUser() != null && (!(prdTermination.getPRDBySecondOrPRDByTicks().isEmpty())))
+            throw new XMLFileException("XML File Error: End condition must be one of two: by user choice, or by number of ticks/seconds, but not them both!\n");
+        if(prdTermination.getPRDByUser() == null && (prdTermination.getPRDBySecondOrPRDByTicks().isEmpty()))
+            throw new XMLFileException("XML File Error: File must contain at least one of the termination conditions! (by seconds or by ticks).\n");
+
+        Map<String, Integer> endConditions = new HashMap<>();
+
+        if(prdTermination.getPRDByUser() != null){
+            // TODO
+        } else {
+            List<Object> prdByTicksOrPRDBySecond = prdTermination.getPRDBySecondOrPRDByTicks();
+
+            if(prdByTicksOrPRDBySecond.isEmpty())
+                throw new XMLFileException("XML File Error: Termination condition by seconds/ticks is empty! There must be at least one of them.\n");
+
+            for(Object o : prdByTicksOrPRDBySecond){
+                if(o instanceof PRDByTicks){
+                    Integer ticks = ((PRDByTicks) o).getCount();
+                    endConditions.put("ticks", ticks);
+                } else if(o instanceof PRDBySecond){
+                    Integer seconds = ((PRDBySecond) o).getCount();
+                    endConditions.put("seconds", seconds);
+                }
+            }
+        }
+
+        return endConditions;
     }
 
     public Grid validateAndCreateGrid(PRDWorld.PRDGrid prdGrid) throws XMLFileException {
@@ -279,15 +257,14 @@ public class WorldCreatorXML {
         return 1; // if not provided -> default is 1
     }
     /** CREATE ACTIONS LIST OF A SINGLE RULE **/
-    ArrayList<Action> validateAndCreateActionsList(List<PRDAction> prdActions) throws XMLFileException {
+    ArrayList<Action> validateAndCreateActionsList(List<PRDAction> prdActionsList) throws XMLFileException {
         ArrayList<Action> actionsList = new ArrayList<>();
-        for(PRDAction a : prdActions){
+        for(PRDAction a : prdActionsList){
             Action action = validateAndCreateAction(a);
             actionsList.add(action);
         }
         return actionsList;
     }
-
     Action validateAndCreateAction(PRDAction prdAction) throws XMLFileException {
         switch (prdAction.getType()) {
             case "increase":
@@ -319,11 +296,7 @@ public class WorldCreatorXML {
         // validate expression is valid, meaning, returning a number
         Expression expression = validateExpressionIsANumber(prdAction.getBy(), mainEntityDefinition, prdAction.getType());
 
-        SecondaryEntity secondaryEntity = null;
-        if(prdAction.getPRDSecondaryEntity() != null){
-            PRDAction.PRDSecondaryEntity prdSecondaryEntity = prdAction.getPRDSecondaryEntity();
-            secondaryEntity = validateAndCreateSecondaryEntity(prdSecondaryEntity);
-        }
+        SecondaryEntity secondaryEntity = validateAndCreateSecondaryEntity(prdAction.getPRDSecondaryEntity());
 
         if(prdAction.getType().equals("increase")){
             return new Increase(mainEntityName, secondaryEntity, propertyName, expression);
@@ -333,21 +306,14 @@ public class WorldCreatorXML {
     }
     public Kill validateAndCreateKillAction(PRDAction prdAction) throws XMLFileException {
         EntityDefinition entDef = findEntityDefinitionInWorld(prdAction.getEntity());
-        SecondaryEntity secondaryEntity = null;
-        if(prdAction.getPRDSecondaryEntity() != null){
-            secondaryEntity = validateAndCreateSecondaryEntity(prdAction.getPRDSecondaryEntity());
-        }
-        return new Kill(entDef.getName(), null, null);
+        SecondaryEntity secondaryEntity = validateAndCreateSecondaryEntity(prdAction.getPRDSecondaryEntity());
+        return new Kill(entDef.getName(), secondaryEntity, null);
     }
     public Calculation validateAndCreateCalculationAction(PRDAction prdAction) throws XMLFileException {
         EntityDefinition entityDefinition = findEntityDefinitionInWorld(prdAction.getEntity());
         String resultProp = validatePropertyBelongsToEntity(prdAction.getResultProp(), entityDefinition);
         validatePropertyIsANumber(prdAction.getProperty(), entityDefinition, "Calculation");
-
-        SecondaryEntity secondaryEntity=null;
-        if(prdAction.getPRDSecondaryEntity() != null){
-            secondaryEntity = validateAndCreateSecondaryEntity(prdAction.getPRDSecondaryEntity());
-        }
+        SecondaryEntity secondaryEntity=validateAndCreateSecondaryEntity(prdAction.getPRDSecondaryEntity());
 
         if(prdAction.getPRDMultiply() != null){
             Expression expression1 = validateExpressionIsANumber(prdAction.getPRDMultiply().getArg1(), entityDefinition, "Multiply");
@@ -360,29 +326,18 @@ public class WorldCreatorXML {
         }
     }
     public Set validateAndCreateSetAction(PRDAction prdAction) throws XMLFileException {
-        // validate entity
         EntityDefinition entityDefinition = findEntityDefinitionInWorld(prdAction.getEntity());
         String propertyName = validatePropertyBelongsToEntity(prdAction.getProperty(), entityDefinition);
-
-        // validate property
         PropertyDefinition propertyDefinition = entityDefinition.getPropsDef().get(propertyName);
-
-        // validate value
         Expression expression = validateExpressionValueInSetAction(prdAction, propertyDefinition.getType(), entityDefinition);
-
-        // validate secondary entity
-        SecondaryEntity secondaryEntity=null;
-        if(prdAction.getPRDSecondaryEntity() != null){
-            secondaryEntity = validateAndCreateSecondaryEntity(prdAction.getPRDSecondaryEntity());
-        }
-
-        return new Set(entityDefinition.getName(), null, propertyName, expression);
+        SecondaryEntity secondaryEntity=validateAndCreateSecondaryEntity(prdAction.getPRDSecondaryEntity());
+        return new Set(entityDefinition.getName(), secondaryEntity, propertyName, expression);
     }
     public Expression validateExpressionValueInSetAction(PRDAction prdAction, String propertyType, EntityDefinition entityDefinition) throws XMLFileException {
         switch (propertyType) { // validate value matches by type
-            case "float": {
+            case "Float": {
                 return validateExpressionIsANumber(prdAction.getValue(), entityDefinition, "Set");
-            } case "boolean": {
+            } case "Boolean": {
                 return validateExpressionIsABoolean(prdAction.getValue(), entityDefinition, "Set");
             } default: { // case "string"
                 return validateExpressionIsAString(prdAction.getValue(), entityDefinition, "Set");
@@ -396,10 +351,7 @@ public class WorldCreatorXML {
         if(!(mode.equals("scratch")) && !(mode.equals("derived"))){
             throw new XMLFileException("XML File Error: 'mode' in action Replace is invalid! could be only 'scratch' or 'derived'\n");
         }
-
-        SecondaryEntity secondaryEntity=null;
-        if(prdAction.getPRDSecondaryEntity() != null)
-            secondaryEntity = validateAndCreateSecondaryEntity(prdAction.getPRDSecondaryEntity());
+        SecondaryEntity secondaryEntity = validateAndCreateSecondaryEntity(prdAction.getPRDSecondaryEntity());
 
         return new Replace(definitionToKill.getName(), secondaryEntity, definitionToCreate.getName(), mode, definitionToCreate);
     }
@@ -407,163 +359,91 @@ public class WorldCreatorXML {
         EntityDefinition sourceDefinition = findEntityDefinitionInWorld(prdAction.getPRDBetween().getSourceEntity());
         EntityDefinition targetDefinition = findEntityDefinitionInWorld(prdAction.getPRDBetween().getTargetEntity());
         Expression depth = validateExpressionIsANumber(prdAction.getPRDEnvDepth().getOf(), sourceDefinition, "Proximity");
-        ArrayList<Action> thenActions = validateAndCreateThenActions(prdAction.getPRDActions().getPRDAction());
-
-        SecondaryEntity secondaryEntity=null;
-        if(prdAction.getPRDSecondaryEntity() != null)
-            secondaryEntity = validateAndCreateSecondaryEntity(prdAction.getPRDSecondaryEntity());
-
+        ArrayList<Action> thenActions = validateAndCreateActionsList(prdAction.getPRDActions().getPRDAction());
+        SecondaryEntity secondaryEntity=validateAndCreateSecondaryEntity(prdAction.getPRDSecondaryEntity());
         return new Proximity(sourceDefinition.getName(), secondaryEntity, null, depth, thenActions, targetDefinition.getName(), grid);
     }
-
     /** ///////////////////////////////////////// CONDITION VALIDATION ////////////////////////////////////////////// **/
     public Condition validateAndCreateConditionAction(PRDAction prdAction) throws XMLFileException {
         EntityDefinition entityDefinition = findEntityDefinitionInWorld(prdAction.getEntity());
         String mainEntityName = entityDefinition.getName();
-
-        SecondaryEntity secondaryEntity=null;
-        if(prdAction.getPRDSecondaryEntity() != null)
-            secondaryEntity = validateAndCreateSecondaryEntity(prdAction.getPRDSecondaryEntity());
+        SecondaryEntity secondaryEntity=validateAndCreateSecondaryEntity(prdAction.getPRDSecondaryEntity());
 
         if (prdAction.getPRDCondition().getSingularity().equals("single"))
-            return validateAndCreateSingleCondition(prdAction, secondaryEntity);
+            return validateAndCreateSingleCondition(true, prdAction, prdAction.getPRDCondition(), secondaryEntity);
         else
-            return validateAndCreateMultipleCondition(prdAction, secondaryEntity, mainEntityName);
+            return validateAndCreateMultipleCondition(true, prdAction, prdAction.getPRDCondition(), secondaryEntity, mainEntityName);
     }
     /** ///////////////////////////////// SINGLE CONDITION VALIDATION ////////////////////////////////////////////// **/
-    public SingleCondition validateAndCreateSingleCondition(PRDAction prdAction, SecondaryEntity secondaryEntity) throws XMLFileException {
-        // NOTE: this is when the single condition is the main action, not part of a multiple condition
-        PRDCondition prdCondition = prdAction.getPRDCondition();
+    public SingleCondition validateAndCreateSingleCondition(boolean mainCond, PRDAction prdAction, PRDCondition prdCondition, SecondaryEntity secondaryEntity) throws XMLFileException {
         String mainEntityName = prdCondition.getEntity();
         EntityDefinition entityDefinition = findEntityDefinitionInWorld(mainEntityName);
 
-        String propertyType = null;// also checking of what type the property is
-        Expression propertyName = validatePropertyExpressionInSingleCondition(prdCondition.getProperty(), entityDefinition, propertyType);
+        // first -> figure out what type the 'property' expression is:
+        Expression propExpression = new Expression(prdCondition.getProperty());
+        String type = propExpression.decipherExpressionType(environmentVarMap, entityDefinition, entityDefList);
+
+        // then -> check if the value matches in its type
+        Expression valueExpression = new Expression(prdCondition.getValue());
+        if(!(valueExpression.checkIfExpressionMatchesType(type, environmentVarMap, entityDefinition, entityDefList)))
+            throw new XMLFileException("XML File Exception: Property expression in Single Condition doesn't match the value expression type!\n");
 
         SingleCondition.Operator operator = validateOperatorInSingleCondition(prdCondition.getOperator());
 
-        Expression value; //    protected String value;
-        switch (propertyType){
-            case "float":
-                value = validateExpressionIsANumber(prdCondition.getValue(), entityDefinition, "Single Condition");
-            case "boolean":
-                value = validateExpressionIsABoolean(prdCondition.getValue(), entityDefinition, "Single Condition");
-            default: // case "string":
-                value = validateExpressionIsAString(prdCondition.getValue(), entityDefinition, "Single Condition");
+        ArrayList<Action> thenActions=null, elseActions=null;
+        if(mainCond) { // if not a main condition -> doesn't have then/else actions.
+            if (prdAction.getPRDThen() != null)
+                thenActions = validateAndCreateActionsList(prdAction.getPRDThen().getPRDAction());
+            else
+                throw new XMLFileException("XML File Error: Single Condition must contain 'then actions'!\n");
+
+            if (prdAction.getPRDElse() != null)
+                elseActions = validateAndCreateActionsList(prdAction.getPRDElse().getPRDAction());
         }
 
-        ArrayList<Action> thenActions=null;
-        if(prdAction.getPRDThen() != null)
-            thenActions = validateAndCreateThenActions(prdAction.getPRDThen().getPRDAction());
-        else
-            throw new XMLFileException("XML File Error: Single Condition must contain 'then actions'!\n");
-
-        ArrayList<Action> elseActions=null;
-        if(prdAction.getPRDElse() != null)
-            elseActions = validateAndCreateThenActions(prdAction.getPRDElse().getPRDAction());
-
-        // todo: property is now an expression, needs to change in the action itself
-        // כרגע זה פלסטר - נשאר סטרינג
-        return new SingleCondition(mainEntityName, secondaryEntity, propertyName.getName(), operator, value, thenActions, elseActions);
-    }
-    public Expression validatePropertyExpressionInSingleCondition(String prdProperty, EntityDefinition entityDefinition, String type) throws XMLFileException {
-        Expression property = new Expression(prdProperty);
-
-        if(property.isNameOfFunction()){ // todo: what to do when it's a name of a function??
-            validateFunctionPropertyExpressionInSingleCondition(property, type);
-        } else if(property.isNameOfProperty(entityDefinition)){
-            if(!(entityDefinition.getPropsDef().containsKey(property.getName())))
-                throw new XMLFileException("XML File Error: Entity " + entityDefinition.getName() + " doesn't have a property named " + property + "!\n");
-            if (entityDefinition.getPropsDef().get(property.getName()) instanceof FloatPropertyDefinition)
-                type = "float";
-            else if (entityDefinition.getPropsDef().get(property.getName()) instanceof BooleanPropertyDefinition)
-                type = "boolean";
-            else
-                type = "string";
-        } /*else { /// todo (wtf) ??????????????
-            if(property.getName().matches("\\d+"))
-                type = "float";
-            else if (property.getName().equals("true") || property.getName().equals("false"))
-                type = "boolean";
-            else
-                type = "string";
-        }*/
-        return property;
-    }
-    public void validateFunctionPropertyExpressionInSingleCondition(Expression propertyExpression, String type) throws XMLFileException {
-        if(propertyExpression.getName().startsWith("environment")){
-            String envName = propertyExpression.getStringInParenthesis();
-            if(!(environmentVarMap.containsKey(envName)))
-                throw new XMLFileException("XML File Error: Function 'environment' didn't receive an environment variable name!!\n");
-            if(environmentVarMap.get(envName) instanceof FloatProperty)
-                type = "float";
-            else if (environmentVarMap.get(envName) instanceof BooleanProperty)
-                type = "boolean";
-            else
-                type = "string";
-        } else if (propertyExpression.getName().startsWith("random")) {
-            throw new XMLFileException("XML File Error: Property in Single Condition is not valid!\n");
-            /*if(!(propertyExpression.getStringInParenthesis().matches("\\d+")))
-                throw new XMLFileException("XML File Error: the value returning from function 'random' is not a number!\n");
-            type = "float";*/
-        } else if(propertyExpression.getName().startsWith("evaluate")){
-            throw new XMLFileException("XML File Error: Property in Single Condition is not valid!\n");
-            /*String[] valueInParenthesis = propertyExpression.getStringInParenthesis().split("\\.");
-            String entityName = valueInParenthesis[0];
-            String propertyName = valueInParenthesis[1];
-            EntityDefinition entDef = findEntityDefinitionInWorld(entityName);
-            if(!(entDef.getPropsDef().containsKey(propertyName)))
-                throw new XMLFileException("XML File Error: Entity " + entDef.getName() + " doesn't have a property named " + propertyName + "!\n");
-            type = entDef.getPropsDef().get(propertyName).getType();*/
-        } else if (propertyExpression.getName().startsWith("percent")) {
-            throw new XMLFileException("XML File Error: Property in Single Condition is not valid!\n");
-            // ???
-        } else { // ticks function. just checking if it gets the right values
-            throw new XMLFileException("XML File Error: Property in Single Condition is not valid!\n");
-            /*String[] valueInParenthesis = propertyExpression.getStringInParenthesis().split("\\.");
-            EntityDefinition entDef = findEntityDefinitionInWorld(valueInParenthesis[0]);
-            validatePropertyBelongsToEntity(valueInParenthesis[1], entDef);
-            type = "float";*/
-        }
-    }
-    public ArrayList<Action> validateAndCreateThenActions(List<PRDAction> prdActionsList) throws XMLFileException {
-        ArrayList<Action> thenActions = new ArrayList<>();
-        for(PRDAction prdAction : prdActionsList){
-            thenActions.add(validateAndCreateAction(prdAction));
-        }
-        return thenActions;
+        // todo: property is now an expression, needs to change in the action itself -> check it
+        return new SingleCondition(mainEntityName, secondaryEntity, propExpression, operator, valueExpression, thenActions, elseActions);
     }
     public SingleCondition.Operator validateOperatorInSingleCondition(String prdOperation) throws XMLFileException {
-        if(prdOperation.equals("EQUAL"))
-            return SingleCondition.Operator.EQUAL;
-        else if(prdOperation.equals("NOTEQUAL"))
-            return SingleCondition.Operator.NOTEQUAL;
-        else if(prdOperation.equals("LESSTHAN"))
-            return SingleCondition.Operator.LESSTHAN;
-        else if(prdOperation.equals("BIGGERTHAN"))
-            return SingleCondition.Operator.BIGGERTHAN;
-        else
-            throw new XMLFileException("XML File Error: Operation sign in condition isn't legal!\n");
+        switch (prdOperation) {
+            case "=":
+                return SingleCondition.Operator.EQUAL;
+            case "!=":
+                return SingleCondition.Operator.NOTEQUAL;
+            case "lt":
+                return SingleCondition.Operator.LESSTHAN;
+            case "bt":
+                return SingleCondition.Operator.BIGGERTHAN;
+            default:
+                throw new XMLFileException("XML File Error: Operation sign in condition isn't legal!\n");
+        }
     }
     /** ///////////////////////////////////////////////// END OF CONDITION /////////////////////////////////////////////////// **/
     /** ///////////////////////////////////////// MULTIPLE CONDITION VALIDATION ////////////////////////////////////////////// **/
-    public MultipleCondition validateAndCreateMultipleCondition(PRDAction prdAction, SecondaryEntity secondaryEntity, String mainEntityName) throws XMLFileException {
+    public MultipleCondition validateAndCreateMultipleCondition(boolean mainCond, PRDAction prdAction, PRDCondition prdCondition, SecondaryEntity secondaryEntity, String mainEntityName) throws XMLFileException {
         ArrayList<Condition> conditions = new ArrayList<>();
-        for(PRDCondition prdCondition : prdAction.getPRDCondition().getPRDCondition()){
-            conditions.add(validateAndCreateSubConditions(prdCondition));
+        List<PRDCondition> prdConditionList = prdCondition.getPRDCondition();
+        for(PRDCondition p : prdConditionList){
+            if(p.getSingularity().equals("single")){
+                Condition condition = validateAndCreateSingleCondition(false, prdAction, p, null);
+                conditions.add(condition);
+            } else{
+                conditions.add(validateAndCreateMultipleCondition(false, prdAction, p, null, mainEntityName));
+            }
         }
 
-        ArrayList<Action> thenActions;
-        if(prdAction.getPRDThen() != null)
-            thenActions = validateAndCreateThenActions(prdAction.getPRDThen().getPRDAction());
-        else
-            throw new XMLFileException("XML File Error: Single Condition must contain 'then actions'!\n");
+        ArrayList<Action> thenActions=null, elseActions=null;
+        if(mainCond){
+            if(prdAction.getPRDThen() != null)
+                thenActions = validateAndCreateActionsList(prdAction.getPRDThen().getPRDAction());
+            else
+                throw new XMLFileException("XML File Error: Multiple Condition must contain 'then actions'!\n");
 
-        ArrayList<Action> elseActions=null;
-        if(prdAction.getPRDElse() != null)
-            elseActions = validateAndCreateThenActions(prdAction.getPRDElse().getPRDAction());
+            if(prdAction.getPRDElse() != null)
+                elseActions = validateAndCreateActionsList(prdAction.getPRDElse().getPRDAction());
+        }
 
-        MultipleCondition.Logic logicSign = validateLogicSign(prdAction.getPRDCondition().getLogical());
+        MultipleCondition.Logic logicSign = validateLogicSign(prdCondition.getLogical());
         return new MultipleCondition(mainEntityName, secondaryEntity, null, thenActions, elseActions, logicSign, conditions);
     }
 
@@ -575,49 +455,32 @@ public class WorldCreatorXML {
         else
             throw new XMLFileException("XML File Error: Logical sign in Multiple Condition isn't legal!\n");
     }
-    public Condition validateAndCreateSubConditions(PRDCondition prdCondition) throws XMLFileException {
-        // this is when the conditions are part of a multiple condition!
-
-        //protected List<PRDCondition> prdCondition;
-        //    protected String value;
-        //    protected String singularity;
-        //    protected String operator;
-        //    protected String property;
-        //    protected String logical;
-        //    protected String entity;
-
-        // todo - > לא סיימתי עדיין !
-        if(prdCondition.getSingularity().equals("single")){
-            // todo: do i need to check if the entity matches the main entity?
-            SingleCondition.Operator operator = validateOperatorInSingleCondition(prdCondition.getOperator());
-            return new SingleCondition(null, null, null, operator, null, null, null);
-        } else {
-            MultipleCondition.Logic logicSign = validateLogicSign(prdCondition.getLogical());
-            return new MultipleCondition(null, null, null, null, null, logicSign, null);
-        }
-    }
-
 
     /** ///////////////////////////////////////////// END OF MULTIPLE CONDITION  ///////////////////////////////////////////// **/
     /** //////////////////////////////////////////// SECONDARY ENTITY VALIDATION //////////////////////////////////////////// **/
     public SecondaryEntity validateAndCreateSecondaryEntity(PRDAction.PRDSecondaryEntity prdSecondaryEntity) throws XMLFileException {
-        EntityDefinition secondEntityDefinition = findEntityDefinitionInWorld(prdSecondaryEntity.getEntity());
-        PRDAction.PRDSecondaryEntity.PRDSelection prdSelection = prdSecondaryEntity.getPRDSelection();
+        if(prdSecondaryEntity != null){
+            EntityDefinition secondEntityDefinition = findEntityDefinitionInWorld(prdSecondaryEntity.getEntity());
+            PRDAction.PRDSecondaryEntity.PRDSelection prdSelection = prdSecondaryEntity.getPRDSelection();
 
-        // validating count:
-        String prdCount = prdSelection.getCount();
-        Integer numOfSecondEntities = validateCountNumberInSecondaryEntity(prdCount);
+            // validating count:
+            String prdCount = prdSelection.getCount();
+            Integer numOfSecondEntities = validateCountNumberInSecondaryEntity(prdCount);
 
-        // validating condition:
-        PRDCondition prdCondition = prdSelection.getPRDCondition(); // validate
-        Condition selection = validateSelectionConditionInSecondaryEntity(prdCondition);
+            // validating condition:
+            PRDCondition prdCondition = prdSelection.getPRDCondition(); // validate
+            Condition selection = validateSelectionConditionInSecondaryEntity(prdCondition);
 
-        return new SecondaryEntity(secondEntityDefinition.getName(), numOfSecondEntities, selection);
+
+            return new SecondaryEntity(secondEntityDefinition.getName(), numOfSecondEntities, selection);
+        }
+        else
+            return null;
     }
     public Integer validateCountNumberInSecondaryEntity(String prdCount) throws XMLFileException {
         if(prdCount.equals("ALL"))
             return null;
-        else if (prdCount.matches("\\d+")){
+        else if (prdCount.matches("[0-9.]+")){
             if(Integer.parseInt(prdCount) > 0)
                 return Integer.parseInt(prdCount);
             else
@@ -627,11 +490,19 @@ public class WorldCreatorXML {
     }
     public Condition validateSelectionConditionInSecondaryEntity(PRDCondition prdCondition) throws XMLFileException {
         if(prdCondition.getSingularity().equals("single")){
-            EntityDefinition entDef = findEntityDefinitionInWorld(prdCondition.getEntity());
-            String propName = validatePropertyBelongsToEntity(prdCondition.getProperty(), entDef); // todo -> also an expression
+            EntityDefinition entityDefinition = findEntityDefinitionInWorld(prdCondition.getEntity());
+
+            // first -> figure out what type the 'property' expression is:
+            Expression propExpression = new Expression(prdCondition.getProperty());
+            String type = propExpression.decipherExpressionType(environmentVarMap, entityDefinition, entityDefList);
+
+            // then -> check if the value matches in its type
+            Expression valueExpression = new Expression(prdCondition.getValue());
+            if(!(valueExpression.checkIfExpressionMatchesType(type, environmentVarMap, entityDefinition, entityDefList)))
+                throw new XMLFileException("XML File Exception: Selection condition in secondary entity is invalid: Property expression in Single Condition doesn't match the value expression type!\n");
+
             SingleCondition.Operator operator = validateOperatorInSingleCondition(prdCondition.getOperator());
-            Expression expression = validateExpressionIsANumber(prdCondition.getValue(), entDef, "Single Condition");
-            return new SingleCondition(entDef.getName(), null, propName, operator, expression, null, null);
+            return new SingleCondition(entityDefinition.getName(), null, propExpression, operator, valueExpression, null, null);
         }
         else{
             System.out.println("HASHEM ISHMOR"); // todo
@@ -663,13 +534,14 @@ public class WorldCreatorXML {
                 throw new XMLFileException("XML File Error: Property " + prdProperty + " used in action " + actionName + " is not of a number type!\n");
         }
     }
+    /** END OF RULES **/
     public Expression validateExpressionIsANumber(String prdExpression, EntityDefinition entityDefinition, String actionName) throws XMLFileException {
+        // todo: maybe move to expression class
         Expression expression = new Expression(prdExpression);
-
         if(expression.isNameOfFunction()){ // check function returns a number
             validateFunctionExpressionIsANumber(expression);
         } else if(expression.isNameOfProperty(entityDefinition)){ // check the property is a number
-            if(!(entityDefinition.getPropsDef().get(expression.getName()).getType().equals("float")))
+            if(!(entityDefinition.getPropsDef().get(expression.getName()) instanceof FloatPropertyDefinition))
                 throw new XMLFileException("XML File Error: Property " + expression.getName() + " used in action " + actionName + " is not of a number type!\n");
         } else { // check is the value of the string is a number
             if(!(expression.isANumber()))
@@ -686,7 +558,7 @@ public class WorldCreatorXML {
             if(!(environmentVarMap.get(envName) instanceof FloatProperty))
                 throw new XMLFileException("XML File Error: the value returning from function 'environment' is not a number!\n");
         } else if (expression.getName().startsWith("random")) {
-            if(!(expression.getStringInParenthesis().matches("\\d+")))
+            if(!(expression.getStringInParenthesis().matches("[0-9.]+")))
                 throw new XMLFileException("XML File Error: the value returning from function 'random' is not a number!\n");
         } else if(expression.getName().startsWith("evaluate")){
             String[] valueInParenthesis = expression.getStringInParenthesis().split("\\.");
@@ -694,9 +566,9 @@ public class WorldCreatorXML {
             String propertyName = valueInParenthesis[1];
 
             EntityDefinition entDef = findEntityDefinitionInWorld(entityName);
-            if(!(entDef.getPropsDef().get(propertyName).getType().equals("float"))){
+            validatePropertyBelongsToEntity(propertyName, entDef);
+            if(!(entDef.getPropsDef().get(propertyName) instanceof FloatPropertyDefinition))
                 throw new XMLFileException("XML File Error: the value returning from function 'evaluate' is not a number!\n");
-            }
         } else if (expression.getName().startsWith("percent")) {
             System.out.println("~~~@@@ need to do @@@~~~");
             // todo :(((
@@ -707,6 +579,7 @@ public class WorldCreatorXML {
         }
     }
     public Expression validateExpressionIsABoolean(String prdExpression, EntityDefinition entityDefinition, String actionName) throws XMLFileException {
+        // todo: maybe move to Expression class
         Expression expression = new Expression(prdExpression);
 
         if(expression.isNameOfFunction()){ // check function returns a boolean
@@ -738,33 +611,33 @@ public class WorldCreatorXML {
     }
 
     public Expression validateExpressionIsAString(String prdExpression, EntityDefinition entityDefinition, String actionName) throws XMLFileException {
+        // todo: maybe move to Expression class
         Expression expression = new Expression(prdExpression);
 
-        if(expression.isNameOfFunction()){ // check function returns a boolean
-            if(expression.getName().startsWith("environment")){
+        if (expression.isNameOfFunction()) { // check function returns a boolean
+            if (expression.getName().startsWith("environment")) {
                 String envName = expression.getStringInParenthesis();
-                if(!(environmentVarMap.containsKey(envName)))
+                if (!(environmentVarMap.containsKey(envName)))
                     throw new XMLFileException("XML File Error: Function 'environment' didn't receive an environment variable name!!\n");
-                if(!(environmentVarMap.get(envName) instanceof StringProperty))
+                if (!(environmentVarMap.get(envName) instanceof StringProperty))
                     throw new XMLFileException("XML File Error: the value returning from function 'environment' is not a string!\n");
-            } else if(expression.getName().startsWith("evaluate")){
+            } else if (expression.getName().startsWith("evaluate")) {
                 String[] valueInParenthesis = expression.getStringInParenthesis().split("\\.");
                 String entityName = valueInParenthesis[0];
                 String propertyName = valueInParenthesis[1];
 
                 EntityDefinition entDef = findEntityDefinitionInWorld(entityName);
-                if(!(entDef.getPropsDef().get(propertyName).getType().equals("string"))){
+                if (!(entDef.getPropsDef().get(propertyName).getType().equals("string"))) {
                     throw new XMLFileException("XML File Error: the value returning from function 'evaluate' is not a string!\n");
                 }
             } else // any other function returns a number
                 throw new XMLFileException("XML File Error: the value returning from the function is not a string!\n");
-        } else if(expression.isNameOfProperty(entityDefinition)){ // check the property is a number
-            if(!(entityDefinition.getPropsDef().get(expression.getName()).getType().equals("string")))
+        } else if (expression.isNameOfProperty(entityDefinition)) { // check the property is a number
+            if (!(entityDefinition.getPropsDef().get(expression.getName()).getType().equals("string")))
                 throw new XMLFileException("XML File Error: Property " + expression.getName() + " used in action " + actionName + " is not of a string type!\n");
         }
         // else -> it's a string
 
         return expression;
     }
-    /** END OF RULES **/
 }

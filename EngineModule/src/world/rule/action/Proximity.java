@@ -20,7 +20,6 @@ public class Proximity extends Action{
      EXPLANATION:
      mainEntityName -> source entity
      expression -> by
-
      works similarly to condition, it has a list of action to perform if the condition is true (thenActions).
      if the entities are close to each other, the actions will be performed.
      **/
@@ -48,7 +47,7 @@ public class Proximity extends Action{
     @Override
     public Boolean activate(ParametersForAction parameters) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
         // get the surrounding cells of the main entity (source entity)
-        List<Coordinate> surroundingCells = grid.findEnvironmentCells(sourcePos, (Integer)expression.getValue());
+        List<Coordinate> surroundingCells = grid.findEnvironmentCells(sourcePos, ((Double)(expression.getValue())).intValue());
         Entity[][] entityMatrix = grid.getEntityMatrix();
 
         // if in one of those cells there is an entity of target type -> perform the actions)
@@ -59,7 +58,7 @@ public class Proximity extends Action{
                     Entity targetEntity = entityMatrix[c.getRow()][c.getCol()];
                     ArrayList<ParametersForAction> thenParams = ((ParametersForCondition)parameters).getThenParams();
                     for(int i=0 ; i<thenActions.size() ; i++){
-                        if(thenActions.get(i).getMainEntityName().equals(targetEntityName)){
+                        if(thenActions.get(i).getMainEntityName().equals(targetEntityName)) {
                             // edit the parameters for action
                             String propertyName = thenActions.get(i).getPropToChangeName();
                             thenParams.get(i).setMainProp(targetEntity.getPropertyByName(propertyName));

@@ -19,15 +19,15 @@ public class World implements Serializable {
     ArrayList<Rule> rules;
     //ArrayList<EndCondition> endConditions;
     Map<String, Integer> endConditions;
-
-    //////// new:
     Map<String, ArrayList<Entity>> allEntities; // new: map by string - name of entity TYPE, to an array of the entity INSTANCES
     Grid grid;
     Integer numOfThreads;
+
     public void printMatrix(){ // todo: delete later
         for (int i = 0; i < grid.getNumOfRows(); i++) {
             for (int j = 0; j < grid.getNumOfCols(); j++) {
-                System.out.print(grid.matrix[i][j] + " ");
+                if(grid.entityMatrix[i][j]!=null) System.out.print(grid.entityMatrix[i][j].getID() + " ");
+                else System.out.print("null ");
             }
             System.out.println();
         }
@@ -65,30 +65,6 @@ public class World implements Serializable {
             }
             allEntities.put(entityName, instancesList);
         }
-
-        int i=1;
-        for (Map.Entry<String, ArrayList<Entity>> entry : allEntities.entrySet()){
-            System.out.println("-----------------------------------------------");
-            System.out.println("Entity #" + i++ + ": " + entry.getKey());
-            ArrayList<Entity> instancesList = entry.getValue();
-            int j=1;
-            for(Entity entity : instancesList){
-                System.out.println("    Instance #" + j++ + ":");
-                System.out.println("    Name:" + entity.getName());
-                System.out.println("    Position: " + entity.getPosition());
-                System.out.println("    Properties: ");
-                int k=1;
-                for (Map.Entry<String, Property> propMap : entity.getProperties().entrySet()){
-                    Property p = propMap.getValue();
-                    System.out.println("        Property #" + k++ + ":");
-                    System.out.println("        Name: " + propMap.getKey());
-                    System.out.println("        Name: " + p.getName());
-                    System.out.println("        Type: " + p.getType());
-                    System.out.println("        Value: " + p.getVal() + "\n");
-                }
-            }
-            System.out.println("-----------------------------------------------");
-        }
     }
     private Property generatePropertyByDefinitions(PropertyDefinition propdef){
         switch (propdef.getType()){
@@ -119,8 +95,8 @@ public class World implements Serializable {
             }
         }
 
-        for(Entity entity : entitiesToKill){ // todo delete
-            entities.remove(entity);
+        for(Entity entity : entitiesToKill){
+            entities.remove(entity); // todo delete
         }
     }
 
@@ -129,8 +105,8 @@ public class World implements Serializable {
             for(Map.Entry<String, ArrayList<Entity>> entry : allEntities.entrySet()){
                 ArrayList<Entity> entityList = entry.getValue();
 
-                for(Entity entity : entityList){
-                    if(entity.equals(entityToCreate)){
+                for(Entity entity : entityList) {
+                    if(entity.equals(entityToCreate)) {
                         entity.setPosition(grid.findNewAvailableCell());
                         grid.updateGridCoordinateIsTakenMATRIX(entity.getPosition(), entity);
                         entityList.add(entityToCreate);
@@ -139,9 +115,11 @@ public class World implements Serializable {
                 }
             }
         }
+
+        entities.addAll(entitiesToCreate); // todo delete
     }
     public ArrayList<Entity> getEntities() {
-        return entities;
+        return entities;  // todo delete
     }
     public Map<String, ArrayList<Entity>> getAllEntities() {
         return allEntities;
@@ -197,19 +175,12 @@ public class World implements Serializable {
     }
 
     public void generateRandomPositionsOnGrid(){ // scatter the entities on the grid randomly
-        int i=1;
         for (Map.Entry<String, ArrayList<Entity>> entry : allEntities.entrySet()){
-            String entityName = entry.getKey();
             ArrayList<Entity> entityList = entry.getValue();
-
-            System.out.println("Entity #" + i++ + ": " + entityName + ":");
-            int j=1;
             for(Entity entity : entityList){
                 entity.setPosition(grid.findNewAvailableCell());
-                System.out.println("Instance #" + j++ + ": new position: (" + entity.getPosition().getRow() + ", " + entity.getPosition().getCol() + ")");
             }
         }
-        System.out.println("--------------------------------------------------------------------------------------");
     }
     public void moveAllEntitiesOnGrid() {
         for(Map.Entry<String, ArrayList<Entity>> entityMap : allEntities.entrySet()){
@@ -250,7 +221,7 @@ public class World implements Serializable {
                 for(PropertyDefinition propDef : entityDef.getPropsDef().values()){
                     entityProps.put(propDef.getName(), generatePropertyByDefinitions(propDef));
                 }
-                entities.add(new Entity(entityDef.getName(),entityProps));
+                entities.add(new Entity(entityDef.getName(),entityProps)); // todo delete
             }
         }
     }

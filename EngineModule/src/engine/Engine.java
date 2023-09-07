@@ -26,13 +26,8 @@ import world.rule.Rule;
 import world.rule.action.*;
 import world.rule.action.Set;
 import world.rule.action.api.*;
-import world.rule.action.calculation.Calculation;
-import world.rule.action.calculation.Divide;
-import world.rule.action.calculation.Multiply;
-import world.rule.action.condition.Condition;
-import world.rule.action.condition.MultipleCondition;
-import world.rule.action.Proximity;
-import world.rule.action.condition.SingleCondition;
+import world.rule.action.calculation.*;
+import world.rule.action.condition.*;
 import xml.reader.XMLReader;
 import xml.reader.schema.generated.v2.*;
 import xml.reader.validator.*;
@@ -59,24 +54,20 @@ public class Engine implements EngineInterface, Serializable {
         this.world = world;
     }
     @Override
-    public Boolean createSimulationByXMLFile(String fileName) throws FileDoesntExistException, InvalidXMLFileNameException, EnvironmentException, EntityException, PropertyException, MustBeNumberException, RuleException, TerminationException, XMLFileException {
+    public Boolean createSimulationByXMLFile(String fileName) throws FileDoesntExistException, InvalidXMLFileNameException, XMLFileException {
         XMLReader reader = new XMLReader();
         PRDWorld prdWorld = reader.validateXMLFileAndCreatePRDWorld(fileName);
 
         // if file opened successfully, but the data is incorrect, then prdWorld would be null
         if(prdWorld != null){
             WorldCreatorXML worldCreator = new WorldCreatorXML(); // new version
-            worldCreator.createWorldFromXMLFile(prdWorld); // new version
-
-
-            //WorldCreator worldCreator = new WorldCreator();
-            //world = worldCreator.createWorldFromXMLFile(prdWorld);
+            world = worldCreator.createWorldFromXMLFile(prdWorld); // new version
+            //WorldCreator worldCreator = new WorldCreator(); // old version
+            //world = worldCreator.createWorldFromXMLFile(prdWorld); // old version
 
             //hardCodedMaster2(); // todo delete later
-
-            //functions.setEnvironmentVariables(world.getEnvironmentVariables());
-
-
+            functions.setAllEntities(world.getAllEntities());
+            functions.setEnvironmentVariables(world.getEnvironmentVariables());
             return true;
         } else {
             // something wrong with the data
@@ -114,7 +105,7 @@ public class Engine implements EngineInterface, Serializable {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy | HH.mm.ss");
         String formattedDateTime = currentDateTime.format(formatter);
 
-        world.generateEntitiesByDefinitions(); // todo : delete
+        world.generateEntitiesByDefinitions(); // todo delete later
         world.generateAllEntitiesMapByDefinition(); // new
         world.generateDefinitionForSecondaryEntity(); // new
         world.generateRandomPositionsOnGrid(); // scatter the entities on the grid randomly
@@ -125,7 +116,6 @@ public class Engine implements EngineInterface, Serializable {
             runRulesOnEachEntity(makeListOfAllActionsThatShouldRun()); // 2. make a list of all the actions that should run
             ticks++;
         }
-
         saveRunResults(formattedDateTime);
         world.cleanup();
         return getEndSimulationData();
@@ -169,83 +159,90 @@ public class Engine implements EngineInterface, Serializable {
     private List<Entity> makeListOfSecondaryEntities(Action action) throws IncompatibleAction, IncompatibleType {
         SecondaryEntity secondaryEntityInfo = action.getSecondEntityInfo();
         Integer count = secondaryEntityInfo.getNumOfSecondEntities();
-        List<Entity> secondEntityList = new ArrayList<>();
+        List<Entity> result = new ArrayList<>();
 
-        // if count=ALL or count>=num of instances -> then select them all
-        if(count == null || count >= secondaryEntityInfo.getDefinition().getNumOfInstances()){ // add all
-            ArrayList<Entity> entityList = world.getAllEntities().get(secondaryEntityInfo.getName());
-            secondEntityList.addAll(entityList);
-        } else if(secondaryEntityInfo.getSelection() == null){ // if there is no condition for selection -> then add randomly by the number
-            Random random = new Random();
-            ArrayList<Entity> entityList = world.getAllEntities().get(secondaryEntityInfo.getName());
-            // randomly add entities, until we get to count
-            while(secondEntityList.size() < count) {
-                int randomIndex = random.nextInt(entityList.size());
-                secondEntityList.add(entityList.get(randomIndex));
+        if(count == null || count > secondaryEntityInfo.getDefinition().getNumOfInstances()){
+            // if count==ALL or that is bigger than the population -> count=population.
+            count = secondaryEntityInfo.getDefinition().getNumOfInstances();
+        }
+
+        ArrayList<Entity> entityList = world.getAllEntities().get(secondaryEntityInfo.getName());
+        ArrayList<Entity> shuffledSecondEntities = new ArrayList<>(entityList); // get a copy of secondary list
+        Collections.shuffle(shuffledSecondEntities); // shuffle the list to make it random
+        Condition condition = action.getSecondEntityInfo().getSelection(); // get the condition for selection
+
+        int i=0; // if no one been chosen -> the list will be empty
+        while(result.size() < count && i < shuffledSecondEntities.size()){
+            // while we are under the count, or there are still entities in the array
+            Entity secondEntityToAdd = shuffledSecondEntities.get(i++); // take the next random entity
+
+            boolean selectionTrue=true;
+            if(secondaryEntityInfo.getSelection() != null){ // if it has a selection condition
+                setValueOfExpressionOnAction(condition, secondEntityToAdd, null);
+                Property actionProp = secondEntityToAdd.getPropertyByName(action.getPropToChangeName());
+                ParametersForAction params = new ParametersForAction(actionProp, secondEntityToAdd, null, ticks);
+                if(condition instanceof SingleCondition)
+                    selectionTrue = ((SingleCondition)condition).checkCondition(params);
+                else
+                    selectionTrue = ((MultipleCondition)condition).checkCondition(params);
             }
-        } else { // add according to the condition
+
+            if(selectionTrue){
+                result.add(secondEntityToAdd);
+            }
+        }
+
+        return result;
+
+        /*// if count=ALL or count>=num of instances -> then select them all
+        if(count == null || count > secondaryEntityInfo.getDefinition().getNumOfInstances()){ // add all
+            // todo: take ALL entities that answered the condition!!!!!!
+            ArrayList<Entity> entityList = world.getAllEntities().get(secondaryEntityInfo.getName());
+            result.addAll(entityList);
+        } else if(secondaryEntityInfo.getSelection() == null){ // if there is no condition for selection -> then add randomly by the number
+            // randomly add entities, until we get to count
             ArrayList<Entity> entityList = world.getAllEntities().get(secondaryEntityInfo.getName());
             ArrayList<Entity> shuffledSecondEntities = new ArrayList<>(entityList); // get a copy of secondary list
             Collections.shuffle(shuffledSecondEntities); // shuffle the list to make it random
-            Condition condition = action.getSecondEntityInfo().getSelection(); // get the condition for selection:
-
             int i=0; // if no one been chosen -> the list will be empty
-            while(secondEntityList.size() < count && i < shuffledSecondEntities.size()){
-                Entity secondEntityToAdd = entityList.get(i++);
-                setValueOfExpressionOnAction(condition, secondEntityToAdd);
-                ParametersForAction params = fillParamsForSelection(secondEntityToAdd, condition);
-                boolean selectionTrue;
-                if(condition instanceof SingleCondition){
-                    selectionTrue = ((SingleCondition)condition).checkCondition(params);
-                } else {
-                    selectionTrue = ((MultipleCondition)condition).checkCondition(params);
-                }
-
-                if(selectionTrue){
-                    secondEntityList.add(secondEntityToAdd);
-                }
+            while(result.size() < count && i < shuffledSecondEntities.size()){
+                result.add(shuffledSecondEntities.get(i++));
             }
+        } else { // add according to the condition
+
         }
-        return secondEntityList;
+        return result;*/
     }
+
+
+
+
+
+
     public Action createNewActionWithoutSecondaryEntity(Action action, Entity entity){
         // if the second entity list is empty -> ignore the secondary entity -> create a new list of conditions without it
         Action newAction=null;
-        System.out.println("%%U&^%&^$&^");
         if(action instanceof MultipleCondition){ // todo: other action types
             ArrayList<Condition> conditions = ((MultipleCondition) action).getConditions();
-            ArrayList<Action> thenActions = ((MultipleCondition) action).getThenActions();
-            ArrayList<Action> elseActions = ((MultipleCondition) action).getElseActions();
-
             ArrayList<Condition> newConditions = new ArrayList<>();
-            ArrayList<Action> newThen = new ArrayList<>();
-            ArrayList<Action> newElse = new ArrayList<>();
-
-            System.out.println("number of conditions: " + conditions.size());
-            int i=1;
-
             for(Condition c : conditions){ // go over the list of conditions and only perform the ones without the second entity
-                System.out.println("condition #" + i++ + " of type: " + c.getActionName());
-                System.out.println("main entity in condition: " + c.getMainEntityName());
-
                 if(!c.getMainEntityName().equals(action.getSecondEntityInfo().getName())){
                     newConditions.add(c);
                 }
             }
 
-            int j=1; // todo: what if there is no then actions????????????
+            ArrayList<Action> thenActions = ((MultipleCondition) action).getThenActions();
+            ArrayList<Action> newThen = new ArrayList<>();
+            // todo: what if there is no then actions????????????
             for(Action t : thenActions){
-                System.out.println("action #" + j++ + " of type: " + t.getActionName());
-                System.out.println("main entity in condition: " + t.getMainEntityName());
                 if(!(t.getMainEntityName().equals(action.getSecondEntityInfo().getName()))){
                     newThen.add(t);
                 }
             }
 
-            int k=1;
+            ArrayList<Action> elseActions = ((MultipleCondition) action).getElseActions();
+            ArrayList<Action> newElse = new ArrayList<>();
             for(Action e : elseActions){
-                System.out.println("action #" + k++ + " of type: " + e.getActionName());
-                System.out.println("main entity in condition: " + e.getMainEntityName());
                 if(!(e.getMainEntityName().equals(action.getSecondEntityInfo().getName()))){
                     newElse.add(e);
                 }
@@ -258,102 +255,152 @@ public class Engine implements EngineInterface, Serializable {
         return newAction;
     }
     public void activateAction(Action action, Entity entity, Entity secondary, ArrayList<Entity> entitiesToKill, ArrayList<Entity> entitiesToCreate) throws IncompatibleAction, DivisionByZeroException, IncompatibleType {
-        setValueOfExpressionOnAction(action, entity);
-        ParametersForAction params = getParametersForAction(action, entity, secondary);
+        ParametersForAction params = setParametersAndExpressionToAction(action, entity, secondary);
+
         if (action.activate(params)) { // need to kill
             entitiesToKill.add(entity);
             if(action instanceof Replace){
-                // meanwhile without position, so it won't take space on grid ! (the new entities don't exist yet)
                 entitiesToCreate.add(((Replace)action).getEntityToCreate());
+            } else if(action instanceof Proximity || action instanceof Condition){
+                Action replaceAction = actionHasReplaceAction(action);
+                entitiesToCreate.add(((Replace)replaceAction).getEntityToCreate());
             }
         }
     }
-    private void setValueOfExpressionOnAction(Action action, Entity entity){ // todo -> לפצל לפונקציות בצורה יפה יותררר
+
+    public Action actionHasReplaceAction(Action action){ // checks if one of the sub actions has Replace action in it.
+        if(action instanceof Proximity){
+            List<Action> thenActions = ((Proximity)action).getThenActions();
+            for(Action t : thenActions){
+                if(t instanceof Replace)
+                    return t;
+                else if(t instanceof Condition || t instanceof Proximity){
+                    return actionHasReplaceAction(t);
+                }
+            }
+            return null;
+        } else if (action instanceof Condition){
+            List<Action> thenActions = ((Condition)action).getThenActions();
+            for(Action t : thenActions){
+                if(t instanceof Replace)
+                    return t;
+                else if(t instanceof Condition || t instanceof Proximity){
+                    return actionHasReplaceAction(t);
+                }
+            }
+
+            List<Action> elseActions = ((Condition)action).getElseActions();
+            for(Action e : elseActions){
+                if(e instanceof Replace)
+                    return e;
+                else if(e instanceof Condition || e instanceof Proximity){
+                    return actionHasReplaceAction(e);
+                }
+            }
+            return null;
+        } else {
+            return null;
+        }
+    }
+
+    public ParametersForAction setParametersAndExpressionToAction(Action action, Entity entity, Entity secondary){
+        ParametersForAction params = getParametersForAction(action, entity, secondary);
+
+        setValueOfExpressionOnAction(action, entity, secondary);
+
+        return params;
+    }
+
+    private void setValueOfExpressionOnAction(Action action, Entity entity, Entity secondary){
         if(action instanceof Decrease || action instanceof Increase || action instanceof Set || action instanceof Calculation){
-            String expression = action.getExpressionNew().getName();
-            Property actionProp = entity.getPropertyByName(action.getPropToChangeName());
-            action.getExpressionNew().setValue(getValueOfExpression(expression, entity, actionProp));
+            Object valExpression = getValueOfExpressionNEW(action, action.getExpressionNew(), entity, secondary);
+            action.getExpressionNew().setValue(valExpression);
+
             if(action instanceof Calculation) {
-                Object expression2Val = getValueOfExpression(((Calculation) action).getExpression2().getName(), entity, actionProp);
-                ((Calculation) action).getExpression2().setValue(expression2Val);
+                Object arg2 = getValueOfExpressionNEW(action, ((Calculation) action).getExpression2(), entity, secondary);
+                ((Calculation) action).getExpression2().setValue(arg2);
             }
         } else if(action instanceof Proximity) { // there is no property
-            String expression = action.getExpressionNew().getName();
-            action.getExpressionNew().setValue(Integer.parseInt(expression));
+            Object valExpression = getValueOfExpressionNEW(action, action.getExpressionNew(), entity, secondary);
+            action.getExpressionNew().setValue(valExpression);
 
             if(((Proximity) action).getThenActions() != null){
                 for(Action thenAction : ((Proximity) action).getThenActions()){
-                    setValueOfExpressionOnAction(thenAction, entity);
+                    setValueOfExpressionOnAction(thenAction, entity, secondary);
                 }
             }
         } else if(action instanceof Kill || action instanceof Replace) {
-            return; // todo
+            return;
         }
 
         if(action instanceof Condition){
             if(((Condition) action).getThenActions() != null)
                 for (Action thenAction : ((Condition) action).getThenActions())
-                    setValueOfExpressionOnAction(thenAction, entity);
+                    setValueOfExpressionOnAction(thenAction, entity, secondary);
 
             if(((Condition) action).getElseActions() != null)
                 for (Action elseAction : ((Condition) action).getElseActions())
-                    setValueOfExpressionOnAction(elseAction, entity);
+                    setValueOfExpressionOnAction(elseAction, entity, secondary);
 
             if(action instanceof SingleCondition){
-                String expression = action.getExpressionNew().getName();
-                Property actionProp = entity.getPropertyByName(action.getPropToChangeName());
-                action.getExpressionNew().setValue(getValueOfExpression(expression, entity, actionProp));
+                Expression valueExpression = action.getExpressionNew();
+                Object val = getValueOfExpressionNEW(action, valueExpression, entity, secondary);
+                action.getExpressionNew().setValue(val);
+
+                Expression propertyExpression = ((SingleCondition)action).getPropertyExpression();
+                Object prop = getValueOfExpressionNEW(action, propertyExpression, entity, secondary);
+                ((SingleCondition)action).getPropertyExpression().setValue(prop);
             }
             if(action instanceof MultipleCondition){
                 for(Condition condition : ((MultipleCondition)action).getConditions()){
-                    setValueOfExpressionOnAction(condition, entity);
+                    setValueOfExpressionOnAction(condition, entity, secondary);
                 }
             }
         }
     }
-    private Object getValueOfExpression(String expression, Entity entity, Property actionProp){
-        if(expression == null)
-            return null;
-        int len = expression.length();
-        if(actionProp == null)
-            return null;
-        if(expression.startsWith("environment"))
-            return functions.environment(expression.substring(12, len-1));
-        else if (expression.startsWith("random"))
-            return functions.random(Integer.parseInt(expression.substring(7, len-1)));
-        else if (expression.startsWith("evaluate")){
-            functions.setEntities(world.getEntities());
-            return functions.evaluate(expression.substring(9, len-1));
+
+    private Object getValueOfExpressionNEW(Action action, Expression expression, Entity mainEntity, Entity secondary){
+        // third entity is for Proximity (target entity) and Replace (the entity to create)
+
+        if(expression.isNameOfFunction()){
+            if(expression.getName().startsWith("environment")){
+                return functions.environment(expression.getStringInParenthesis());
+            } else if(expression.getName().startsWith("random")){
+                return functions.random(Integer.parseInt(expression.getStringInParenthesis()));
+            } else if(expression.getName().startsWith("evaluate")){
+                if(action instanceof Proximity){
+                    System.out.println("TODO: check evaluate function with Proximity");
+                    return functions.evaluate(expression.getStringInParenthesis(), mainEntity, secondary, null);
+                } else if(action instanceof Replace){
+                    Entity third = ((Replace)action).getEntityToCreate();
+                    return functions.evaluate(expression.getStringInParenthesis(), mainEntity, secondary, third);
+                }else {
+                    return functions.evaluate(expression.getStringInParenthesis(), mainEntity, secondary, null);
+                }
+            } else if(expression.getName().startsWith("percent")){
+                if(action instanceof Proximity){
+                    System.out.println("TODO: check evaluate function with Proximity");
+                    return functions.evaluate(expression.getStringInParenthesis(), mainEntity, secondary, null);
+                } else if(action instanceof Replace){
+                    Entity third = ((Replace)action).getEntityToCreate();
+                    return functions.evaluate(expression.getStringInParenthesis(), mainEntity, secondary, third);
+                } else {
+                    return functions.percent(expression.getStringInParenthesis(), mainEntity, secondary, null);
+                }
+            } else { // ticks
+                return functions.ticks(expression.getStringInParenthesis(), mainEntity);
+            }
+        } else if(expression.isNameOfProperty(mainEntity)){
+            return mainEntity.getProperties().get(expression.getName()).getVal();
+        } else {
+            if(expression.isANumber())
+                return Double.parseDouble(expression.getName());
+            else if(expression.isBoolean())
+                return Boolean.parseBoolean(expression.getName());
+            else
+                return expression.getName();
         }
-        else if (expression.startsWith("percent")){
-            functions.setEntities(world.getEntities());
-            functions.setNumOfTicksInSimulation(ticks); // todo: maybe don't need?
-            return functions.percent(expression.substring(8, len-1));
-        }
-        else if (expression.startsWith("ticks")){
-            functions.setEntities(world.getEntities());
-            functions.setNumOfTicksInSimulation(ticks); // todo: maybe don't need?
-            return functions.ticks(expression.substring(6, len-1));
-        }
-        else if (entity.getPropertyByName(expression) != null)
-            return entity.getPropertyByName(expression).getVal();
-        else
-            return getSimpleExpressionValue(expression, actionProp);
     }
-
-    private Object getSimpleExpressionValue(String expression, Property actionProp){
-        if (actionProp instanceof IntegerProperty)
-            return Integer.parseInt(expression);
-        else if (actionProp instanceof FloatProperty)
-            return Double.parseDouble(expression);
-        else if (actionProp instanceof BooleanProperty)
-            return Boolean.parseBoolean(expression);
-        else //StringProperty
-            return expression;
-    }
-
-
-
     ParametersForAction getParametersForAction(Action action, Entity mainEntity, Entity secondaryEntity){
         ParametersForAction params;
 
@@ -363,6 +410,8 @@ public class Engine implements EngineInterface, Serializable {
             ArrayList<Action> thenActions = ((Proximity)action).getThenActions();
             ArrayList<ParametersForAction> thenParams = getParametersForCondition(thenActions, mainEntity, secondaryEntity);
             params = new ParametersForCondition(null, mainEntity, secondaryEntity, ticks, thenParams, null);
+
+
         } else if(action instanceof Replace){
             String nameToCreate = ((Replace)action).getEntityToCreateName();
             Entity toCreate = new Entity(nameToCreate, null); // fill properties in Replace
@@ -441,12 +490,6 @@ public class Engine implements EngineInterface, Serializable {
             actionsThatShouldRun.addAll(rule.getActions());
         }
         return actionsThatShouldRun;
-    }
-
-    ParametersForAction fillParamsForSelection(Entity secondEntity, Condition condition){
-        Property mainProp = secondEntity.getPropertyByName(condition.getPropToChangeName());
-        return new ParametersForAction(mainProp, secondEntity, null, ticks);
-        // the main entity for this selection is actually the secondary entity for the action........ imale!!!
     }
 
     private void updateDataFromUser(DataFromUser detailsToRun){
@@ -598,10 +641,7 @@ public class Engine implements EngineInterface, Serializable {
         if(numOfSecondsToEnd != null && System.currentTimeMillis() - startTime > numOfSecondsToEnd*1000L)
             return false;
 
-        if(numOfTicksToEnd != null && numOfTicksToEnd<ticks)
-            return false;
-
-        return true;
+        return numOfTicksToEnd == null || numOfTicksToEnd >= ticks;
     }
     @Override
     public SimulationInfo displaySimulationDefinitionInformation(){
@@ -718,7 +758,7 @@ public class Engine implements EngineInterface, Serializable {
         for (Entity entity : world.getEntities()) {
             for (Action action : rule.getActions()) {
                 if (actionShouldRunOnEntity(action, entity)) {
-                    setValueOfExpressionOnAction(action, entity);
+                    setValueOfExpressionOnAction(action, entity, null);
                     //if (action.activate(getNeededProperties(action, entity))) { // need to kill
                     if (action.activate(null)) { // need to kill
                         entitiesToKill.add(entity);
@@ -727,6 +767,45 @@ public class Engine implements EngineInterface, Serializable {
             }
         }
         world.killEntities(entitiesToKill);
+    }
+    private Object getValueOfExpression(String expression, Entity entity, Property actionProp){
+        // todo: delete
+        if(expression == null)
+            return null;
+        int len = expression.length();
+        if(actionProp == null)
+            return null;
+        if(expression.startsWith("environment"))
+            return functions.environment(expression.substring(12, len-1));
+        else if (expression.startsWith("random"))
+            return functions.random(Integer.parseInt(expression.substring(7, len-1)));
+        else if (expression.startsWith("evaluate")){
+            return functions.evaluate(expression.substring(9, len-1), entity, null, null);
+        }
+        else if (expression.startsWith("percent")){
+            functions.setNumOfTicksInSimulation(ticks);
+            return functions.percent(expression.substring(8, len-1), entity, null, null);
+        }
+        else if (expression.startsWith("ticks")){
+            functions.setNumOfTicksInSimulation(ticks);
+            return functions.ticks(expression.substring(6, len-1), entity);
+        }
+        else if (entity.getPropertyByName(expression) != null)
+            return entity.getPropertyByName(expression).getVal();
+        else
+            return getSimpleExpressionValue(expression, actionProp);
+    }
+
+    private Object getSimpleExpressionValue(String expression, Property actionProp){
+        // todo: delete
+        if (actionProp instanceof IntegerProperty)
+            return Integer.parseInt(expression);
+        else if (actionProp instanceof FloatProperty)
+            return Double.parseDouble(expression);
+        else if (actionProp instanceof BooleanProperty)
+            return Boolean.parseBoolean(expression);
+        else //StringProperty
+            return expression;
     }
     /*    private PropertiesToAction getNeededProperties(Action action, Entity entity) { // todo: delete this
         PropertiesToAction res = null;
@@ -857,14 +936,14 @@ public class Engine implements EngineInterface, Serializable {
     }
     private Rule hardChardCodedMaster2Rule2(ArrayList<EntityDefinition> entitiesDefinition){
         // todo: property of condition is expression
-        SingleCondition r2a1 = new SingleCondition("ent-1", null, "p1",
+        SingleCondition r2a1 = new SingleCondition("ent-1", null, new Expression("p1"),
                 SingleCondition.Operator.BIGGERTHAN, new Expression("4"), null, null);
-        SingleCondition r2a2 = new SingleCondition("ent-2", null, "p2",
+        SingleCondition r2a2 = new SingleCondition("ent-2", null, new Expression("p2"),
                 SingleCondition.Operator.LESSTHAN, new Expression("3"), null, null);
         /////////////////////////////////////////////////////////////////////////////////////////////////////////
-        SingleCondition sc1 = new SingleCondition("ent-1", null, "p4",
+        SingleCondition sc1 = new SingleCondition("ent-1", null, new Expression("p4"),
                 SingleCondition.Operator.NOTEQUAL, new Expression("nothing"), null, null);
-        SingleCondition sc2 = new SingleCondition("ent-1", null, "p3",
+        SingleCondition sc2 = new SingleCondition("ent-1", null, new Expression("p3"),
                 SingleCondition.Operator.EQUAL, new Expression("environment(e2)"), null, null);
         ArrayList<Condition> conditions = new ArrayList<>();
         conditions.add(sc1);
@@ -890,7 +969,7 @@ public class Engine implements EngineInterface, Serializable {
         elseActions.add(else1);
         /////////////////////
 
-        SingleCondition selection = new SingleCondition("ent-2", null, "p1", SingleCondition.Operator.BIGGERTHAN, new Expression("4"), null, null);
+        SingleCondition selection = new SingleCondition("ent-2", null, new Expression("p1"), SingleCondition.Operator.BIGGERTHAN, new Expression("4"), null, null);
         SecondaryEntity sEnt = new SecondaryEntity("ent-2", null, selection);
         MultipleCondition m1 = new MultipleCondition("ent-1", sEnt, null,
                 thenActions, elseActions, MultipleCondition.Logic.OR, conditions1);

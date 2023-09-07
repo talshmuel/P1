@@ -32,8 +32,11 @@ public class Multiply extends Calculation {
             parameters.getMainProp().setTickNumThatHasChanged(parameters.getCurrentTicks()); // update in which tick it has been changed
             return false;
         }
-        else
+        else {
+            System.out.println("Error in Multiply Action!");
             throw new IncompatibleType();
+        }
+
     }
 }
 

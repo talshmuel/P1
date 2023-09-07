@@ -41,8 +41,9 @@ public class FloatProperty extends Property {
                 val = val+(Integer) increaseBy;
             else
                 val = (Double)definition.getTopLimit();
-        else
+        else {
             throw new IncompatibleType();
+        }
     }
 
     @Override

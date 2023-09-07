@@ -9,15 +9,15 @@ import java.util.Random;
 
 public class AssistFunctions implements AssistFunctionsInterface, Serializable {
     Map<String, Property> environmentVariables;
-    ArrayList<Entity> entities;
+    Map<String, ArrayList<Entity>> allEntities;
     Integer numOfTicksInSimulation;
 
     public void setEnvironmentVariables(Map<String, Property> environmentVariables) {
         this.environmentVariables = environmentVariables;
     }
 
-    public void setEntities(ArrayList<Entity> entities) {
-        this.entities = entities;
+    public void setAllEntities(Map<String, ArrayList<Entity>> allEntities) {
+        this.allEntities = allEntities;
     }
 
     public void setNumOfTicksInSimulation(Integer numOfTicksInSimulation) {
@@ -36,45 +36,50 @@ public class AssistFunctions implements AssistFunctionsInterface, Serializable {
     }
 
     @Override
-    public Object evaluate(String expression) {
-        // example: evaluate(ent-1.p2)
+    public Object evaluate(String expression, Entity mainEntity, Entity secondEntity, Entity thirdEntity) {
         String[] splitExpression = expression.split("\\.");
         String entityName = splitExpression[0];
         String propertyName = splitExpression[1];
 
-        for(Entity e : entities){ // TODO: CHNAGE TO MAP
-            if(e.getName().equals(entityName)){
-                return e.getPropertyByName(propertyName).getVal();
-            }
+        if(mainEntity.getName().equals(entityName)){ // it's the main entity's property
+            return mainEntity.getPropertyByName(propertyName).getVal();
+        } else if (secondEntity != null) {
+            return secondEntity.getPropertyByName(propertyName).getVal(); // it's the secondary entity's property
+        } else if (thirdEntity != null) {
+            return thirdEntity.getPropertyByName(propertyName).getVal(); // only in proximity and replace
+        } else {
+            System.out.println("TODO: problem in ticks function");
+            return mainEntity.getPropertyByName(propertyName).getVal();
+            //return null;
         }
-        return null; // todo: maybe exception?
+
     }
 
     @Override
-    public Double percent(String expression) { // todo: check the hell out of this method!!!
+    public Double percent(String expression, Entity mainEntity, Entity secondEntity, Entity thirdEntity) { // todo: check the hell out of this method!!!
         String[] splitExpression = expression.split(",");
         String whole = splitExpression[0];
         String part = splitExpression[1];
 
-        Double wholeNum = trimPercentExpressionToNumber(whole);
-        Double partNum = trimPercentExpressionToNumber(part);
+        Double wholeNum = trimPercentExpressionToNumber(whole, mainEntity, secondEntity, thirdEntity);
+        Double partNum = trimPercentExpressionToNumber(part, mainEntity, secondEntity, thirdEntity);
 
         return (partNum/100)*wholeNum;
     }
 
-    public Double trimPercentExpressionToNumber(String whole){
+    public Double trimPercentExpressionToNumber(String whole, Entity mainEntity, Entity secondEntity, Entity thirdEntity){
         if(whole.startsWith("environment")){
             return (Double) environment(whole.substring(12, whole.length()-1));
         } else if(whole.startsWith("random")){
             Integer randomResult = random(Integer.parseInt(whole.substring(7, whole.length()-1)));
             return new Double(randomResult);
         } else if(whole.startsWith("evaluate")){
-            return (Double) evaluate(whole.substring(9, whole.length()-1));
+            return (Double) evaluate(whole.substring(9, whole.length()-1), mainEntity, secondEntity, thirdEntity);
         } else if(whole.startsWith("percent")){
             whole = whole.substring(8, whole.length()-1);
-            return percent(whole);
+            return percent(whole, mainEntity, secondEntity, thirdEntity);
         } else if(whole.startsWith("ticks")){
-            return (double) ticks(whole.substring(6, whole.length()-1));
+            return (double) ticks(whole.substring(6, whole.length()-1), mainEntity);
         } else { // is a number
             return Double.parseDouble(whole);
         }
@@ -85,17 +90,17 @@ public class AssistFunctions implements AssistFunctionsInterface, Serializable {
      in each action that can change a property value (increase, decrease, multiply, divide, set) we update in which tick the property was changed.
      so in this function we take the number of ticks in the simulation and subtract the property's field of tickNumThatHasChanged.**/
     @Override
-    public int ticks(String expression) {
+    public int ticks(String expression, Entity entity) {
         String[] splitExpression = expression.split("\\.");
         String entityName = splitExpression[0];
         String propertyName = splitExpression[1];
 
-        for(Entity e : entities){
-            if(e.getName().equals(entityName)){
-                int tickNumThatHasChanged = e.getPropertyByName(propertyName).getTickNumThatHasChanged();
-                return (this.numOfTicksInSimulation-tickNumThatHasChanged);
-            }
+        if(entity.getName().equals(entityName)){
+            int tickNumThatHasChanged = entity.getPropertyByName(propertyName).getTickNumThatHasChanged();
+            return (this.numOfTicksInSimulation-tickNumThatHasChanged);
+        } else {
+            System.out.println("TODO: problem in ticks function");
+            return 0;
         }
-        return 0; // todo: maybe exception?
     }
 }

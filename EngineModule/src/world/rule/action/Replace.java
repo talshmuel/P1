@@ -18,9 +18,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Replace extends Action{ // todo של החייםםםםםםםםםםםם
-    /**
-     * EXPLANATION:
-     * **/
     String mode;
     String entityToCreateName;
     Entity entityToCreate;
@@ -52,27 +49,8 @@ public class Replace extends Action{ // todo של החייםםםםםםםםםםם
                 String type = mapEntry.getValue().getType();
                 PropertyDefinition definition = mapEntry.getValue();
                 propertiesToCreate.put(mapEntry.getKey(), createPropertyByDefault(type, definition));
-                /*switch (type){
-                    case "Decimal":{}
-                    case "Float": {
-                        propertiesToCreate.put(mapEntry.getKey(), new FloatProperty(mapEntry.getValue()));
-                        break;
-                    }
-                    case "Boolean": {
-                        propertiesToCreate.put(mapEntry.getKey(), new BooleanProperty(mapEntry.getValue()));
-                        break;
-                    }
-                    case "String":{
-                        propertiesToCreate.put(mapEntry.getKey(), new StringProperty(mapEntry.getValue()));
-                        break;
-                    }
-                }*/
             }
         } else if(mode.equals("derived")) {
-            /**
-             *  נעבור על כל אחד מהמאפיינים של הישות שצריך לברוא
-             * אם יש מאפיין שזהה בשם ובסוג למאפיין של הישות להרוג -> לקחת את הערכים שלו
-             */
             Entity entityToKill = parameters.getMainEntity();
 
             for(Map.Entry<String, PropertyDefinition> mapEntry : definitionToCreate.getPropsDef().entrySet()){
@@ -81,27 +59,13 @@ public class Replace extends Action{ // todo של החייםםםםםםםםםםם
                 PropertyDefinition definition = mapEntry.getValue();
 
                 // check if the entity to kill has an identical property (in name and type)
-                Property propertyToKill = entityToKill.getPropertyByName(propertyName);
-                if(propertyToKill.getName().equals(propertyName) && propertyToKill.getType().equals(propertyType)){
-                    propertiesToCreate.put(propertyName, propertyToKill); // if it does -> take its values
-                    // todo: check it doesn't die with the entity
+                if(entityToKill.getProperties().containsKey(propertyName)){ // entity to kill has this property
+                    Property propertyToKill = entityToKill.getPropertyByName(propertyName);
+                    if(propertyToKill.getType().equalsIgnoreCase(propertyType)){ // equals by name and type !
+                        propertiesToCreate.put(propertyName, propertyToKill); // take its values
+                    }
                 } else { // else -> create regularly
                     propertiesToCreate.put(propertyName, createPropertyByDefault(propertyType, definition));
-                    /*switch (propertyType){
-                        case "Decimal":{}
-                        case "Float": {
-                            propertiesToCreate.put(propertyName, new FloatProperty(d.getValue()));
-                            break;
-                        }
-                        case "Boolean": {
-                            propertiesToCreate.put(propertyName, new BooleanProperty(d.getValue()));
-                            break;
-                        }
-                        case "String":{
-                            propertiesToCreate.put(propertyName, new StringProperty(d.getValue()));
-                            break;
-                        }
-                    }*/
                 }
             }
         }
@@ -112,7 +76,7 @@ public class Replace extends Action{ // todo של החייםםםםםםםםםםם
 
     public Property createPropertyByDefault(String type, PropertyDefinition definition){
         switch (type){
-            case "Decimal":{} // תקף לשניהם
+            case "Decimal":{}
             case "Float": {
                 return new FloatProperty(definition);
             }

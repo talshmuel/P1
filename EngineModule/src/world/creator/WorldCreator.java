@@ -18,7 +18,7 @@ import xml.reader.validator.*;
 import java.util.*;
 
 
-public class WorldCreator {
+public class WorldCreator { // todo: delete this and use the other one instead. matches the new schema
     Map<String, Property> environmentVarMap;
     ArrayList<EntityDefinition> entityDefList;
     ArrayList<Rule> rulesList;
@@ -341,10 +341,10 @@ public class WorldCreator {
         if(mainCond){ // if not a main condition -> doesn't have then/else actions.
             ArrayList<Action> thenActions = validateAndCreateThenActions(a, entities);
             ArrayList<Action> elseActions = validateAndCreateElseActions(a, entities);
-            return new SingleCondition(c.getEntity(), null, property, operator, new Expression(expression), thenActions, elseActions);
+            return new SingleCondition(c.getEntity(), null, null, operator, new Expression(expression), thenActions, elseActions);
 
         } else {
-            return new SingleCondition(c.getEntity(), null, property, operator, new Expression(expression), null, null); // thenActions, elseActions);
+            return new SingleCondition(c.getEntity(), null, null, operator, new Expression(expression), null, null); // thenActions, elseActions);
         }
 
     }

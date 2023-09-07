@@ -17,6 +17,7 @@ public class Grid {
     public Grid(Integer numOfRows, Integer numOfCols) {
         this.numOfRows = numOfRows;
         this.numOfCols = numOfCols;
+
         entityMatrix = new Entity[numOfRows][numOfCols];
         for(int i=0 ; i < numOfRows ; i++){
             for (int j = 0; j < numOfCols; j++) {
@@ -149,7 +150,6 @@ public class Grid {
             int newCol = random.nextInt(numOfCols);
             if (isPositionAvailableMATRIX(newRow, newCol)) {
                 Coordinate position = new Coordinate(newRow, newCol);
-                System.out.println("new position: (" + newRow + ", " + newCol + ")");
                 return position;
             }
         }
