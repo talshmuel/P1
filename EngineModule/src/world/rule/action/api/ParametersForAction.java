@@ -1,7 +1,6 @@
 package world.rule.action.api;
 
 import world.entity.Entity;
-import world.entity.EntityDefinition;
 import world.property.impl.Property;
 
 public class ParametersForAction {

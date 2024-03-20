@@ -7,7 +7,10 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="EngineModule" />
+    <orderEntry type="library" name="EngineModule" level="project" />
+    <orderEntry type="library" name="DTOModule" level="project" />
+    <orderEntry type="library" name="UIModule" level="project" />
     <orderEntry type="module" module-name="DataTransferModule" />
+    <orderEntry type="module" module-name="EngineModule" />
   </component>
 </module>

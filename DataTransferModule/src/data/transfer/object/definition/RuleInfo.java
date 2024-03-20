@@ -7,9 +7,9 @@ public final class RuleInfo {
     int ticks;
     double probability;
     int numOfActions;
-    ArrayList<String> actions;
+    ArrayList<ActionInfo> actions;
 
-    public RuleInfo(String name, int ticks, double probability, int numOfActions, ArrayList<String> actions){
+    public RuleInfo(String name, int ticks, double probability, int numOfActions, ArrayList<ActionInfo> actions){
         this.name = name;
         this.numOfActions = numOfActions;
         this.probability = probability;
@@ -19,13 +19,9 @@ public final class RuleInfo {
 
     @Override
     public String toString() {
-        return "RuleInfo{" +'\n'+"      "+
-                "name='" + name + '\'' +
-                ", ticks=" + ticks +
-                ", probability=" + probability +
-                ", numOfActions=" + numOfActions +
-                ", actions=" + actions +
-                '}'+'\n';
+        return  "Rule name: "+name+"\n"+
+                "Ticks: "+ticks+"\n"+
+                "Probability: "+ probability+"\n";
     }
 
     public String getName() {
@@ -44,7 +40,7 @@ public final class RuleInfo {
         return ticks;
     }
 
-    public ArrayList<String> getActions() {
+    public ArrayList<ActionInfo> getActions() {
         return actions;
     }
 }

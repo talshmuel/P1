@@ -1,7 +1,9 @@
 package world;
 
 import data.transfer.object.definition.PropertyValueInfo;
-import exception.IncompatibleType;
+import data.transfer.object.run.result.EntityResultInfo;
+import data.transfer.object.run.result.WorldResultInfo;
+import exception.SimulationRunningException;
 import world.entity.Coordinate;
 import world.entity.Entity;
 import world.entity.EntityDefinition;
@@ -9,29 +11,48 @@ import world.property.api.PropertyDefinition;
 import world.property.impl.*;
 import world.rule.Rule;
 import world.rule.action.Action;
-import java.io.Serializable;
+
+import java.io.*;
 import java.util.*;
 
 public class World implements Serializable {
     ArrayList<EntityDefinition> entitiesDefinition; // size as number of entities TYPES. describes each entity
-    ArrayList<Entity> entities; // todo: delete
     Map<String, Property> environmentVariables;
     ArrayList<Rule> rules;
-    //ArrayList<EndCondition> endConditions;
     Map<String, Integer> endConditions;
     Map<String, ArrayList<Entity>> allEntities; // new: map by string - name of entity TYPE, to an array of the entity INSTANCES
     Grid grid;
     Integer numOfThreads;
 
-    public void printMatrix(){ // todo: delete later
-        for (int i = 0; i < grid.getNumOfRows(); i++) {
-            for (int j = 0; j < grid.getNumOfCols(); j++) {
-                if(grid.entityMatrix[i][j]!=null) System.out.print(grid.entityMatrix[i][j].getID() + " ");
-                else System.out.print("null ");
-            }
-            System.out.println();
-        }
-        System.out.println("-----------------------------------------------");
+    public Integer getNumOfThreads() {
+        return numOfThreads;
+    }
+
+    public World deepCopy() throws IOException, ClassNotFoundException {
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream out = new ObjectOutputStream(bos);
+        out.writeObject(this);
+
+        ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream in = new ObjectInputStream(bis);
+        return (World) in.readObject();
+
+    }
+    public WorldResultInfo getWorldResultInfo(){
+        return new WorldResultInfo(getEntitiesResultInfo(), grid.getGridResultInfo());
+    }
+
+    private Map<String, ArrayList<EntityResultInfo>> getEntitiesResultInfo(){
+        Map<String, ArrayList<EntityResultInfo>> res = new HashMap<>();
+        allEntities.forEach((name, entitiesArray)->{
+            ArrayList<EntityResultInfo> entitiesResultInfo = new ArrayList<>();
+            entitiesArray.forEach((entity)->{
+                entitiesResultInfo.add(entity.getEntityResultInfo());
+            });
+            res.put(name, entitiesResultInfo);
+        });
+        return res;
     }
     public Grid getGrid() {
         return grid;
@@ -45,7 +66,6 @@ public class World implements Serializable {
         this.environmentVariables = environmentVariables;
         this.entitiesDefinition = entitiesDefinition;
         this.endConditions = endConditions;
-        this.entities = new ArrayList<>(); // todo: delete later
         this.allEntities = new HashMap<>();
         this.grid = grid;
         this.numOfThreads = numOfThreads;
@@ -87,7 +107,7 @@ public class World implements Serializable {
 
                 for(Entity entity : entityList){
                     if(entity.equals(entityToKill)){
-                        grid.updateGridCoordinateIsAvailableMATRIX(entity.getPosition());
+                        grid.updateGridCoordinateIsAvailable(entity.getPosition());
                         entityList.remove(entity);
                         break;
                     }
@@ -95,9 +115,6 @@ public class World implements Serializable {
             }
         }
 
-        for(Entity entity : entitiesToKill){
-            entities.remove(entity); // todo delete
-        }
     }
 
     public void createEntities(ArrayList<Entity> entitiesToCreate){
@@ -108,7 +125,7 @@ public class World implements Serializable {
                 for(Entity entity : entityList) {
                     if(entity.equals(entityToCreate)) {
                         entity.setPosition(grid.findNewAvailableCell());
-                        grid.updateGridCoordinateIsTakenMATRIX(entity.getPosition(), entity);
+                        grid.updateGridCoordinateIsTaken(entity.getPosition(), entity);
                         entityList.add(entityToCreate);
                         break;
                     }
@@ -116,11 +133,16 @@ public class World implements Serializable {
             }
         }
 
-        entities.addAll(entitiesToCreate); // todo delete
+
     }
-    public ArrayList<Entity> getEntities() {
-        return entities;  // todo delete
+    public Map<String, Integer> getEntitiesAmount() {
+        Map<String, Integer> res = new HashMap<>();
+        allEntities.forEach((entName, entInstances) -> {
+            res.put(entName, entInstances.size());
+        });
+        return res;
     }
+
     public Map<String, ArrayList<Entity>> getAllEntities() {
         return allEntities;
     }
@@ -140,8 +162,12 @@ public class World implements Serializable {
         }
         return res;
     }
-    public void setEnvironmentValue(String name, Object val) throws IncompatibleType {
-        environmentVariables.get(name).set(val);
+    public void setEnvironmentValue(String name, Object val) throws SimulationRunningException {
+        try {
+            environmentVariables.get(name).set(val);
+        } catch (SimulationRunningException e) {
+            throw new RuntimeException(e);
+        }
     }
     public ArrayList<PropertyValueInfo> getEnvironmentValues(){
         ArrayList<PropertyValueInfo> res = new ArrayList<>();
@@ -170,9 +196,15 @@ public class World implements Serializable {
         }
     }
     public void cleanup(){
-        entities.clear(); // todo: delete
+        entitiesDefinition.clear();
+        environmentVariables.clear();
+        rules.clear();
+        endConditions.clear();
         allEntities.clear();
+        grid.cleanup();
     }
+
+
 
     public void generateRandomPositionsOnGrid(){ // scatter the entities on the grid randomly
         for (Map.Entry<String, ArrayList<Entity>> entry : allEntities.entrySet()){
@@ -187,12 +219,12 @@ public class World implements Serializable {
             ArrayList<Entity> entityList = entityMap.getValue();
             for(Entity e : entityList){
                 Coordinate prevPos = e.getPosition();
-                Coordinate newPos = grid.moveEntityOnGridMATRIX(e);
+                Coordinate newPos = grid.moveEntityOnGrid(e);
 
                 if(!newPos.equals(prevPos)){ // if we moved the entity
                     e.setPosition(newPos); // set its new location
-                    grid.updateGridCoordinateIsAvailableMATRIX(prevPos); // update that the previous location is free
-                    grid.updateGridCoordinateIsTakenMATRIX(newPos, e); // update that the new location is now taken
+                    grid.updateGridCoordinateIsAvailable(prevPos); // update that the previous location is free
+                    grid.updateGridCoordinateIsTaken(newPos, e); // update that the new location is now taken
                 }
             }
         }
@@ -209,19 +241,6 @@ public class World implements Serializable {
                         }
                     }
                 }
-            }
-        }
-    }
-
-    ///////////////////////////////////// TO DELETE /////////////////////////////////////
-    public void generateEntitiesByDefinitions(){ // todo delete
-        for(EntityDefinition entityDef: entitiesDefinition) {
-            for (int i = 0; i <entityDef.getNumOfInstances();i++){
-                Map <String, Property> entityProps = new HashMap<>();
-                for(PropertyDefinition propDef : entityDef.getPropsDef().values()){
-                    entityProps.put(propDef.getName(), generatePropertyByDefinitions(propDef));
-                }
-                entities.add(new Entity(entityDef.getName(),entityProps)); // todo delete
             }
         }
     }

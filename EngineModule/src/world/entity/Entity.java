@@ -1,8 +1,10 @@
 package world.entity;
+import data.transfer.object.run.result.EntityResultInfo;
+import data.transfer.object.run.result.PropertyResultInfo;
 import world.property.impl.Property;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 public class Entity implements Serializable {
@@ -17,6 +19,13 @@ public class Entity implements Serializable {
         this.properties = properties;
         this.position = null; // at the beginning it's null, and when the simulation starts, it will be randomized
         this.ID = nextId++;
+    }
+    public EntityResultInfo getEntityResultInfo(){
+        Map<String, PropertyResultInfo> propsResultInfo = new HashMap<>();
+        properties.forEach((name, prop)->{
+            propsResultInfo.put(name, prop.getPropertyResultInfo());
+        });
+        return new EntityResultInfo(name, ID,propsResultInfo , position.getRow(), position.getCol());
     }
 
     public String getName() {

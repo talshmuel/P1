@@ -1,11 +1,10 @@
 package world.rule.action.calculation;
 
-import exception.DivisionByZeroException;
-import exception.IncompatibleType;
+import data.transfer.object.definition.ActionInfo;
+import exception.SimulationRunningException;
 import world.rule.action.Action;
 import world.rule.action.api.Expression;
 import world.rule.action.api.ParametersForAction;
-import world.rule.action.api.PropertiesToAction;
 import world.rule.action.api.SecondaryEntity;
 
 public abstract class Calculation extends Action {
@@ -15,11 +14,14 @@ public abstract class Calculation extends Action {
         this.expression2=expression2;
     }
     @Override
-    public abstract Boolean activate (ParametersForAction parameters)throws DivisionByZeroException, IncompatibleType;
+    public abstract Boolean activate (ParametersForAction parameters) throws SimulationRunningException;
     public Expression getExpression2() {
         return expression2;
     }
     public void setExpression2(Expression expression2) {
         this.expression2 = expression2;
     }
+
+    @Override
+    public abstract ActionInfo getActionInfo();
 }

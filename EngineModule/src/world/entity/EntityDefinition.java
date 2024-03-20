@@ -1,7 +1,6 @@
 package world.entity;
 
 import world.property.api.PropertyDefinition;
-
 import java.io.Serializable;
 import java.util.Map;
 

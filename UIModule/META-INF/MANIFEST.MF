@@ -1,4 +1,4 @@
 Manifest-Version: 1.0
-Main-Class: Main
-Class-Path: Main.java
+Main-Class: UI.UserInterface
+Class-Path: UserInterface.java
 

@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.ListView?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.layout.StackPane?>
 
-<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UI.page.results.ResultsPageController">
-  <columnConstraints>
-    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-  </columnConstraints>
-  <rowConstraints>
-    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-  </rowConstraints>
-   <children>
-      <ListView fx:id="resultsListView" prefHeight="200.0" prefWidth="200.0" />
-   </children>
-</GridPane>
+<SplitPane dividerPositions="0.27008928571428575" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UI.page.results.ResultsPageController">
+    <items>
+        <ListView fx:id="resultsListView" onMouseClicked="#handleClickOnResult" prefHeight="200.0" prefWidth="200.0" />
+        <StackPane fx:id="resultStackPane" prefHeight="150.0" prefWidth="200.0">
+            <children>
+                <fx:include fx:id="runningResultsPage" source="running/ResultPageForRunningSimulations.fxml" />
+                <fx:include fx:id="doneResultsPage" source="done/ResultPageForDoneSimulations.fxml" />
+            </children>
+        </StackPane>
+    </items>
+</SplitPane>

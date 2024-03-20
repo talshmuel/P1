@@ -1,19 +1,19 @@
 package world.rule.action;
 
-import exception.DivisionByZeroException;
-import exception.IncompatibleAction;
-import exception.IncompatibleType;
+import data.transfer.object.definition.ActionInfo;
+import exception.SimulationRunningException;
 import world.Grid;
 import world.entity.Coordinate;
 import world.entity.Entity;
-import world.property.impl.Property;
 import world.rule.action.api.Expression;
 import world.rule.action.api.ParametersForAction;
 import world.rule.action.api.ParametersForCondition;
 import world.rule.action.api.SecondaryEntity;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Proximity extends Action{
     /**
@@ -45,7 +45,7 @@ public class Proximity extends Action{
     }
 
     @Override
-    public Boolean activate(ParametersForAction parameters) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
+    public Boolean activate(ParametersForAction parameters) throws SimulationRunningException {
         // get the surrounding cells of the main entity (source entity)
         List<Coordinate> surroundingCells = grid.findEnvironmentCells(sourcePos, ((Double)(expression.getValue())).intValue());
         Entity[][] entityMatrix = grid.getEntityMatrix();
@@ -73,7 +73,7 @@ public class Proximity extends Action{
         return false; // we haven't found any of the target entities
     }
 
-    public Boolean activateThenActions(ArrayList<ParametersForAction> parameters) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
+    public Boolean activateThenActions(ArrayList<ParametersForAction> parameters) throws SimulationRunningException {
         boolean kill=false;
         int len = thenActions.size();
         for(int i=0; i<len;i++){
@@ -81,5 +81,22 @@ public class Proximity extends Action{
                 kill = true;
         }
         return kill;
+    }
+
+    @Override
+    public ActionInfo getActionInfo() {
+        boolean haveSecondEntity=false;
+        if(secondEntityInfo!=null)
+            haveSecondEntity=true;
+
+
+        Map<String, Object> moreProp = new HashMap<>();
+        moreProp.put("Source entity", mainEntityName);
+        moreProp.put("Target entity", targetEntityName);
+        moreProp.put("Environment depth", expression.getName());
+        if(thenActions != null)
+            moreProp.put("Number of then actions", thenActions.size());
+
+        return new ActionInfo("Proximity", mainEntityName, haveSecondEntity, moreProp);
     }
 }

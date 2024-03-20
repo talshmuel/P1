@@ -1,19 +1,22 @@
 package data.transfer.object.definition;
 public final class TerminationInfo {
-    //public enum TerminationName {TICKS, SECONDS};
     String terminationCondition;
-    int val;
-    public TerminationInfo(String terminationCondition, int val){
+    Integer val;
+
+    public TerminationInfo(String terminationCondition, Integer val){
         this.terminationCondition = terminationCondition;
         this.val = val;
     }
 
     @Override
     public String toString() {
-        return "TerminationInfo{" +'\n'+"       "+
-                "terminationCondition='" + terminationCondition + '\'' +
-                ", val=" + val +
-                '}'+'\n';
+
+        String res = "By "+terminationCondition;
+        if(terminationCondition!="user")
+            res+= ": "+val+" "+terminationCondition;
+
+        return res;
+
     }
 
     public int getVal() {

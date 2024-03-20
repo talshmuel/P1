@@ -48,14 +48,13 @@ public class AssistFunctions implements AssistFunctionsInterface, Serializable {
         } else if (thirdEntity != null) {
             return thirdEntity.getPropertyByName(propertyName).getVal(); // only in proximity and replace
         } else {
-            System.out.println("פלסטררררררר בפונקציה של evaluate");
             return mainEntity.getPropertyByName(propertyName).getVal();
         }
 
     }
 
     @Override
-    public Double percent(String expression, Entity mainEntity, Entity secondEntity, Entity thirdEntity) { // todo: check the hell out of this method!!!
+    public Double percent(String expression, Entity mainEntity, Entity secondEntity, Entity thirdEntity) {
         String[] splitExpression = expression.split(",");
         String whole = splitExpression[0];
         String part = splitExpression[1];
@@ -98,7 +97,6 @@ public class AssistFunctions implements AssistFunctionsInterface, Serializable {
             int tickNumThatHasChanged = entity.getPropertyByName(propertyName).getTickNumThatHasChanged();
             return (this.numOfTicksInSimulation-tickNumThatHasChanged);
         } else {
-            System.out.println("פלסטררררר בפונקציה של ticks");
             int tickNumThatHasChanged = entity.getPropertyByName(propertyName).getTickNumThatHasChanged();
             return (this.numOfTicksInSimulation-tickNumThatHasChanged);
         }

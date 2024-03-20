@@ -1,32 +1,25 @@
 package engine;
 
-import data.transfer.object.EndSimulationData;
 import data.transfer.object.DataFromUser;
 import data.transfer.object.definition.PropertyInfo;
 import data.transfer.object.definition.PropertyValueInfo;
 import data.transfer.object.definition.SimulationInfo;
 import data.transfer.object.run.result.RunResultInfo;
-import exception.DivisionByZeroException;
-import exception.IncompatibleAction;
-import exception.IncompatibleType;
-import exception.PathDoesntExistException;
+import exception.*;
 import world.creator.XMLFileException;
-import xml.reader.validator.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 
 public interface EngineInterface {
-    Boolean createSimulationByXMLFile(String fileName) throws FileDoesntExistException, InvalidXMLFileNameException, EnvironmentException, EntityException, PropertyException, MustBeNumberException, RuleException, TerminationException, XMLFileException;
-    EndSimulationData runSimulation(DataFromUser detailsToRun)throws DivisionByZeroException, IncompatibleType, IncompatibleAction;
-    EndSimulationData runSimulation2(DataFromUser detailsToRun)throws DivisionByZeroException, IncompatibleType, IncompatibleAction;
-    void setEnvironmentVariable(String name, Object val)throws IncompatibleType;
+    void createSimulationByXMLFile(String fileName) throws XMLFileException;
+    void runSimulation(DataFromUser detailsToRun) ;
     ArrayList<PropertyValueInfo> getEnvironmentValues();
     ArrayList<PropertyInfo> getEnvironmentDefinitions();
-    ArrayList<RunResultInfo> displayRunResultsInformation();
+    RunResultInfo displayRunResultsInformation(int runID);
     SimulationInfo displaySimulationDefinitionInformation();
-    void cleanResults ();
-    void saveState(String fileName) throws PathDoesntExistException;
-    Engine restoreState(String fileName) throws FileDoesntExistException;
-
+    void setUserControlOnSpecificRun(int runID, String userControl);
+    String getCurrentStateOfSpecificRun(int runID);
+    void cleanup();
 }

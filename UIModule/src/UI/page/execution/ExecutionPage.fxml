@@ -2,7 +2,9 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollBar?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.effect.Lighting?>
@@ -11,17 +13,107 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<GridPane alignment="CENTER" hgap="5.0" prefHeight="400.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UI.page.execution.ExecutionPageController">
+<GridPane fx:id="mainGridPane" alignment="CENTER" hgap="5.0" minHeight="400.0" minWidth="400.0" prefHeight="400.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UI.page.execution.ExecutionPageController">
     <columnConstraints>
-        <ColumnConstraints hgrow="ALWAYS" maxWidth="Infinity" minWidth="10.0" prefWidth="231.33327738444012" />
-        <ColumnConstraints hgrow="ALWAYS" maxWidth="Infinity" minWidth="10.0" prefWidth="452.6667226155599" />
+        <ColumnConstraints hgrow="ALWAYS" maxWidth="Infinity" minWidth="10.0" prefWidth="253.6667226155599" />
+        <ColumnConstraints hgrow="ALWAYS" maxWidth="Infinity" minWidth="10.0" prefWidth="436.0" />
+        <ColumnConstraints hgrow="ALWAYS" maxWidth="10.0" minWidth="10.0" prefWidth="10.0" />
     </columnConstraints>
     <rowConstraints>
         <RowConstraints maxHeight="20.0" minHeight="5.666677157084152" prefHeight="20.0" vgrow="ALWAYS" />
         <RowConstraints maxHeight="20.0" minHeight="10.0" prefHeight="20.0" vgrow="ALWAYS" />
-      <RowConstraints maxHeight="20.0" minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+        <RowConstraints maxHeight="20.0" minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
         <RowConstraints maxHeight="Infinity" minHeight="10.0" prefHeight="322.00000699361163" vgrow="ALWAYS" />
         <RowConstraints maxHeight="35.0" minHeight="0.0" prefHeight="26.6666259765625" vgrow="ALWAYS" />
+        <RowConstraints maxHeight="35.0" minHeight="0.0" prefHeight="26.6666259765625" vgrow="ALWAYS" />
+    </rowConstraints>
+    <children>
+        <Button fx:id="clearSimulation" mnemonicParsing="false" onAction="#handleClearSimulation" text="Clear" GridPane.rowIndex="4">
+            <GridPane.margin>
+                <Insets left="150.0" />
+            </GridPane.margin>
+        </Button>
+        <Button fx:id="startSimulation" mnemonicParsing="false" onAction="#handleStartSimulation" text="Start!" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="4">
+            <GridPane.margin>
+                <Insets left="100.0" />
+            </GridPane.margin>
+        </Button>
+        <Label maxHeight="20.0" minHeight="10.0" prefHeight="20.0" prefWidth="342.0" text="Environment variables have been initiallized with random values." GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+        <Label prefHeight="20.0" prefWidth="195.0" text="Please choose number of population" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="TOP" GridPane.vgrow="ALWAYS">
+            <GridPane.margin>
+                <Insets />
+            </GridPane.margin></Label>
+        <TableView fx:id="envTable" maxHeight="Infinity" maxWidth="Infinity" minHeight="20.0" minWidth="10.0" prefHeight="500.0" prefWidth="439.0" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="envNameCol" editable="false" minWidth="30.0" prefWidth="110.66668446858694" sortable="false" text="Name" />
+                <TableColumn fx:id="envTypeCol" editable="false" minWidth="30.0" prefWidth="56.00000762939453" sortable="false" text="Type" />
+                <TableColumn fx:id="envValueCol" minWidth="70.0" prefWidth="119.99995422363281" sortable="false" text="Value" />
+                <TableColumn fx:id="envSelectedValCol" minWidth="70.0" prefWidth="122.0" sortable="false" text="Selected Value" />
+            </columns>
+            <GridPane.margin>
+                <Insets bottom="10.0" left="10.0" top="10.0" />
+            </GridPane.margin>
+            <opaqueInsets>
+                <Insets />
+            </opaqueInsets>
+            <padding>
+                <Insets right="10.0" />
+            </padding>
+        </TableView>
+        <TableView fx:id="entityTable" maxHeight="Infinity" maxWidth="Infinity" minHeight="200.0" minWidth="235.0" prefHeight="500.0" prefWidth="235.0" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="entityNameCol" editable="false" minWidth="40.0" prefWidth="89.33335399627686" sortable="false" text="Entity Name" />
+                <TableColumn fx:id="entityPopCol" minWidth="20.0" prefWidth="65.99999237060547" sortable="false" text="Population" />
+                <TableColumn fx:id="entitySelectedCol" minWidth="20.0" prefWidth="65.99999237060547" sortable="false" text="Selected" />
+            </columns>
+            <GridPane.margin>
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+            </GridPane.margin>
+        </TableView>
+        <Label prefHeight="20.0" prefWidth="80.0" text="for each entity:" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+        <Label alignment="CENTER" layoutX="355.0" layoutY="10.0" maxHeight="20.0" minHeight="10.0" prefHeight="20.0" prefWidth="385.0" text="If you want to change those values you can edit the Value column:" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+        <Label prefHeight="17.0" prefWidth="201.0" text="Choose a value and then press 'Enter'" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+        <ScrollBar fx:id="sideScroller" onScroll="#handleSideScroll" orientation="VERTICAL" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowSpan="6" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+        <ScrollBar fx:id="downScroller" maxHeight="15.0" minHeight="15.0" minWidth="30.0" onScroll="#handleDownScroll" prefHeight="15.0" GridPane.columnSpan="2" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5" GridPane.vgrow="ALWAYS" />
+        <CheckBox fx:id="cancelAnimation" mnemonicParsing="false" text="Cancel Animation" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="4" />
+    </children>
+    <effect>
+        <Lighting diffuseConstant="2.0" specularConstant="0.0" surfaceScale="0.0">
+            <bumpInput>
+                <Shadow />
+            </bumpInput>
+        </Lighting>
+    </effect>
+</GridPane>
+
+<!--
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollBar?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.effect.Lighting?>
+<?import javafx.scene.effect.Shadow?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+
+<GridPane fx:id="mainGridPane" alignment="CENTER" hgap="5.0" minHeight="400.0" minWidth="400.0" prefHeight="400.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UI.page.execution.ExecutionPageController">
+    <columnConstraints>
+        <ColumnConstraints hgrow="ALWAYS" maxWidth="Infinity" minWidth="10.0" prefWidth="253.6667226155599" />
+        <ColumnConstraints hgrow="ALWAYS" maxWidth="Infinity" minWidth="10.0" prefWidth="436.0" />
+        <ColumnConstraints hgrow="ALWAYS" maxWidth="10.0" minWidth="10.0" prefWidth="10.0" />
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints maxHeight="20.0" minHeight="5.666677157084152" prefHeight="20.0" vgrow="ALWAYS" />
+        <RowConstraints maxHeight="20.0" minHeight="10.0" prefHeight="20.0" vgrow="ALWAYS" />
+        <RowConstraints maxHeight="20.0" minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+        <RowConstraints maxHeight="Infinity" minHeight="10.0" prefHeight="322.00000699361163" vgrow="ALWAYS" />
+        <RowConstraints maxHeight="35.0" minHeight="0.0" prefHeight="26.6666259765625" vgrow="ALWAYS" />
+        <RowConstraints maxHeight="10.0" minHeight="10.0" prefHeight="10.0" vgrow="ALWAYS" />
     </rowConstraints>
     <children>
         <Button fx:id="clearSimulation" mnemonicParsing="false" onAction="#handleClearSimulation" text="Clear" GridPane.rowIndex="4">
@@ -39,35 +131,39 @@
             <GridPane.margin>
                 <Insets />
             </GridPane.margin></Label>
-        <TableView fx:id="envTable" maxHeight="Infinity" maxWidth="Infinity" minHeight="20.0" minWidth="10.0" prefHeight="500.0" prefWidth="407.0" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
+        <TableView fx:id="envTable" maxHeight="Infinity" maxWidth="Infinity" minHeight="20.0" minWidth="10.0" prefHeight="500.0" prefWidth="439.0" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
             <columns>
-                <TableColumn fx:id="envNameCol" editable="false" minWidth="30.0" prefWidth="120.0" sortable="false" text="Name" />
-                <TableColumn fx:id="envTypeCol" editable="false" minWidth="30.0" prefWidth="70.0" sortable="false" text="Type" />
-                <TableColumn fx:id="envValueCol" minWidth="70.0" prefWidth="130.0" sortable="false" text="Value" />
-            <TableColumn fx:id="envSelectedValCol" minWidth="70.0" prefWidth="119.0" sortable="false" text="Selected Value" />
+                <TableColumn fx:id="envNameCol" editable="false" minWidth="30.0" prefWidth="110.66668446858694" sortable="false" text="Name" />
+                <TableColumn fx:id="envTypeCol" editable="false" minWidth="30.0" prefWidth="56.00000762939453" sortable="false" text="Type" />
+                <TableColumn fx:id="envValueCol" minWidth="70.0" prefWidth="119.99995422363281" sortable="false" text="Value" />
+                <TableColumn fx:id="envSelectedValCol" minWidth="70.0" prefWidth="122.0" sortable="false" text="Selected Value" />
             </columns>
             <GridPane.margin>
                 <Insets bottom="10.0" left="10.0" top="10.0" />
             </GridPane.margin>
-         <opaqueInsets>
-            <Insets />
-         </opaqueInsets>
-         <padding>
-            <Insets right="10.0" />
-         </padding>
+            <opaqueInsets>
+                <Insets />
+            </opaqueInsets>
+            <padding>
+                <Insets right="10.0" />
+            </padding>
         </TableView>
-        <TableView fx:id="entityTable" maxHeight="Infinity" maxWidth="Infinity" minHeight="20.0" minWidth="10.0" prefHeight="500.0" prefWidth="235.0" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
+        <TableView fx:id="entityTable" maxHeight="Infinity" maxWidth="Infinity" minHeight="200.0" minWidth="235.0" prefHeight="500.0" prefWidth="235.0" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
             <columns>
-                <TableColumn fx:id="entityNameCol" editable="false" minWidth="40.0" prefWidth="116.0" sortable="false" text="Entity Name" />
-                <TableColumn fx:id="entityPopCol" minWidth="20.0" prefWidth="121.9999974568685" text="Population" />
+                <TableColumn fx:id="entityNameCol" editable="false" minWidth="40.0" prefWidth="89.33335399627686" sortable="false" text="Entity Name" />
+                <TableColumn fx:id="entityPopCol" minWidth="20.0" prefWidth="65.99999237060547" sortable="false" text="Population" />
+                <TableColumn fx:id="entitySelectedCol" minWidth="20.0" prefWidth="65.99999237060547" sortable="false" text="Selected" />
             </columns>
             <GridPane.margin>
-                <Insets bottom="10.0" left="10.0" top="10.0" />
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
             </GridPane.margin>
         </TableView>
         <Label prefHeight="20.0" prefWidth="80.0" text="for each entity:" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
-      <Label alignment="CENTER" layoutX="355.0" layoutY="10.0" maxHeight="20.0" minHeight="10.0" prefHeight="20.0" prefWidth="385.0" text="If you want to change those values you can edit the Value column:" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
-      <Label prefHeight="17.0" prefWidth="201.0" text="Choose a value and then press 'Enter'" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+        <Label alignment="CENTER" layoutX="355.0" layoutY="10.0" maxHeight="20.0" minHeight="10.0" prefHeight="20.0" prefWidth="385.0" text="If you want to change those values you can edit the Value column:" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+        <Label prefHeight="17.0" prefWidth="201.0" text="Choose a value and then press 'Enter'" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+        <ScrollBar fx:id="entityScroller" onScroll="#handleEntityScroll" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+        <ScrollBar fx:id="envScroller" GridPane.rowIndex="5" />
+        <ScrollBar fx:id="sideScroller" onScroll="#handleSideScroll" orientation="VERTICAL" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowSpan="6" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
     </children>
     <effect>
         <Lighting diffuseConstant="2.0" specularConstant="0.0" surfaceScale="0.0">
@@ -76,4 +172,4 @@
             </bumpInput>
         </Lighting>
     </effect>
-</GridPane>
+</GridPane>-->

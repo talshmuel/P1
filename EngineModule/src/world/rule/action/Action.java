@@ -1,14 +1,11 @@
 package world.rule.action;
-import exception.DivisionByZeroException;
-import exception.IncompatibleAction;
-import exception.IncompatibleType;
+
+import data.transfer.object.definition.ActionInfo;
+import exception.SimulationRunningException;
 import world.rule.action.api.Expression;
 import world.rule.action.api.ParametersForAction;
-import world.rule.action.api.PropertiesToAction;
 import world.rule.action.api.SecondaryEntity;
-
 import java.io.Serializable;
-
 
 abstract public class Action implements Serializable {
     String mainEntityName;
@@ -43,5 +40,6 @@ abstract public class Action implements Serializable {
     public void setSecondEntityInfo(SecondaryEntity secondEntityInfo) {
         this.secondEntityInfo = secondEntityInfo;
     }
-    abstract public Boolean activate(ParametersForAction parameters)throws DivisionByZeroException, IncompatibleAction, IncompatibleType;//return true if need to kill, return false else
+    abstract public Boolean activate(ParametersForAction parameters) throws SimulationRunningException;//return true if need to kill, return false else
+    abstract public ActionInfo getActionInfo();
 }

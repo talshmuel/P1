@@ -1,25 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollBar?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<SplitPane dividerPositions="0.32031250000000006" prefHeight="288.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UI.page.details.DetailsPageController">
+<SplitPane fx:id="mainSplitPane" dividerPositions="0.32031250000000006" prefHeight="288.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UI.page.details.DetailsPageController">
     <items>
-        <TreeView fx:id="worldDetailsTree" onContextMenuRequested="#handleSelectWorldTreeItem" onMouseClicked="#handleSelectWorldTreeItem" prefHeight="286.0" prefWidth="147.0" />
-      <GridPane>
-        <columnConstraints>
-          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-        </columnConstraints>
-        <rowConstraints>
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-        </rowConstraints>
-         <children>
-            <ListView fx:id="entityPropertiesListView" prefHeight="95.0" prefWidth="181.0" />
-         </children>
-      </GridPane>
+        <TreeView fx:id="worldDetailsTree" onMouseClicked="#handleSelectWorldTreeItem" prefHeight="286.0" prefWidth="147.0" />
+        <GridPane>
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            </rowConstraints>
+            <children>
+                <ListView fx:id="entityPropertiesListView" minHeight="10.0" minWidth="20.0" prefHeight="95.0" prefWidth="181.0" />
+                <ScrollBar fx:id="sideScroller" maxWidth="15.0" minWidth="15.0" nodeOrientation="LEFT_TO_RIGHT" onScroll="#handleSideScroll" orientation="VERTICAL" prefWidth="15.0" GridPane.halignment="RIGHT" />
+                <ScrollBar fx:id="rightScroller" maxHeight="15.0" minHeight="15.0" onScroll="#handleRightScroller" prefHeight="15.0" GridPane.valignment="BOTTOM" />
+            </children>
+        </GridPane>
     </items>
 </SplitPane>

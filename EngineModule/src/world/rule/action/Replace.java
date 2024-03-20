@@ -1,9 +1,7 @@
 package world.rule.action;
 
-import exception.DivisionByZeroException;
-import exception.IncompatibleAction;
-import exception.IncompatibleType;
-import world.entity.Coordinate;
+import exception.SimulationRunningException;
+import data.transfer.object.definition.ActionInfo;
 import world.entity.Entity;
 import world.entity.EntityDefinition;
 import world.property.api.PropertyDefinition;
@@ -17,7 +15,8 @@ import world.rule.action.api.SecondaryEntity;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Replace extends Action{ // todo של החייםםםםםםםםםםםם
+
+public class Replace extends Action{
     String mode;
     String entityToCreateName;
     Entity entityToCreate;
@@ -41,7 +40,7 @@ public class Replace extends Action{ // todo של החייםםםםםםםםםםם
     }
 
     @Override
-    public Boolean activate(ParametersForAction parameters) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
+    public Boolean activate(ParametersForAction parameters) throws SimulationRunningException {
         Map<String, Property> propertiesToCreate = new HashMap<>();
 
         if(mode.equals("scratch")){
@@ -87,5 +86,18 @@ public class Replace extends Action{ // todo של החייםםםםםםםםםםם
                 return new StringProperty(definition);
             }
         }
+    }
+
+    @Override
+    public ActionInfo getActionInfo() {
+        boolean haveSecondEntity=false;
+        if(secondEntityInfo!=null)
+            haveSecondEntity=true;
+
+
+        Map<String, Object> moreProp = new HashMap<>();
+        moreProp.put("Replace with", entityToCreate);
+
+        return new ActionInfo("Replace", mainEntityName, haveSecondEntity, moreProp);
     }
 }

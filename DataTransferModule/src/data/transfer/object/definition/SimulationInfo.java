@@ -8,13 +8,19 @@ public final class SimulationInfo {
     ArrayList<RuleInfo> rules;
     ArrayList<TerminationInfo> endConditions;
     Map<String, PropertyInfo> environmentVariables;
-    //ArrayList<PropertyInfo> environmentVariables;
 
-    public SimulationInfo(ArrayList<EntityInfo> entities, ArrayList<RuleInfo> rules, ArrayList<TerminationInfo> endConditions, Map<String, PropertyInfo> environmentVariables){
+    Integer numOfThreads;
+    Integer gridSize;
+
+
+    public SimulationInfo(ArrayList<EntityInfo> entities, ArrayList<RuleInfo> rules, ArrayList<TerminationInfo> endConditions,
+                          Map<String, PropertyInfo> environmentVariables, Integer numOfThreads, Integer gridSize){
         this.endConditions = endConditions;
         this.entities = entities;
         this.rules = rules;
         this.environmentVariables = environmentVariables;
+        this.numOfThreads = numOfThreads;
+        this.gridSize = gridSize;
     }
 
     @Override
@@ -41,5 +47,13 @@ public final class SimulationInfo {
 
     public Map<String, PropertyInfo> getEnvironmentVariables() {
         return environmentVariables;
+    }
+
+    public Integer getNumOfThreads() {
+        return numOfThreads;
+    }
+
+    public Integer getGridSize() {
+        return gridSize;
     }
 }

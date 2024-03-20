@@ -22,12 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 public class WorldCreatorXML {
-    // TODO LIST:
-    // todo: 1. check if the type can also be decimal, or only float (i assumed it's only float)
-    // todo: 2. finish converting 'property' in action to expression -> make sure it's ok (ask about the fuctions,
-    //          are some of them invalid? like random)
-    // todo: 3. fucking evaluate function איףףףףףףףףףףףףףףףף
-    // todo: 4. האם צריך לבדוק שאנטיטי שקיבלנו באחד מהתנאים תואם לאנטיטי הראשי????
     Map<String, Property> environmentVarMap;
     ArrayList<EntityDefinition> entityDefList;
     ArrayList<Rule> rulesList;
@@ -39,38 +33,29 @@ public class WorldCreatorXML {
         grid = validateAndCreateGrid(prdWorld.getPRDGrid());
         environmentVarMap = validateAndCreateEnvironment(prdWorld.getPRDEnvironment().getPRDEnvProperty());
         entityDefList = validateAndCreateEntities(prdWorld.getPRDEntities().getPRDEntity());
-        for(EntityDefinition e : entityDefList){ // todo: delete later
-            e.setNumOfInstances(30);
-        }
-
         rulesList = validateAndCreateRules(prdWorld.getPRDRules().getPRDRule());
-        //endConditionsMap = validateAndCreateTermination(prdWorld.getPRDTermination());
-        // todo: delete later -> hard coded
-        Map<String, Integer> endConditions = new HashMap<>();
-        Integer ticks = 480;
-        Integer seconds = 10;
-        endConditions.put("ticks", ticks);
-        endConditions.put("seconds", seconds);
-        endConditionsMap = endConditions;
-
+        endConditionsMap = new HashMap<>();
+        endConditionsMap = validateAndCreateTermination(prdWorld.getPRDTermination());
         return (new World(entityDefList, environmentVarMap, rulesList, endConditionsMap, grid, threads));
     }
 
     public Map<String, Integer> validateAndCreateTermination(PRDTermination prdTermination) throws XMLFileException {
         if(prdTermination.getPRDByUser() != null && (!(prdTermination.getPRDBySecondOrPRDByTicks().isEmpty())))
-            throw new XMLFileException("XML File Error: End condition must be one of two: by user choice, or by number of ticks/seconds, but not them both!\n");
+            // both conditions appear
+            throw new XMLFileException("XML File Error:\nEnd condition must be one of two: by user choice or by number of ticks/seconds, but not them both!\n");
         if(prdTermination.getPRDByUser() == null && (prdTermination.getPRDBySecondOrPRDByTicks().isEmpty()))
-            throw new XMLFileException("XML File Error: File must contain at least one of the termination conditions! (by seconds or by ticks).\n");
+            // no end condition appears
+            throw new XMLFileException("XML File Error:\nFile must contain at least one of the termination conditions! by user's choice or by ticks/seconds.\n");
 
         Map<String, Integer> endConditions = new HashMap<>();
 
+        // if we got here, one of them isn't null for sure
         if(prdTermination.getPRDByUser() != null){
-            // TODO
+            endConditions.put("user", null);
         } else {
             List<Object> prdByTicksOrPRDBySecond = prdTermination.getPRDBySecondOrPRDByTicks();
-
-            if(prdByTicksOrPRDBySecond.isEmpty())
-                throw new XMLFileException("XML File Error: Termination condition by seconds/ticks is empty! There must be at least one of them.\n");
+            /*if(prdByTicksOrPRDBySecond.isEmpty())
+                throw new XMLFileException("XML File Error: Termination condition by seconds/ticks is empty! There must be at least one of them.\n");*/
 
             for(Object o : prdByTicksOrPRDBySecond){
                 if(o instanceof PRDByTicks){
@@ -89,12 +74,12 @@ public class WorldCreatorXML {
     public Grid validateAndCreateGrid(PRDWorld.PRDGrid prdGrid) throws XMLFileException {
         int rows = prdGrid.getRows();
         if(rows < 10 || rows > 100){
-            throw new XMLFileException("XML File Error: Number of rows in grid must be between 10-100!\n");
+            throw new XMLFileException("XML File Error:\nNumber of rows in grid must be between 10-100!\n");
         }
 
         int cols = prdGrid.getColumns();
         if(cols < 10 || cols > 100){
-            throw new XMLFileException("XML File Error: Number of columns in grid must be between 10-100!\n");
+            throw new XMLFileException("XML File Error:\nNumber of columns in grid must be between 10-100!\n");
         }
 
         return new Grid(rows, cols);
@@ -129,18 +114,20 @@ public class WorldCreatorXML {
     }
     public String validateEnvironmentName(Map<String, Property> environmentMap, String envName) throws XMLFileException {
         if(environmentMap.containsKey(envName.trim())){
-            throw new XMLFileException("XML File Error: File contains duplicated environment variable names!\n");
+            throw new XMLFileException("XML File Error:\nFile contains duplicated environment variable names!\n");
         } else if(envName.trim().contains(" ")){
-            throw new XMLFileException("XML File Error: Environment variable names cannot contain spaces!\n");
+            throw new XMLFileException("XML File Error:\nEnvironment variable names cannot contain spaces!\n");
         }
         return envName.trim();
     }
     public FloatProperty createFloatEnvironmentProperty(PRDEnvProperty prdEnvProperty, String propName){
         Double from=null, to=null;
-
         if(prdEnvProperty.getPRDRange() != null){
             from = prdEnvProperty.getPRDRange().getFrom();
             to = prdEnvProperty.getPRDRange().getTo();
+        } else {
+            from = Double.valueOf(0);
+            to = Double.valueOf(100);
         }
 
         return new FloatProperty(new FloatPropertyDefinition(propName, true, null, to, from));
@@ -160,10 +147,10 @@ public class WorldCreatorXML {
     public String validateEntityName(ArrayList<EntityDefinition> entityDefs, String newEntName) throws XMLFileException {
         /** explanation: checks if the entity name already exists, and if it has spaces in the name. **/
         if(entityDefs.stream().anyMatch(entity -> entity.getName().equals(newEntName))){
-            throw new XMLFileException("XML File Error: File contains duplicated entity names!\n");
+            throw new XMLFileException("XML File Error:\nFile contains duplicated entity names!\n");
         }
-        if(newEntName.contains(" ")){ // todo -> is this relevant?
-            throw new XMLFileException("XML File Error: File contains entity name with spaces!\n");
+        if(newEntName.contains(" ")){
+            throw new XMLFileException("XML File Error:\nFile contains entity name with spaces!\n");
         }
         return newEntName;
     }
@@ -192,10 +179,10 @@ public class WorldCreatorXML {
     }
     public String validatePropertyName(Map<String, PropertyDefinition> map, String newPropName) throws XMLFileException {
         if(map.containsKey(newPropName)){
-            throw new XMLFileException("XML File Error: Entity contains duplicated property names!\n");
+            throw new XMLFileException("XML File Error:\nEntity contains duplicated property names!\n");
         }
-        if(newPropName.contains(" ")){ // todo: check if this is still relevant?
-            throw new XMLFileException("XML File Error: Entity's property names cannot contain spaces!\n");
+        if(newPropName.contains(" ")){
+            throw new XMLFileException("XML File Error:\nEntity's property names cannot contain spaces!\n");
         }
         return newPropName;
     }
@@ -210,6 +197,11 @@ public class WorldCreatorXML {
         Double init = null;
         if(p.getPRDValue().getInit() != null){
             init = Double.parseDouble(p.getPRDValue().getInit());
+        }
+
+        if(p.getPRDValue().isRandomInitialize() && p.getPRDRange() == null){
+            from = Double.valueOf(0);
+            to = Double.valueOf(100);
         }
 
         return new FloatPropertyDefinition(pName, p.getPRDValue().isRandomInitialize(), init, to, from);
@@ -502,8 +494,7 @@ public class WorldCreatorXML {
             SingleCondition.Operator operator = validateOperatorInSingleCondition(prdCondition.getOperator());
             return new SingleCondition(entityDefinition.getName(), null, propExpression, operator, valueExpression, null, null);
         }
-        else{
-            System.out.println("todo: multiple condition in secondary entity! HASHEM ISHMOR"); // todo
+        else {
             return null;
         }
     }

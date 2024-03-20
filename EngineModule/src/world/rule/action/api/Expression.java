@@ -1,15 +1,16 @@
 package world.rule.action.api;
 
-import exception.IncompatibleAction;
+import exception.SimulationRunningException;
 import world.creator.XMLFileException;
 import world.entity.Entity;
 import world.entity.EntityDefinition;
 import world.property.impl.Property;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Map;
 
-public class Expression {
+public class Expression implements Serializable {
     String name;
     Object value;
     public Expression(String name) {
@@ -73,7 +74,7 @@ public class Expression {
         return (this.getValue().equals(other.getValue()));
     }
 
-    public boolean isSmaller(Expression other) throws IncompatibleAction {
+    public boolean isSmaller(Expression other) throws SimulationRunningException {
         if(value instanceof Double && other.getValue() instanceof Double){
             return ((Double)value < (Double)other.getValue());
         } else if(value instanceof Integer && other.getValue() instanceof Integer) {
@@ -83,10 +84,10 @@ public class Expression {
         } else if(value instanceof Double && other.getValue() instanceof Integer) {
             return ((Double) value < (Integer) other.getValue());
         } else
-            throw new IncompatibleAction();
+            throw new SimulationRunningException("Simulation Error:\nAttempt was made to perform an Action that does not match the type of the variable");
     }
 
-    public boolean isBigger(Expression other) throws IncompatibleAction {
+    public boolean isBigger(Expression other) throws SimulationRunningException {
         if(value instanceof Double && other.getValue() instanceof Double){
             return ((Double)value > (Double)other.getValue());
         } else if(value instanceof Integer && other.getValue() instanceof Integer) {
@@ -96,7 +97,7 @@ public class Expression {
         } else if(value instanceof Double && other.getValue() instanceof Integer) {
             return ((Double) value > (Integer) other.getValue());
         } else
-            throw new IncompatibleAction();
+            throw new SimulationRunningException("Simulation Error:\nAttempt was made to perform an Action that does not match the type of the variable");
     }
 
     /** take an expression and returns its type **/

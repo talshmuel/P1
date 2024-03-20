@@ -1,14 +1,14 @@
 package world.rule.action.api;
 
-import world.entity.Entity;
+
 import world.entity.EntityDefinition;
 import world.rule.action.condition.Condition;
-import world.rule.action.condition.SingleCondition;
 
-import java.util.ArrayList;
-import java.util.List;
 
-public class SecondaryEntity {
+import java.io.Serializable;
+
+
+public class SecondaryEntity implements Serializable {
     String name;
     EntityDefinition definition;
     Integer numOfSecondEntities; // if == null -> ALL -> translate it to population number

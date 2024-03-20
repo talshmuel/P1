@@ -1,12 +1,12 @@
 package world.rule.action.condition;
 
-import exception.DivisionByZeroException;
-import exception.IncompatibleAction;
-import exception.IncompatibleType;
+import exception.SimulationRunningException;
 import world.rule.action.Action;
 import world.rule.action.api.*;
-
 import java.util.ArrayList;
+import data.transfer.object.definition.ActionInfo;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MultipleCondition extends Condition {
     ArrayList<Condition> conditions;
@@ -23,7 +23,7 @@ public class MultipleCondition extends Condition {
         this.thenActions = thenActions;
         this.logicSign = logicSign;
     }
-    public Boolean checkCondition(ParametersForAction parameters)throws IncompatibleAction, IncompatibleType {
+    public Boolean checkCondition(ParametersForAction parameters) throws SimulationRunningException {
         switch (logicSign) {
             case OR:
                 return checkORCondition((ParametersForMultipleCondition) parameters);
@@ -32,17 +32,9 @@ public class MultipleCondition extends Condition {
             }
         }
         return false;
-        /*switch (logicSign) { // old version
-            case OR:
-                return checkORCondition((PropertiesToMultipleCondition) propsToChange);
-            case AND: {
-                return checkANDCondition((PropertiesToMultipleCondition) propsToChange);
-            }
-        }
-        return false;*/
     }
     @Override
-    public Boolean activate(ParametersForAction parameters)throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
+    public Boolean activate(ParametersForAction parameters) throws SimulationRunningException {
         if (checkCondition(parameters)) {
             return activateThenActions(((ParametersForMultipleCondition)parameters).getThenParams());
         }
@@ -51,14 +43,6 @@ public class MultipleCondition extends Condition {
         else {
             return false;
         }
-        /*if (checkCondition(propsToChange)) { // old version
-            return activateThenActions(((PropertiesToMultipleCondition)propsToChange).getThenProps());
-        }
-        else if (elseActions != null)
-            return activateElseActions(((PropertiesToMultipleCondition)propsToChange).getElseProps());
-        else {
-            return false;
-        }*/
     }
     @Override
     public ArrayList<Action> getThenActions() {
@@ -77,7 +61,7 @@ public class MultipleCondition extends Condition {
     }
 
     @Override
-    public Boolean activateThenActions(ArrayList<ParametersForAction> parameters) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
+    public Boolean activateThenActions(ArrayList<ParametersForAction> parameters) throws SimulationRunningException {
         boolean kill=false;
         int len = thenActions.size();
         for(int i=0; i<len;i++){
@@ -85,17 +69,9 @@ public class MultipleCondition extends Condition {
                 kill = true;
         }
         return kill;
-        /* old version: parameter to method:  ArrayList<PropertiesToAction> props
-        boolean kill=false; // old version
-        int len = thenActions.size();
-        for(int i=0; i<len;i++){
-            if(thenActions.get(i).activate(null, props.get(i)))
-                kill = true;
-        }
-        return kill;*/
     }
     @Override
-    public Boolean activateElseActions(ArrayList<ParametersForAction> parameters) throws DivisionByZeroException ,IncompatibleAction, IncompatibleType {
+    public Boolean activateElseActions(ArrayList<ParametersForAction> parameters) throws SimulationRunningException {
         boolean kill=false;
         int len = elseActions.size();
         for(int i=0; i<len;i++){
@@ -103,16 +79,8 @@ public class MultipleCondition extends Condition {
                 kill = true;
         }
         return kill;
-        /* old version: parameter to method:  ArrayList<PropertiesToAction> props
-        boolean kill=false; // old version
-        int len = elseActions.size();
-        for(int i=0; i<len;i++){
-            if(elseActions.get(i).activate(null, props.get(i)))
-                kill = true;
-        }
-        return kill;*/
     }
-    Boolean checkORCondition(ParametersForMultipleCondition parameters) throws IncompatibleAction, IncompatibleType{
+    Boolean checkORCondition(ParametersForMultipleCondition parameters) throws SimulationRunningException {
         boolean res = false;
         int len = conditions.size();
         for(int i=0; i<len; i++){
@@ -120,15 +88,8 @@ public class MultipleCondition extends Condition {
                 res = true;
         }
         return res;
-        /*boolean res = false; // old version
-        int len = conditions.size();
-        for(int i=0; i<len; i++){
-            if(conditions.get(i).checkCondition(props.getConditionsProp().get(i)))
-                res = true;
-        }
-        return res;*/
     }
-    Boolean checkANDCondition(ParametersForMultipleCondition parameters) throws IncompatibleAction, IncompatibleType{
+    Boolean checkANDCondition(ParametersForMultipleCondition parameters) throws SimulationRunningException {
         boolean res = true;
         int len = conditions.size();
         for(int i=0; i<len; i++){
@@ -136,12 +97,25 @@ public class MultipleCondition extends Condition {
                 res = false;
         }
         return res;
-        /*boolean res = true; // old version
-        int len = conditions.size();
-        for(int i=0; i<len; i++){
-            if(!conditions.get(i).checkCondition(props.getConditionsProp().get(i)))
-                res = false;
+    }
+
+    @Override
+    public ActionInfo getActionInfo() {
+        boolean haveSecondEntity=false;
+        if(super.getSecondEntityInfo()!=null)
+            haveSecondEntity=true;
+
+
+        Map<String, Object> moreProp = new HashMap<>();
+        moreProp.put("Number of then actions", thenActions.size());
+        if(elseActions != null){
+            moreProp.put("Number of else actions", elseActions.size());
         }
-        return res;*/
+
+        moreProp.put("Logic", logicSign);
+        moreProp.put("Number of conditions", conditions.size());
+
+
+        return new ActionInfo("Multiple Condition", super.getMainEntityName(), haveSecondEntity, moreProp);
     }
 }

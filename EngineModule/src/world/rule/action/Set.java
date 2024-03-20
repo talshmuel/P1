@@ -1,21 +1,36 @@
 package world.rule.action;
 
-import exception.IncompatibleType;
+import exception.SimulationRunningException;
 import world.rule.action.api.Expression;
 import world.rule.action.api.ParametersForAction;
-import world.rule.action.api.PropertiesToAction;
 import world.rule.action.api.SecondaryEntity;
+import data.transfer.object.definition.ActionInfo;
 
+import java.util.HashMap;
+import java.util.Map;
 public class Set extends Action{
     public Set(String mainEntity, SecondaryEntity secondEntityInfo, String propToChangeName, Expression expression) {
         super(mainEntity, secondEntityInfo, propToChangeName, expression);
     }
 
     @Override
-    public Boolean activate(ParametersForAction parameters)throws IncompatibleType {
+    public Boolean activate(ParametersForAction parameters) throws SimulationRunningException {
         parameters.getMainProp().set(expression.getValue());
         parameters.getMainProp().setTickNumThatHasChanged(parameters.getCurrentTicks()); // update in which tick it has been changed
         //propsToChange.getMainProp().set(expressionVal);
         return false;
+    }
+
+    @Override
+    public ActionInfo getActionInfo() {
+        boolean haveSecondEntity=false;
+        if(secondEntityInfo!=null)
+            haveSecondEntity=true;
+
+
+        Map<String, Object> moreProp = new HashMap<>();
+        moreProp.put("Set to", expression.getName());
+
+        return new ActionInfo("Set", mainEntityName, haveSecondEntity, moreProp);
     }
 }

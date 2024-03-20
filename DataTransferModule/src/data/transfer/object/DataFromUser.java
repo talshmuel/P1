@@ -4,17 +4,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DataFromUser {
+
+    int runID;
     Map<String, Integer> population;
     Map<String, Object> environment;
 
-    public DataFromUser(){
+    public DataFromUser(int runID){
+
+       this.runID = runID;
         population = new HashMap<>();
         environment = new HashMap<>();
     }
-    public DataFromUser(DataFromUser other){
-        this.environment = new HashMap<>(other.getEnvironment());
-        this.population = new HashMap<>(other.getPopulation());
-    }
+
 
 
     public void setEnvironment(String varName, Object varValue) {
@@ -32,8 +33,8 @@ public class DataFromUser {
     public Map<String, Object> getEnvironment() {
         return environment;
     }
-    public void cleanup(){
-        population.clear();
-        environment.clear();
+
+    public int getRunID() {
+        return runID;
     }
 }

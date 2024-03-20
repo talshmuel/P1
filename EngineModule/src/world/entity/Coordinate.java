@@ -1,6 +1,8 @@
 package world.entity;
 
-public class Coordinate {
+import java.io.Serializable;
+
+public class Coordinate implements Serializable {
     private Integer row;
     private Integer col;
     public Coordinate(Integer row, Integer col) {
@@ -11,7 +13,7 @@ public class Coordinate {
         return row;
     }
     public boolean isEqual(Coordinate other) {
-       return other.getRow().equals(row) && other.getCol().equals(col);
+        return other.getRow().equals(row) && other.getCol().equals(col);
     }
     public void setRow(Integer row) {
         this.row = row;

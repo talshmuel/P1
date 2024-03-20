@@ -4,19 +4,29 @@ import java.util.Map;
 
 public final class PropertyResultInfo {
     String name;
-    Map<Object, Integer> histogram;//for each value of the property - how many entities have this value
-
-
-    public PropertyResultInfo(String name, Map<Object, Integer> histogram){
-        this.histogram = histogram;
+    int tickNumThatHasChanged; // באיזה טיק הוא השתנה
+    String type;
+    Object value;
+    public PropertyResultInfo(String name, String type, int tickNumThatHasChanged, Object value){
         this.name = name;
-    }
-
-    public Map<Object, Integer> getHistogram() {
-        return histogram;
+        this.tickNumThatHasChanged = tickNumThatHasChanged;
+        this.type = type;
+        this.value = value;
     }
 
     public String getName() {
         return name;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public Integer getTickNumThatHasChanged() {
+        return tickNumThatHasChanged;
+    }
+
+    public Object getValue() {
+        return value;
     }
 }

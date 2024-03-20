@@ -1,6 +1,7 @@
 package world.property.impl;
 
-import exception.IncompatibleType;
+import data.transfer.object.run.result.PropertyResultInfo;
+import exception.SimulationRunningException;
 import world.property.api.IntegerPropertyDefinition;
 import world.property.api.PropertyDefinition;
 
@@ -19,6 +20,10 @@ public class IntegerProperty extends Property {
         }
     }
     @Override
+    public PropertyResultInfo getPropertyResultInfo() {
+        return new PropertyResultInfo(getName(), getType(), tickNumThatHasChanged, val);
+    }
+    @Override
     public String getType() {
         return "Integer";
     }
@@ -29,29 +34,29 @@ public class IntegerProperty extends Property {
     }
 
     @Override
-    public void increase(Object increaseBy) throws IncompatibleType {
+    public void increase(Object increaseBy) throws SimulationRunningException {
         if(increaseBy instanceof Integer)
             if((Integer)increaseBy+val<=(Integer)definition.getTopLimit())
                 val = val + (Integer) increaseBy;
             else
                 val = (Integer) definition.getTopLimit();
         else
-            throw new IncompatibleType();
+            throw new SimulationRunningException("Simulation Error:\nAttempt was made to enter a value that does not match the variable type");
     }
 
     @Override
-    public void decrease(Object decreaseBy) throws IncompatibleType {
+    public void decrease(Object decreaseBy) throws SimulationRunningException {
         if(decreaseBy instanceof Integer)
             if(val-(Integer)decreaseBy>=(Integer)definition.getBottomLimit())
                 val = val-(Integer) decreaseBy;
             else
                 val = (Integer)definition.getBottomLimit();
         else
-            throw new IncompatibleType();
+            throw new SimulationRunningException("Simulation Error:\nAttempt was made to enter a value that does not match the variable type");
     }
 
     @Override
-    public void set(Object setTo) throws IncompatibleType {
+    public void set(Object setTo) throws SimulationRunningException {
         if(setTo instanceof Integer)
             if((Integer) setTo >= (Integer) definition.getBottomLimit() && (Integer) setTo <= (Integer)definition.getTopLimit())
                 val = (Integer) setTo;
@@ -61,26 +66,26 @@ public class IntegerProperty extends Property {
                 val = (Integer) definition.getTopLimit();
             }
             else
-                throw new IncompatibleType();
+                throw new SimulationRunningException("Simulation Error:\nAttempt was made to enter a value that does not match the variable type");
     }
     @Override
-    public Boolean isBigger(Object toCompere) throws IncompatibleType {
+    public Boolean isBigger(Object toCompere) throws SimulationRunningException {
         if(toCompere instanceof Integer)
             return val > (Integer) toCompere;
         else if(toCompere instanceof Double)
             return val > (Double) toCompere;
         else
-            throw new IncompatibleType();
+            throw new SimulationRunningException("Simulation Error:\nAttempt was made to enter a value that does not match the variable type");
     }
 
     @Override
-    public Boolean isSmaller(Object toCompere) throws IncompatibleType {
+    public Boolean isSmaller(Object toCompere) throws SimulationRunningException {
         if(toCompere instanceof Integer)
             return val < (Integer) toCompere;
         else if(toCompere instanceof Double)
             return val < (Double) toCompere;
         else
-            throw new IncompatibleType();
+            throw new SimulationRunningException("Simulation Error:\nAttempt was made to enter a value that does not match the variable type");
     }
     private Integer generateRandomValue(Integer topLimit, Integer bottomLimit){
         Random random = new Random();

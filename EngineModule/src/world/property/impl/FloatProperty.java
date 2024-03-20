@@ -1,6 +1,7 @@
 package world.property.impl;
 
-import exception.IncompatibleType;
+import data.transfer.object.run.result.PropertyResultInfo;
+import exception.SimulationRunningException;
 import world.property.api.FloatPropertyDefinition;
 import world.property.api.PropertyDefinition;
 
@@ -18,6 +19,10 @@ public class FloatProperty extends Property {
                 val = (Double)definition.getInitValue();
         }
     }
+    @Override
+    public PropertyResultInfo getPropertyResultInfo() {
+        return new PropertyResultInfo(getName(), getType(), tickNumThatHasChanged, val);
+    }
 
     @Override
     public String getType() {
@@ -30,7 +35,7 @@ public class FloatProperty extends Property {
     }
 
     @Override
-    public void increase(Object increaseBy)throws IncompatibleType {
+    public void increase(Object increaseBy) throws SimulationRunningException {
         if(increaseBy instanceof Double)
             if((Double)increaseBy+val<=(Double)definition.getTopLimit())
                 val = val+(Double) increaseBy;
@@ -42,12 +47,13 @@ public class FloatProperty extends Property {
             else
                 val = (Double)definition.getTopLimit();
         else {
-            throw new IncompatibleType();
+            throw new SimulationRunningException("Simulation Error:\nAttempt was made to enter a value that does not match the variable type");
+            //throw new IncompatibleType();
         }
     }
 
     @Override
-    public void decrease(Object decreaseBy)throws IncompatibleType {
+    public void decrease(Object decreaseBy) throws SimulationRunningException {
         if (decreaseBy instanceof Double)
             if (val - (Double) decreaseBy >= (Double) definition.getBottomLimit())
                 val = val - (Double) decreaseBy;
@@ -59,11 +65,12 @@ public class FloatProperty extends Property {
             else
                 val = (Double) definition.getBottomLimit();
         else
-            throw new IncompatibleType();
+            throw new SimulationRunningException("Simulation Error:\nAttempt was made to enter a value that does not match the variable type");
+        //throw new IncompatibleType();
     }
 
     @Override
-    public void set(Object setTo)throws IncompatibleType {
+    public void set(Object setTo) throws SimulationRunningException {
         if(setTo instanceof Double)
             if((Double) setTo>=(Double)definition.getBottomLimit() && (Double) setTo<=(Double)definition.getTopLimit())
                 val = (Double) setTo;
@@ -72,27 +79,30 @@ public class FloatProperty extends Property {
             else if ((Double) setTo>(Double)definition.getTopLimit())
                 val = (Double)definition.getTopLimit();
             else
-                throw new IncompatibleType();
+                throw new SimulationRunningException("Simulation Error:\nAttempt was made to enter a value that does not match the variable type");
+        //throw new IncompatibleType();
     }
 
     @Override
-    public Boolean isBigger(Object toCompere)throws IncompatibleType {
+    public Boolean isBigger(Object toCompere) throws SimulationRunningException {
         if(toCompere instanceof Double)
             return val>(Double) toCompere;
         if(toCompere instanceof Integer)
             return val>(Integer) toCompere;
         else
-            throw new IncompatibleType();
+            throw new SimulationRunningException("Simulation Error:\nAttempt was made to enter a value that does not match the variable type");
+        //throw new IncompatibleType();
     }
 
     @Override
-    public Boolean isSmaller(Object toCompere)throws IncompatibleType {
+    public Boolean isSmaller(Object toCompere) throws SimulationRunningException {
         if(toCompere instanceof Double)
             return val<(Double) toCompere;
         else if(toCompere instanceof Integer)
             return val<(Integer) toCompere;
         else
-            throw new IncompatibleType();
+            throw new SimulationRunningException("Simulation Error:\nAttempt was made to enter a value that does not match the variable type");
+        //throw new IncompatibleType();
     }
 
     private Double generateRandomValue(Double topLimit, Double bottomLimit){

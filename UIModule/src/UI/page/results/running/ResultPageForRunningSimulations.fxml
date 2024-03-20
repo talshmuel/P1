@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UI.page.results.running.RunningResultPageController">
+   <bottom>
+      <HBox alignment="CENTER" prefHeight="62.0" prefWidth="600.0" spacing="30.0" BorderPane.alignment="CENTER">
+         <children>
+            <Button mnemonicParsing="false" onAction="#handleClickOnPauseButton" prefHeight="25.0" prefWidth="100.0" text="pause" textFill="#1100ff" />
+            <Button mnemonicParsing="false" onAction="#handleClickOnStopButton" prefWidth="100.0" text="stop" textFill="RED" />
+            <Button mnemonicParsing="false" onAction="#handleClickOnResumeButton" prefWidth="100.0" text="resume" textFill="#309a2e" />
+         </children>
+      </HBox>
+   </bottom>
+   <top>
+      <VBox alignment="CENTER" prefHeight="148.0" prefWidth="600.0" BorderPane.alignment="CENTER">
+         <children>
+            <HBox alignment="CENTER" prefHeight="34.0" prefWidth="600.0">
+               <children>
+                  <Label text="Run ID - ">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="runIDLabel" textFill="#1500ff">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label text="Start time -  " textAlignment="CENTER">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="startTimeLabel" textFill="#1500ff">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children>
+            </HBox>
+            <HBox alignment="CENTER" prefHeight="33.0" prefWidth="600.0" spacing="10.0">
+               <children>
+                  <Label text="Current tick - " />
+                  <TextField fx:id="currentTickTextField" editable="false" prefHeight="0.0" prefWidth="65.0" style="-fx-border-color: blue;" />
+                  <Label text="Current second - " />
+                  <TextField fx:id="currentSecondTextField" editable="false" prefHeight="25.0" prefWidth="65.0" style="-fx-border-color: blue;" />
+               </children>
+            </HBox>
+            <Label prefHeight="0.0" prefWidth="205.0" text="Current amount of entities" textAlignment="CENTER">
+               <font>
+                  <Font size="13.0" />
+               </font>
+            </Label>
+            <TableView fx:id="currentEntitiesAmountTable" prefHeight="58.0" prefWidth="600.0">
+               <columns>
+                  <!--<TableColumn prefWidth="75.0" text="C1" />
+                  <TableColumn prefWidth="75.0" text="C2" />-->
+               </columns>
+            </TableView>
+         </children>
+      </VBox>
+   </top>
+   <center>
+      <Label text="Here maybe one day will be the grid :-)" BorderPane.alignment="CENTER" />
+   </center>
+</BorderPane>

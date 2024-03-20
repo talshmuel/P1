@@ -5,25 +5,57 @@ import java.util.ArrayList;
 
 public final class RunResultInfo {
 
-    String runDate;
-    int id;
-    ArrayList<EntityResultInfo> entitiesResults;
+    int ticks;
+    long startTime;
+    int runID;
+    long totalTime;
+    String currentState;
+    String cancelReason;
 
-    public RunResultInfo(ArrayList<EntityResultInfo> entitiesResults, int id, String runDate){
-        this.entitiesResults = entitiesResults;
-        this.id = id;
-        this.runDate = runDate;
+    WorldResultInfo currentWorldResult;//just for results of RUNNING runs
+
+    ArrayList<WorldResultInfo> worldResultAtEveryTick;//just for results of DONE runs
+
+    public RunResultInfo(int ticks, long startTime, long totalTime, int runID, String currentState,WorldResultInfo currentWorldResult, ArrayList<WorldResultInfo> worldResultAtEveryTick, String cancelReason) {
+        this.ticks = ticks;
+        this.startTime = startTime;
+        this.totalTime = totalTime;
+        this.runID = runID;
+        this.currentState = currentState;
+        this.currentWorldResult = currentWorldResult;
+        this.worldResultAtEveryTick = worldResultAtEveryTick;
+        this.cancelReason = cancelReason;
     }
 
-    public int getId() {
-        return id;
+    public int getRunID() {
+        return runID;
     }
 
-    public ArrayList<EntityResultInfo> getEntitiesResults() {
-        return entitiesResults;
+    public int getTicks() {
+        return ticks;
     }
 
-    public String getRunDate() {
-        return runDate;
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public String getCurrentState() {
+        return currentState;
+    }
+
+    public long getTotalTime() {
+        return totalTime;
+    }
+
+    public WorldResultInfo getCurrentWorldResult() {
+        return currentWorldResult;
+    }
+
+    public ArrayList<WorldResultInfo> getWorldResultAtEveryTick() {
+        return worldResultAtEveryTick;
+    }
+
+    public String getCancelReason() {
+        return cancelReason;
     }
 }

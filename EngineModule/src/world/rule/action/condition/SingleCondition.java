@@ -1,19 +1,19 @@
 package world.rule.action.condition;
 
-import exception.DivisionByZeroException;
-import exception.IncompatibleAction;
-import exception.IncompatibleType;
+import exception.SimulationRunningException;
 import world.rule.action.Action;
 import world.rule.action.api.*;
-
 import java.util.ArrayList;
+import data.transfer.object.definition.ActionInfo;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SingleCondition extends Condition {
     public enum Operator{EQUAL, NOTEQUAL, BIGGERTHAN, LESSTHAN}
     Operator operator;
     ArrayList<Action> thenActions;
     ArrayList<Action> elseActions;
-    Expression propertyExpression; // todo של החיים
+    Expression propertyExpression;
 
     public SingleCondition(String mainEntity, SecondaryEntity secondEntityInfo, Expression property, Operator operator,
                            Expression expression, ArrayList<Action> thenActions, ArrayList<Action> elseActions) {
@@ -28,7 +28,7 @@ public class SingleCondition extends Condition {
         return propertyExpression;
     }
 
-    public Boolean checkCondition(ParametersForAction parameters) throws IncompatibleAction, IncompatibleType {
+    public Boolean checkCondition(ParametersForAction parameters) throws SimulationRunningException {
         switch (operator){
             case EQUAL: return propertyExpression.isEqual(expression);
             case NOTEQUAL: return !(propertyExpression.isEqual(expression));
@@ -38,7 +38,7 @@ public class SingleCondition extends Condition {
         return null;
     }
     @Override
-    public Boolean activate(ParametersForAction parameters) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
+    public Boolean activate(ParametersForAction parameters) throws SimulationRunningException {
         if(checkCondition(parameters))
             return activateThenActions(((ParametersForCondition)parameters).getThenParams());
         else if (elseActions!=null)
@@ -55,7 +55,7 @@ public class SingleCondition extends Condition {
         return thenActions;
     }
     @Override
-    public Boolean activateThenActions(ArrayList<ParametersForAction> parameters) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
+    public Boolean activateThenActions(ArrayList<ParametersForAction> parameters) throws SimulationRunningException {
         boolean kill=false;
         int len = thenActions.size();
         for(int i=0; i<len;i++){
@@ -65,7 +65,7 @@ public class SingleCondition extends Condition {
         return kill;
     }
     @Override
-    public Boolean activateElseActions(ArrayList<ParametersForAction> parameters) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
+    public Boolean activateElseActions(ArrayList<ParametersForAction> parameters) throws SimulationRunningException {
         boolean kill=false;
         int len = elseActions.size();
         for(int i=0; i<len;i++){
@@ -75,43 +75,21 @@ public class SingleCondition extends Condition {
         return kill;
     }
 
-    ///////////////////////////////////////////////////// old versions:
-    /*public Boolean checkCondition(ParametersForAction parameters) throws IncompatibleAction, IncompatibleType {
-        switch (operator){ // old version
-            case EQUAL: return propsToChange.getMainProp().getVal().equals(expressionVal);
-            case NOTEQUAL: return !(propsToChange.getMainProp().getVal().equals(expressionVal));
-            case LESSTHAN:  return propsToChange.getMainProp().isSmaller(expressionVal);
-            case BIGGERTHAN: return propsToChange.getMainProp().isBigger(expressionVal);
-        }
-        return null;
-    }*/
+    @Override
+    public ActionInfo getActionInfo() {
+        boolean haveSecondEntity=false;
+        if(super.getSecondEntityInfo()!=null)
+            haveSecondEntity=true;
 
-    /*public Boolean activate(ParametersForAction parameters) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
-        if(checkCondition(propsToChange))
-            return activateThenActions(((PropertiesToCondition)propsToChange).getThenProps());
-        else if (elseActions!=null)
-            return activateElseActions(((PropertiesToCondition)propsToChange).getElseProps());
-        else
-            return false;
-    }*/
-
-    /*public Boolean activateThenActions(ArrayList<ParametersForAction> parameters) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
-        boolean kill=false; // old version
-        int len = thenActions.size();
-        for(int i=0; i<len;i++){
-            if(thenActions.get(i).activate(null, props.get(i)))
-                kill = true;
+        Map<String, Object> moreProp = new HashMap<>();
+        moreProp.put("Number of then actions", thenActions.size());
+        if(elseActions != null){
+            moreProp.put("Number of else actions", elseActions.size());
         }
-        return kill;
-    }*/
-    /*public Boolean activateElseActions(ArrayList<ParametersForAction> parameters) throws DivisionByZeroException, IncompatibleAction, IncompatibleType {
-        boolean kill=false; // old version
-        int len = elseActions.size();
-        for(int i=0; i<len;i++){
-            if(elseActions.get(i).activate(null, props.get(i)))
-                kill = true;
-        }
-        return kill;
-    }*/
 
+        moreProp.put("Operator", operator);
+        moreProp.put("Compere to", propertyExpression.getName());
+
+        return new ActionInfo("Multiple Condition", super.getMainEntityName(), haveSecondEntity, moreProp);
+    }
 }

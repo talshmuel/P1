@@ -1,34 +1,40 @@
 package data.transfer.object.run.result;
 
-import java.util.ArrayList;
+
+import java.util.Map;
 
 public final class EntityResultInfo {
     String name;
-    int numOfInstanceAtStart;
-    int numOfInstanceAtEnd;
+    int ID;
+    Map<String, PropertyResultInfo> properties;
+    int rowOnGrid;
+    int colOnGrid;
 
-    ArrayList<PropertyResultInfo> propertiesResults;
-
-    public EntityResultInfo(String name, ArrayList<PropertyResultInfo> propertiesResults, int numOfInstanceAtStart, int numOfInstanceAtEnd){
-        this.propertiesResults = propertiesResults;
-        this.numOfInstanceAtStart = numOfInstanceAtStart;
-        this.numOfInstanceAtEnd = numOfInstanceAtEnd;
+    public EntityResultInfo(String name, int ID, Map<String, PropertyResultInfo> properties, int rowOnGrid, int colOnGrid) {
         this.name = name;
-    }
-
-    public ArrayList<PropertyResultInfo> getPropertiesResults() {
-        return propertiesResults;
-    }
-
-    public int getNumOfInstanceAtStart() {
-        return numOfInstanceAtStart;
-    }
-
-    public int getNumOfInstanceAtEnd() {
-        return numOfInstanceAtEnd;
+        this.ID = ID;
+        this.properties = properties;
+        this.rowOnGrid = rowOnGrid;
+        this.colOnGrid = colOnGrid;
     }
 
     public String getName() {
         return name;
+    }
+
+    public int getID() {
+        return ID;
+    }
+
+    public int getColOnGrid() {
+        return colOnGrid;
+    }
+
+    public int getRowOnGrid() {
+        return rowOnGrid;
+    }
+
+    public Map<String, PropertyResultInfo> getProperties() {
+        return properties;
     }
 }
